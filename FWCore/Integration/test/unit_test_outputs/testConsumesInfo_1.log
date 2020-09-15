@@ -37,6 +37,7 @@ modules on end path e:
 modules on end path p1ep2:
 All modules and modules in the current process whose products they consume:
 (This does not include modules from previous processes or the source)
+(Exclusively considers Event products, not Run, Lumi, or ProcessBlock products)
   IntProducer/'intProducerA'
   IntProducer/'intProducerF'
   IntProducer/'intProducerG'
@@ -158,6 +159,7 @@ modules on path path1:
   intProducerD
 All modules and modules in the current process whose products they consume:
 (This does not include modules from previous processes or the source)
+(Exclusively considers Event products, not Run, Lumi, or ProcessBlock products)
   IntProducer/'intProducerF'
   IntProducer/'intProducerH'
   IntProducer/'intProducerB'
@@ -235,6 +237,7 @@ modules on end path ep1:
 modules on end path ep2:
 All modules and modules in the current process whose products they consume:
 (This does not include modules from previous processes or the source)
+(Exclusively considers Event products, not Run, Lumi, or ProcessBlock products)
   IntProducer/'intProducerF'
   IntProducer/'intProducerG'
   IntVectorProducer/'intVectorProducer'
@@ -410,13 +413,12 @@ For products only read from previous processes, 'skip current process' is added
   IntProducerEndProcessBlock/'intProducerEndProcessBlock'
   TestFindProduct/'processBlockTest1' consumes:
     edmtest::IntProduct 'intProducerBeginProcessBlock' '' '', processBlock
-    edmtest::IntProduct 'intProducerBeginProcessBlock' '' 'PROD1', processBlock
     edmtest::IntProduct 'intProducerBeginProcessBlock' '' 'COPY', processBlock
-    edmtest::IntProduct 'intProducerBeginProcessBlock' '' '', processBlock
     edmtest::IntProduct 'intProducerBeginProcessBlock' '' 'PROD1', processBlock
+    edmtest::IntProduct 'intProducerEndProcessBlock' '' 'PROD1', processBlock
+    edmtest::IntProduct 'intProducerBeginProcessBlock' '' '', processBlock
     edmtest::IntProduct 'intProducerBeginProcessBlock' '' 'COPY', processBlock
     edmtest::IntProduct 'intProducerEndProcessBlock' '' '', processBlock
-    edmtest::IntProduct 'intProducerEndProcessBlock' '' 'PROD1', processBlock
     edmtest::IntProduct 'intProducerEndProcessBlock' '' 'COPY', processBlock
     edmtest::IntProduct 'intProducerEndProcessBlock' '' 'COPY', processBlock
   ConsumingIntProducer/'testManyConsumingProducer' consumes:
@@ -464,4 +466,4 @@ TestFindProduct sum = 9015
 TestFindProduct sum = 0
 TestFindProduct sum = 0
 TestFindProduct sum = 45057
-TestFindProduct sum = 460034
+TestFindProduct sum = 450034

@@ -198,6 +198,10 @@ namespace edm {
 
     ConstProductResolverPtr getProductResolverByIndex(ProductResolverIndex const& oid) const;
 
+    virtual unsigned int processBlockIndex(std::string const& processName) const;
+    virtual std::vector<unsigned int> const& processBlockIndexes() const;
+    virtual std::vector<std::string> const& processesWithProcessBlockProducts() const;
+
   protected:
     // ----- Add a new ProductResolver
     // *this takes ownership of the ProductResolver, which in turn owns its

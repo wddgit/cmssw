@@ -77,6 +77,11 @@
     <use name="FWCore/Utilities"/>
   </bin>
 
+  <bin file="TestIntegration.cpp" name="TestIntegrationProcessBlock">
+    <flags TEST_RUNNER_ARGS=" /bin/bash FWCore/Integration/test run_TestProcessBlock.sh"/>
+    <use name="FWCore/Utilities"/>
+  </bin>
+
   <bin file="TestIntegration.cpp" name="TestIntegrationOutput">
     <flags TEST_RUNNER_ARGS=" /bin/bash FWCore/Integration/test run_TestOutput.sh"/>
     <use name="FWCore/Utilities"/>
