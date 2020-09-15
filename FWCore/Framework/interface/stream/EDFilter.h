@@ -40,6 +40,7 @@ namespace edm {
       typedef CacheContexts<T...> CacheTypes;
 
       typedef typename CacheTypes::GlobalCache GlobalCache;
+      typedef typename CacheTypes::InputProcessBlockCache InputProcessBlockCache;
       typedef typename CacheTypes::RunCache RunCache;
       typedef typename CacheTypes::LuminosityBlockCache LuminosityBlockCache;
       typedef RunContextT<RunCache, GlobalCache> RunContext;

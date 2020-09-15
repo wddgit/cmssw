@@ -22,6 +22,7 @@
 #include <memory>
 // user include files
 #include "FWCore/Framework/interface/stream/dummy_helpers.h"
+
 // forward declarations
 
 namespace edm {
@@ -46,6 +47,16 @@ namespace edm {
       T* makeStreamModule(edm::ParameterSet const& iPSet, void const*) {
         return new T(iPSet);
       }
+
+      template <typename T, typename G>
+      std::unique_ptr<G> makeInputProcessBlockCacheImpl(G const*) {
+        return std::make_unique<G>();
+      }
+      template <typename T>
+      dummy_ptr makeInputProcessBlockCacheImpl(void const*) {
+        return dummy_ptr();
+      }
+
     }  // namespace impl
   }    // namespace stream
 }  // namespace edm

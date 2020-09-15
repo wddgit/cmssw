@@ -156,13 +156,7 @@ namespace edm {
       this->doEndLuminosityBlock_(cnstLb, c);
     }
 
-    void EDAnalyzerBase::doRespondToOpenInputFile(FileBlock const& fb) {
-      //respondToOpenInputFile(fb);
-    }
-
-    void EDAnalyzerBase::doRespondToCloseInputFile(FileBlock const& fb) {
-      //respondToCloseInputFile(fb);
-    }
+    void EDAnalyzerBase::doRespondToCloseOutputFile() { clearInputProcessBlockCaches(); }
 
     void EDAnalyzerBase::doBeginProcessBlock_(ProcessBlock const&) {}
     void EDAnalyzerBase::doAccessInputProcessBlock_(ProcessBlock const&) {}
@@ -172,6 +166,8 @@ namespace edm {
     void EDAnalyzerBase::doEndRun_(Run const& rp, EventSetup const& c) {}
     void EDAnalyzerBase::doBeginLuminosityBlock_(LuminosityBlock const& lbp, EventSetup const& c) {}
     void EDAnalyzerBase::doEndLuminosityBlock_(LuminosityBlock const& lbp, EventSetup const& c) {}
+
+    void EDAnalyzerBase::clearInputProcessBlockCaches() {}
 
     void EDAnalyzerBase::fillDescriptions(ConfigurationDescriptions& descriptions) {
       ParameterSetDescription desc;

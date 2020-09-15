@@ -44,10 +44,9 @@ namespace edm {
     typedef T Type;
   };
 
-  template <typename T>
+  template <typename... CacheTypes>
   struct InputProcessBlockCache {
     static constexpr module::Abilities kAbilities = module::Abilities::kInputProcessBlockCache;
-    typedef T Type;
   };
 
   template <typename T>
@@ -131,9 +130,9 @@ namespace edm {
   template <module::Abilities ABILITY, typename T, typename... VArgs>
   struct CheckAbility<ABILITY, T, VArgs...> {
     static constexpr bool kHasIt = (T::kAbilities == ABILITY) | CheckAbility<ABILITY, VArgs...>::kHasIt;
-    typedef std::
-        conditional_t<(T::kAbilities == ABILITY), typename T::Type, typename CheckAbility<ABILITY, VArgs...>::Type>
-            Type;
+    //typedef std::
+    //    conditional_t<(T::kAbilities == ABILITY), typename T::Type, typename CheckAbility<ABILITY, VArgs...>::Type>
+    //        Type;
   };
 
   //End of the recursion

@@ -93,7 +93,8 @@ namespace edm {
 
   void RootPrimaryFileSequence::closeFile_() {
     // close the currently open file, if any, and delete the RootFile object.
-    if (rootFile()) {
+    if (rootFile() && !goToEventClosedFile_) {
+      goToEventClosedFile_ = false;
       auto sentry = std::make_unique<InputSource::FileCloseSentry>(input_, lfn(), usedFallback());
       rootFile()->close();
       if (duplicateChecker_)
@@ -130,6 +131,7 @@ namespace edm {
                                       input_.productSelectorRules(),
                                       InputType::Primary,
                                       input_.branchIDListHelper(),
+                                      input_.processBlockHelper().get(),
                                       input_.thinnedAssociationsHelper(),
                                       nullptr,  // associationsFromSecondary
                                       duplicateChecker(),
@@ -288,6 +290,8 @@ namespace edm {
           assert(rootFile());
           bool found = rootFile()->goToEvent(eventID);
           assert(found);
+          goToEventClosedFile_ = true;
+          firstFile_ = true;
           return true;
         }
       }
@@ -300,6 +304,8 @@ namespace edm {
           if ((*it)->containsItem(eventID.run(), eventID.luminosityBlock(), eventID.event())) {
             assert(rootFile());
             if (rootFile()->goToEvent(eventID)) {
+              goToEventClosedFile_ = true;
+              firstFile_ = true;
               return true;
             }
           }

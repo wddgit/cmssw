@@ -49,9 +49,9 @@ namespace edm {
         typedef edm::one::impl::LuminosityBlockWatcher<edm::one::EDAnalyzerBase> Type;
       };
 
-      template <typename C>
-      struct AbilityToImplementor<edm::InputProcessBlockCache<C>> {
-        typedef edm::one::impl::InputProcessBlockCacheHolder<edm::one::EDAnalyzerBase, C> Type;
+      template <typename... Cs>
+      struct AbilityToImplementor<edm::InputProcessBlockCache<Cs...>> {
+        typedef edm::one::impl::InputProcessBlockCacheHolder<edm::one::EDAnalyzerBase, Cs...> Type;
       };
 
       template <typename C>

@@ -343,7 +343,7 @@ namespace edmtest {
         return std::make_unique<UnsafeCache>();
       }
 
-      void beginProcessBlock(edm::ProcessBlock const& processBlock) const override {
+      void beginProcessBlock(edm::ProcessBlock const& processBlock) override {
         if (m_count != 5) {
           throw cms::Exception("transitions") << "ProcessBlockIntAnalyzer::beginProcessBlock transition " << m_count
                                               << " but it was supposed to be " << 5;
@@ -383,7 +383,7 @@ namespace edmtest {
         ++m_count;
       }
 
-      void endProcessBlock(edm::ProcessBlock const& processBlock) const override {
+      void endProcessBlock(edm::ProcessBlock const& processBlock) override {
         if (m_count != 646u) {
           throw cms::Exception("transitions") << "ProcessBlockIntAnalyzer::endProcessBlock transition " << m_count
                                               << " but it was supposed to be " << 646;

@@ -27,6 +27,7 @@
 
 // user include files
 #include "DataFormats/Provenance/interface/BranchType.h"
+#include "FWCore/Common/interface/FWCoreCommonFwd.h"
 #include "FWCore/Framework/interface/ProductResolverIndexAndSkipBit.h"
 #include "FWCore/Framework/interface/EventSetupRecordKey.h"
 #include "FWCore/Framework/interface/HCTypeTag.h"
@@ -102,6 +103,7 @@ namespace edm {
     // ---------- member functions ---------------------------
     void updateLookup(BranchType iBranchType, ProductResolverIndexHelper const&, bool iPrefetchMayGet);
     void updateLookup(eventsetup::ESRecordsToProxyIndices const&);
+    void selectInputProcessBlocks(ProductRegistry const&, ProcessBlockHelperBase const&);
 
     typedef ProductLabels Labels;
     void labelsForToken(EDGetToken iToken, Labels& oLabels) const;
@@ -253,6 +255,9 @@ namespace edm {
     void throwESConsumesInProcessBlock() const;
 
     edm::InputTag const& checkIfEmpty(edm::InputTag const& tag);
+
+    virtual void doSelectInputProcessBlocks(ProductRegistry const&, ProcessBlockHelperBase const&) {}
+
     // ---------- member data --------------------------------
 
     struct TokenLookupInfo {

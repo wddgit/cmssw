@@ -170,6 +170,14 @@ namespace edm {
     return primaryFileSequence_->readLuminosityBlockAuxiliary_();
   }
 
+  bool PoolSource::nextProcessBlock_(ProcessBlockPrincipal& processBlockPrincipal) {
+    return primaryFileSequence_->nextProcessBlock_(processBlockPrincipal);
+  }
+
+  void PoolSource::readProcessBlock_(ProcessBlockPrincipal& processBlockPrincipal) {
+    primaryFileSequence_->readProcessBlock_(processBlockPrincipal);
+  }
+
   void PoolSource::readRun_(RunPrincipal& runPrincipal) {
     primaryFileSequence_->readRun_(runPrincipal);
     if (secondaryFileSequence_ && !branchIDsToReplace_[InRun].empty()) {

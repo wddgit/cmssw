@@ -342,7 +342,7 @@ namespace edmtest {
         }
       }
 
-      void beginProcessBlock(edm::ProcessBlock const& processBlock) const override {
+      void beginProcessBlock(edm::ProcessBlock const& processBlock) override {
         if (m_count != 0) {
           throw cms::Exception("transitions")
               << "ProcessBlockIntAnalyzer::begin transitions " << m_count << " but it was supposed to be " << 0;
@@ -364,7 +364,7 @@ namespace edmtest {
         ++m_count;
       }
 
-      void endProcessBlock(edm::ProcessBlock const& processBlock) const override {
+      void endProcessBlock(edm::ProcessBlock const& processBlock) override {
         ++m_count;
         if (m_count != trans_) {
           throw cms::Exception("transitions")

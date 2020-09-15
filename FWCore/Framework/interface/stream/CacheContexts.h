@@ -21,6 +21,7 @@
 // system include files
 
 // user include files
+#include "FWCore/Framework/interface/InputProcessBlockCacheImpl.h"
 #include "FWCore/Framework/interface/moduleAbilities.h"
 
 // forward declarations
@@ -35,6 +36,11 @@ namespace edm {
       template <typename G, typename... U>
       struct AbilityToCache<GlobalCache<G>, U...> : public AbilityToCache<U...> {
         typedef G GlobalCache;
+      };
+
+      template <typename... CacheTypes, typename... U>
+      struct AbilityToCache<InputProcessBlockCache<CacheTypes...>, U...> : public AbilityToCache<U...> {
+        typedef edm::impl::InputProcessBlockCacheImpl<CacheTypes...> InputProcessBlockCache;
       };
 
       template <typename R, typename... U>
@@ -60,6 +66,7 @@ namespace edm {
       template <>
       struct AbilityToCache<Last> {
         typedef void GlobalCache;
+        typedef void InputProcessBlockCache;
         typedef void RunCache;
         typedef void LuminosityBlockCache;
         typedef void RunSummaryCache;

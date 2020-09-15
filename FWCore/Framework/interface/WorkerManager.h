@@ -5,6 +5,7 @@
 
 */
 
+#include "FWCore/Common/interface/FWCoreCommonFwd.h"
 #include "FWCore/Framework/interface/ExceptionHelpers.h"
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/UnscheduledCallProducer.h"
@@ -78,7 +79,9 @@ namespace edm {
     void setupResolvers(Principal& principal);
     void setupOnDemandSystem(EventTransitionInfo const&);
 
-    void beginJob(ProductRegistry const& iRegistry, eventsetup::ESRecordsToProxyIndices const&);
+    void beginJob(ProductRegistry const& iRegistry,
+                  eventsetup::ESRecordsToProxyIndices const&,
+                  ProcessBlockHelperBase const&);
     void endJob();
     void endJob(ExceptionCollector& collector);
 
