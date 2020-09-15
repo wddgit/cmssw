@@ -13,6 +13,10 @@ a set of related EDProducts. This is the storage unit of such information.
 #include "DataFormats/Provenance/interface/BranchDescription.h"
 #include "DataFormats/Provenance/interface/BranchID.h"
 #include "DataFormats/Provenance/interface/Provenance.h"
+#include "FWCore/Framework/interface/Principal.h"
+#include "FWCore/ServiceRegistry/interface/GlobalContext.h"
+#include "FWCore/ServiceRegistry/interface/ModuleCallingContext.h"
+#include "FWCore/Utilities/interface/BranchType.h"
 #include "FWCore/Utilities/interface/ProductResolverIndex.h"
 #include "FWCore/Utilities/interface/TypeID.h"
 #include "FWCore/Utilities/interface/thread_safety_macros.h"
@@ -28,9 +32,7 @@ namespace edm {
   class MergeableRunProductMetadata;
   class ProductProvenanceRetriever;
   class DelayedReader;
-  class ModuleCallingContext;
   class SharedResourcesAcquirer;
-  class Principal;
   class UnscheduledAuxiliary;
   class Worker;
   class ServiceToken;
@@ -383,6 +385,13 @@ namespace edm {
                                bool skipCurrentProcess,
                                SharedResourcesAcquirer* sra,
                                ModuleCallingContext const* mcc) const override {
+      if (principal.branchType() == InProcess &&
+          mcc->parent().globalContext()->transition() != GlobalContext::Transition::kAccessInputProcessBlock) {
+        // This is a SubProcess beginProcessBlock or endProcessBlock transition
+        // We cannot access products from parent processes in those transitions
+        return Resolution(nullptr);
+      }
+
       skipCurrentProcess = false;
       return realProduct_->resolveProduct(*parentPrincipal_, skipCurrentProcess, sra, mcc);
     }
@@ -392,6 +401,13 @@ namespace edm {
                         ServiceToken const& token,
                         SharedResourcesAcquirer* sra,
                         ModuleCallingContext const* mcc) const override {
+      if (principal.branchType() == InProcess &&
+          mcc->parent().globalContext()->transition() != GlobalContext::Transition::kAccessInputProcessBlock) {
+        // This is a SubProcess beginProcessBlock or endProcessBlock transition
+        // We cannot access products from parent processes in those transitions
+        return;
+      }
+
       skipCurrentProcess = false;
       realProduct_->prefetchAsync(waitTask, *parentPrincipal_, skipCurrentProcess, token, sra, mcc);
     }

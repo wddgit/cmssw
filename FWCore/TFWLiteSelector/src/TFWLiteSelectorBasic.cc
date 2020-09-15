@@ -35,6 +35,7 @@
 #include "DataFormats/Provenance/interface/ProductRegistry.h"
 #include "DataFormats/Provenance/interface/RunAuxiliary.h"
 #include "DataFormats/Provenance/interface/ThinnedAssociationsHelper.h"
+#include "DataFormats/Provenance/interface/ToProcessBlockIndexes.h"
 #include "FWCore/Framework/interface/DelayedReader.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventPrincipal.h"
@@ -322,6 +323,7 @@ Bool_t TFWLiteSelectorBasic::Process(Long64_t iEntry) {
     branchListIndexBranch->SetAddress(&pBranchListIndexes);
     branchListIndexBranch->GetEntry(iEntry);
     m_->branchIDListHelper_->fixBranchListIndexes(branchListIndexes);
+    edm::EventToProcessBlockIndexes dummyEventToProcessBlockIndexes;
 
     try {
       m_->reader_->setEntry(iEntry);
@@ -334,6 +336,7 @@ Bool_t TFWLiteSelectorBasic::Process(Long64_t iEntry) {
                                   history,
                                   std::move(eventSelectionIDs),
                                   std::move(branchListIndexes),
+                                  dummyEventToProcessBlockIndexes,
                                   *(m_->provRetriever_),
                                   m_->reader_.get());
       lbp->setRunPrincipal(rp);

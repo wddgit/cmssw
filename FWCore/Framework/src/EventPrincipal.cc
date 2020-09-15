@@ -13,6 +13,7 @@
 #include "DataFormats/Provenance/interface/ProductRegistry.h"
 #include "DataFormats/Provenance/interface/Provenance.h"
 #include "DataFormats/Provenance/interface/ThinnedAssociationsHelper.h"
+#include "FWCore/Common/interface/ProcessBlockHelperBase.h"
 #include "FWCore/Framework/interface/DelayedReader.h"
 #include "FWCore/Framework/interface/ProductResolverBase.h"
 #include "FWCore/Framework/interface/LuminosityBlockPrincipal.h"
@@ -34,13 +35,15 @@ namespace edm {
                                  ProcessConfiguration const& pc,
                                  HistoryAppender* historyAppender,
                                  unsigned int streamIndex,
-                                 bool isForPrimaryProcess)
+                                 bool isForPrimaryProcess,
+                                 ProcessBlockHelperBase const* processBlockHelper)
       : Base(reg, reg->productLookup(InEvent), pc, InEvent, historyAppender, isForPrimaryProcess),
         aux_(),
         luminosityBlockPrincipal_(nullptr),
         provRetrieverPtr_(new ProductProvenanceRetriever(streamIndex, *reg)),
         eventSelectionIDs_(),
         branchIDListHelper_(branchIDListHelper),
+        processBlockHelper_(processBlockHelper),
         thinnedAssociationsHelper_(thinnedAssociationsHelper),
         branchListIndexes_(),
         branchListIndexToProcessIndex_(),
@@ -66,6 +69,7 @@ namespace edm {
                                           ProcessHistory const* processHistory,
                                           EventSelectionIDVector eventSelectionIDs,
                                           BranchListIndexes branchListIndexes,
+                                          EventToProcessBlockIndexes const& eventToProcessBlockIndexes,
                                           ProductProvenanceRetriever const& provRetriever,
                                           DelayedReader* reader,
                                           bool deepCopyRetriever) {
@@ -82,6 +86,7 @@ namespace edm {
       }
       updateBranchListIndexes(std::move(branchListIndexes));
     }
+    eventToProcessBlockIndexes_ = eventToProcessBlockIndexes;
     commonFillEventPrincipal(aux, processHistory, reader);
   }
 
@@ -251,6 +256,18 @@ namespace edm {
     return ProductID();
   }
 
+  unsigned int EventPrincipal::processBlockIndex(std::string const& processName) const {
+    return processBlockHelper_->processBlockIndex(processName, eventToProcessBlockIndexes_);
+  }
+
+  std::vector<unsigned int> const& EventPrincipal::processBlockIndexes() const {
+    return processBlockHelper_->processBlockIndexes(eventToProcessBlockIndexes_);
+  }
+
+  std::vector<std::string> const& EventPrincipal::processesWithProcessBlockProducts() const {
+    return processBlockHelper_->topProcessesWithProcessBlockProducts();
+  }
+
   unsigned int EventPrincipal::transitionIndex_() const { return streamID_.value(); }
 
   void EventPrincipal::changedIndexes_() { provRetrieverPtr_->update(productRegistry()); }
@@ -364,6 +381,10 @@ namespace edm {
   EventSelectionIDVector const& EventPrincipal::eventSelectionIDs() const { return eventSelectionIDs_; }
 
   BranchListIndexes const& EventPrincipal::branchListIndexes() const { return branchListIndexes_; }
+
+  EventToProcessBlockIndexes const& EventPrincipal::eventToProcessBlockIndexes() const {
+    return eventToProcessBlockIndexes_;
+  }
 
   edm::ThinnedAssociation const* EventPrincipal::getThinnedAssociation(edm::BranchID const& branchID) const {
     ConstProductResolverPtr const phb = getProductResolver(branchID);

@@ -76,6 +76,7 @@ namespace edm {
     unsigned int treeCacheSize_;
     edm::propagate_const<std::shared_ptr<DuplicateChecker>> duplicateChecker_;
     bool usingGoToEvent_;
+    bool goToEventClosedFile_ = false;
     bool enablePrefetching_;
     bool enforceGUIDInFileName_;
   };  // class RootPrimaryFileSequence

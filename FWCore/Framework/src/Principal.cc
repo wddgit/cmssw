@@ -555,6 +555,19 @@ namespace edm {
     return phb;
   }
 
+  unsigned int Principal::processBlockIndex(std::string const& processName) const {
+    throw Exception(errors::LogicError) << "Principal::processBlockIndex not implemented for this type of Principal";
+  }
+
+  std::vector<unsigned int> const& Principal::processBlockIndexes() const {
+    throw Exception(errors::LogicError) << "Principal::processBlockIndexes not implemented for this type of Principal";
+  }
+
+  std::vector<std::string> const& Principal::processesWithProcessBlockProducts() const {
+    throw Exception(errors::LogicError)
+        << "Principal::processesWithProcessBlockProducts not implemented for this type of Principal";
+  }
+
   BasicHandle Principal::getByLabel(KindOfType kindOfType,
                                     TypeID const& typeID,
                                     InputTag const& inputTag,

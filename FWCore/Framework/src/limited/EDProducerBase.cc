@@ -224,13 +224,7 @@ namespace edm {
       this->doStreamEndLuminosityBlockSummary_(id, lb, c);
     }
 
-    void EDProducerBase::doRespondToOpenInputFile(FileBlock const& fb) {
-      //respondToOpenInputFile(fb);
-    }
-
-    void EDProducerBase::doRespondToCloseInputFile(FileBlock const& fb) {
-      //respondToCloseInputFile(fb);
-    }
+    void EDProducerBase::doRespondToCloseOutputFile() { clearInputProcessBlockCaches(); }
 
     void EDProducerBase::preallocStreams(unsigned int) {}
     void EDProducerBase::preallocLumis(unsigned int) {}
@@ -266,6 +260,8 @@ namespace edm {
     void EDProducerBase::doEndRunProduce_(Run& rp, EventSetup const& c) {}
     void EDProducerBase::doBeginLuminosityBlockProduce_(LuminosityBlock& lbp, EventSetup const& c) {}
     void EDProducerBase::doEndLuminosityBlockProduce_(LuminosityBlock& lbp, EventSetup const& c) {}
+
+    void EDProducerBase::clearInputProcessBlockCaches() {}
 
     void EDProducerBase::fillDescriptions(ConfigurationDescriptions& descriptions) {
       ParameterSetDescription desc;

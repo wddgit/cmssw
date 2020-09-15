@@ -19,14 +19,17 @@
 #include "DataFormats/Provenance/interface/ProcessHistoryRegistry.h"
 #include "DataFormats/Provenance/interface/ProductRegistry.h"
 #include "DataFormats/Provenance/interface/StoredMergeableRunProductMetadata.h"
+#include "DataFormats/Provenance/interface/StoredProcessBlockHelper.h"
 #include "DataFormats/Provenance/interface/StoredProductProvenance.h"
 #include "DataFormats/Provenance/interface/ThinnedAssociationsHelper.h"
 #include "DataFormats/Provenance/interface/RunID.h"
+#include "FWCore/Common/interface/ProcessBlockHelper.h"
 #include "FWCore/Framework/interface/FileBlock.h"
 #include "FWCore/Framework/interface/EventPrincipal.h"
 #include "FWCore/Framework/interface/ProductSelector.h"
 #include "FWCore/Framework/interface/LuminosityBlockPrincipal.h"
 #include "FWCore/Framework/interface/MergeableRunProductMetadata.h"
+#include "FWCore/Framework/interface/ProcessBlockPrincipal.h"
 #include "FWCore/Framework/interface/RunPrincipal.h"
 #include "FWCore/Framework/interface/SharedResourcesAcquirer.h"
 #include "FWCore/Framework/src/SharedResourcesRegistry.h"
@@ -155,6 +158,7 @@ namespace edm {
                      ProductSelectorRules const& productSelectorRules,
                      InputType inputType,
                      std::shared_ptr<BranchIDListHelper> branchIDListHelper,
+                     ProcessBlockHelper* processBlockHelper,
                      std::shared_ptr<ThinnedAssociationsHelper> thinnedAssociationsHelper,
                      std::vector<BranchID> const* associationsFromSecondary,
                      std::shared_ptr<DuplicateChecker> duplicateChecker,
@@ -224,6 +228,7 @@ namespace edm {
         productRegistry_(),
         branchIDLists_(),
         branchIDListHelper_(branchIDListHelper),
+        processBlockHelper_(processBlockHelper),
         fileThinnedAssociationsHelper_(),
         thinnedAssociationsHelper_(thinnedAssociationsHelper),
         processingMode_(processingMode),
@@ -232,6 +237,10 @@ namespace edm {
         eventHistoryTree_(nullptr),
         eventSelectionIDs_(),
         branchListIndexes_(),
+        eventToProcessBlockIndexesBranch_(
+            inputType == InputType::Primary
+                ? eventTree_.tree()->GetBranch(poolNames::eventToProcessBlockIndexesBranchName().c_str())
+                : nullptr),
         history_(),
         branchChildren_(new BranchChildren),
         duplicateChecker_(duplicateChecker),
@@ -244,10 +253,9 @@ namespace edm {
         inputType_(inputType) {
     hasNewlyDroppedBranch_.fill(false);
 
-    treePointers_[InEvent] = &eventTree_;
-    treePointers_[InLumi] = &lumiTree_;
-    treePointers_[InRun] = &runTree_;
-    treePointers_[InProcess] = nullptr;
+    treePointers_.emplace_back(&eventTree_);
+    treePointers_.emplace_back(&lumiTree_);
+    treePointers_.emplace_back(&runTree_);
 
     // Read the metadata tree.
     // We use a smart pointer so the tree will be deleted after use, and not kept for the life of the file.
@@ -278,6 +286,14 @@ namespace edm {
       metaDataTree->SetBranchAddress(poolNames::indexIntoFileBranchName().c_str(), &iifPtr);
     }
 
+    StoredProcessBlockHelper storedProcessBlockHelper;
+    StoredProcessBlockHelper* pStoredProcessBlockHelper = &storedProcessBlockHelper;
+    if (inputType == InputType::Primary) {
+      if (metaDataTree->FindBranch(poolNames::processBlockHelperBranchName().c_str()) != nullptr) {
+        metaDataTree->SetBranchAddress(poolNames::processBlockHelperBranchName().c_str(), &pStoredProcessBlockHelper);
+      }
+    }
+
     StoredMergeableRunProductMetadata* smrc = nullptr;
     if (inputType == InputType::Primary) {
       smrc = &*storedMergeableRunProductMetadata_;
@@ -292,7 +308,7 @@ namespace edm {
     ProductRegistry* ppReg = &inputProdDescReg;
     metaDataTree->SetBranchAddress(poolNames::productDescriptionBranchName().c_str(), (&ppReg));
 
-    typedef std::map<ParameterSetID, ParameterSetBlob> PsetMap;
+    using PsetMap = std::map<ParameterSetID, ParameterSetBlob>;
     PsetMap psetMap;
     PsetMap* psetMapPtr = &psetMap;
     if (metaDataTree->FindBranch(poolNames::parameterSetMapBranchName().c_str()) != nullptr) {
@@ -308,7 +324,7 @@ namespace edm {
             << "Could not find tree " << poolNames::parameterSetsTreeName() << " in the input file.\n";
       }
 
-      typedef std::pair<ParameterSetID, ParameterSetBlob> IdToBlobs;
+      using IdToBlobs = std::pair<ParameterSetID, ParameterSetBlob>;
       IdToBlobs idToBlob;
       IdToBlobs* pIdToBlob = &idToBlob;
       psetTree->SetBranchAddress(poolNames::idToParameterSetBlobsBranchName().c_str(), &pIdToBlob);
@@ -499,17 +515,9 @@ namespace edm {
     runHelper_->setForcedRunOffset(indexIntoFileBegin_ == indexIntoFileEnd_ ? 1 : indexIntoFileBegin_.run());
     eventProcessHistoryIter_ = eventProcessHistoryIDs_.begin();
 
-    // Set product presence information in the product registry.
-    ProductRegistry::ProductList& pList = inputProdDescReg.productListUpdator();
-    for (auto& product : pList) {
-      BranchDescription& prod = product.second;
-      prod.init();
-      if (prod.branchType() == InProcess) {
-        // ProcessBlock input not implemented yet
-        continue;
-      }
-      treePointers_[prod.branchType()]->setPresence(prod, newBranchToOldBranch(prod.branchName()));
-    }
+    makeProcessBlockRootTrees(filePtr, treeMaxVirtualSize, enablePrefetching, inputType, storedProcessBlockHelper);
+
+    setPresenceInProductRegistry(inputProdDescReg, storedProcessBlockHelper);
 
     auto newReg = std::make_unique<ProductRegistry>();
 
@@ -533,11 +541,15 @@ namespace edm {
           newBranchToOldBranch_.insert(std::make_pair(newBD.branchName(), prod.branchName()));
         }
       }
-      dropOnInput(*newReg, productSelectorRules, dropDescendants, inputType);
+
+      dropOnInput(
+          *newReg, productSelectorRules, dropDescendants, inputType, storedProcessBlockHelper, processBlockHelper);
+
       if (inputType == InputType::SecondaryFile) {
         thinnedAssociationsHelper->updateFromSecondaryInput(*fileThinnedAssociationsHelper_,
                                                             *associationsFromSecondary);
       } else if (inputType == InputType::Primary) {
+        initializeProcessBlockHelper(processBlockHelper, storedProcessBlockHelper);
         thinnedAssociationsHelper->updateFromPrimaryInput(*fileThinnedAssociationsHelper_);
       }
 
@@ -545,6 +557,10 @@ namespace edm {
         for (auto& product : newReg->productListUpdator()) {
           setIsMergeable(product.second);
         }
+      }
+
+      for (auto& processBlockTree : processBlockTrees_) {
+        treePointers_.push_back(processBlockTree.get());
       }
 
       // freeze the product registry
@@ -556,18 +572,21 @@ namespace edm {
     ProductRegistry::ProductList const& prodList = productRegistry()->productList();
 
     {
-      std::array<size_t, NumBranchTypes> nBranches;
-      nBranches.fill(0);
+      std::vector<size_t> nBranches(treePointers_.size(), 0);
       for (auto const& product : prodList) {
-        ++nBranches[product.second.branchType()];
+        if (product.second.branchType() == InProcess) {
+          std::vector<std::string> const& processes = storedProcessBlockHelper.processesWithProcessBlockProducts();
+          auto it = std::find(processes.begin(), processes.end(), product.second.processName());
+          assert(it != processes.end());
+          auto index = std::distance(processes.begin(), it);
+          ++nBranches[numberOfRunLumiEventProductTrees + index];
+        } else {
+          ++nBranches[product.second.branchType()];
+        }
       }
 
       int i = 0;
-      for (auto t : treePointers_) {
-        if (t == nullptr) {
-          // ProcessBlock input not implemented yet
-          continue;
-        }
+      for (auto& t : treePointers_) {
         t->numberOfBranchesToAdd(nBranches[i]);
         ++i;
       }
@@ -575,10 +594,15 @@ namespace edm {
     for (auto const& product : prodList) {
       BranchDescription const& prod = product.second;
       if (prod.branchType() == InProcess) {
-        // ProcessBlock input not implemented yet
-        continue;
+        std::vector<std::string> const& processes = storedProcessBlockHelper.processesWithProcessBlockProducts();
+        auto it = std::find(processes.begin(), processes.end(), prod.processName());
+        assert(it != processes.end());
+        auto index = std::distance(processes.begin(), it);
+        treePointers_[numberOfRunLumiEventProductTrees + index]->addBranch(prod,
+                                                                           newBranchToOldBranch(prod.branchName()));
+      } else {
+        treePointers_[prod.branchType()]->addBranch(prod, newBranchToOldBranch(prod.branchName()));
       }
-      treePointers_[prod.branchType()]->addBranch(prod, newBranchToOldBranch(prod.branchName()));
     }
 
     // Determine if this file is fast clonable.
@@ -593,6 +617,9 @@ namespace edm {
     // Train the run and lumi trees.
     runTree_.trainCache("*");
     lumiTree_.trainCache("*");
+    for (auto& processBlockTree : processBlockTrees_) {
+      processBlockTree->trainCache("*");
+    }
   }
 
   RootFile::~RootFile() {}
@@ -722,7 +749,13 @@ namespace edm {
     }
   }
 
-  std::unique_ptr<FileBlock> RootFile::createFileBlock() const {
+  std::unique_ptr<FileBlock> RootFile::createFileBlock() {
+    std::vector<TTree*> processBlockTrees;
+    std::vector<std::string> processesWithProcessBlockTrees;
+    for (auto& processBlockTree : processBlockTrees_) {
+      processBlockTrees.push_back(processBlockTree->tree());
+      processesWithProcessBlockTrees.push_back(processBlockTree->processName());
+    }
     return std::make_unique<FileBlock>(fileFormatVersion(),
                                        eventTree_.tree(),
                                        eventTree_.metaTree(),
@@ -730,6 +763,8 @@ namespace edm {
                                        lumiTree_.metaTree(),
                                        runTree_.tree(),
                                        runTree_.metaTree(),
+                                       std::move(processBlockTrees),
+                                       std::move(processesWithProcessBlockTrees),
                                        whyNotFastClonable(),
                                        hasNewlyDroppedBranch(),
                                        file_,
@@ -1213,10 +1248,6 @@ namespace edm {
     // Just to play it safe, zero all pointers to objects in the InputFile to be closed.
     eventHistoryTree_ = nullptr;
     for (auto& treePointer : treePointers_) {
-      if (treePointer == nullptr) {
-        // ProcessBlock input not implemented yet
-        continue;
-      }
       treePointer->close();
       treePointer = nullptr;
     }
@@ -1249,6 +1280,21 @@ namespace edm {
     eventTree_.setEntryNumber(entry);
     fillThisEventAuxiliary();
     return true;
+  }
+
+  void RootFile::fillEventToProcessBlockIndexes() {
+    if (eventToProcessBlockIndexesBranch_ == nullptr) {
+      if (processBlockHelper_.get() == nullptr) {
+        eventToProcessBlockIndexes_.setIndex(0);
+      } else {
+        eventToProcessBlockIndexes_.setIndex(processBlockHelper_->outerOffset());
+      }
+    } else {
+      EventToProcessBlockIndexes* pEventToProcessBlockIndexes = &eventToProcessBlockIndexes_;
+      eventTree_.fillBranchEntry(eventToProcessBlockIndexesBranch_, pEventToProcessBlockIndexes);
+      unsigned int updatedIndex = eventToProcessBlockIndexes_.index() + processBlockHelper_->outerOffset();
+      eventToProcessBlockIndexes_.setIndex(updatedIndex);
+    }
   }
 
   void RootFile::fillEventHistory() {
@@ -1473,6 +1519,7 @@ namespace edm {
       const_cast<EventID&>(eventAux_.id()).setLuminosityBlockNumber(eventAux_.oldLuminosityBlock());
       eventAux_.resetObsoleteInfo();
     }
+    fillEventToProcessBlockIndexes();
     fillEventHistory();
     runHelper_->overrideRunNumber(eventAux_.id(), eventAux().isRealData());
 
@@ -1483,6 +1530,7 @@ namespace edm {
                                  history,
                                  std::move(eventSelectionIDs_),
                                  std::move(branchListIndexes_),
+                                 eventToProcessBlockIndexes_,
                                  *(makeProductProvenanceRetriever(principal.streamID().value())),
                                  eventTree_.resetAndGetRootDelayedReader());
 
@@ -1555,6 +1603,53 @@ namespace edm {
     }
     savedRunAuxiliary_ = runAuxiliary;
     return runAuxiliary;
+  }
+
+  bool RootFile::initializeFirstProcessBlockEntry() {
+    if (processBlockTrees_[currentProcessBlockTree_]->entryNumber() == IndexIntoFile::invalidEntry) {
+      processBlockTrees_[currentProcessBlockTree_]->setEntryNumber(0);
+      assert(processBlockTrees_[currentProcessBlockTree_]->current());
+      return true;
+    }
+    return false;
+  }
+
+  bool RootFile::endOfProcessBlocksReached() const { return currentProcessBlockTree_ >= processBlockTrees_.size(); }
+
+  bool RootFile::nextProcessBlock_(ProcessBlockPrincipal&) {
+    assert(inputType_ == InputType::Primary);
+    if (endOfProcessBlocksReached()) {
+      return false;
+    }
+    if (initializeFirstProcessBlockEntry()) {
+      return true;
+    }
+    // With the current design, the RootFile should always be
+    // set to a valid ProcessBlock entry in one of the TTrees
+    // if it not at the end.
+    assert(processBlockTrees_[currentProcessBlockTree_]->current());
+    // Try for next entry in the same TTree
+    if (processBlockTrees_[currentProcessBlockTree_]->nextWithCache()) {
+      return true;
+    }
+    // Next ProcessBlock TTree
+    ++currentProcessBlockTree_;
+    if (endOfProcessBlocksReached()) {
+      return false;
+    }
+    // With current design there should always be at least one entry.
+    // Initialize for that entry.
+    processBlockTrees_[currentProcessBlockTree_]->setEntryNumber(0);
+    assert(processBlockTrees_[currentProcessBlockTree_]->current());
+    return true;
+  }
+
+  void RootFile::readProcessBlock_(ProcessBlockPrincipal& processBlockPrincipal) {
+    assert(inputType_ == InputType::Primary);
+    RootTree* rootTree = processBlockTrees_[currentProcessBlockTree_].get();
+    rootTree->insertEntryForIndex(0);
+    assert(!rootTree->processName().empty());
+    processBlockPrincipal.fillProcessBlockPrincipal(rootTree->processName(), rootTree->resetAndGetRootDelayedReader());
   }
 
   void RootFile::readRun_(RunPrincipal& runPrincipal) {
@@ -1704,6 +1799,33 @@ namespace edm {
     }
   }
 
+  void RootFile::setPresenceInProductRegistry(ProductRegistry& inputProdDescReg,
+                                              StoredProcessBlockHelper const& storedProcessBlockHelper) {
+    // Set product presence information in the product registry.
+    // "Presence" is a boolean that is true if and only if the TBranch exists
+    // in the TTree (except it will be false for ProcessBlock products in non-Primary
+    // input files).
+    ProductRegistry::ProductList& pList = inputProdDescReg.productListUpdator();
+    for (auto& product : pList) {
+      BranchDescription& prod = product.second;
+      prod.init();
+      if (prod.branchType() == InProcess) {
+        std::vector<std::string> const& processes = storedProcessBlockHelper.processesWithProcessBlockProducts();
+        auto it = std::find(processes.begin(), processes.end(), prod.processName());
+        if (it != processes.end()) {
+          auto index = std::distance(processes.begin(), it);
+          processBlockTrees_[index]->setPresence(prod, newBranchToOldBranch(prod.branchName()));
+        } else {
+          // Given current rules for saving BranchDescriptions, this case should only occur
+          // in non-Primary sequences.
+          prod.setDropped(true);
+        }
+      } else {
+        treePointers_[prod.branchType()]->setPresence(prod, newBranchToOldBranch(prod.branchName()));
+      }
+    }
+  }
+
   void RootFile::markBranchToBeDropped(bool dropDescendants,
                                        BranchDescription const& branch,
                                        std::set<BranchID>& branchesToDrop,
@@ -1718,16 +1840,13 @@ namespace edm {
   void RootFile::dropOnInput(ProductRegistry& reg,
                              ProductSelectorRules const& rules,
                              bool dropDescendants,
-                             InputType inputType) {
-    // This is the selector for drop on input.
-    ProductSelector productSelector;
-    productSelector.initialize(rules, reg.allBranchDescriptions());
-
-    std::vector<BranchDescription const*> associationDescriptions;
-
+                             InputType inputType,
+                             StoredProcessBlockHelper& storedProcessBlockHelper,
+                             ProcessBlockHelper* processBlockHelper) {
     ProductRegistry::ProductList& prodList = reg.productListUpdator();
-    // Do drop on input. On the first pass, just fill in a set of branches to be dropped.
-    std::set<BranchID> branchesToDrop;
+
+    // First fill in a map we will need to navigate to descendants
+    // in the case of EDAliases.
     std::map<BranchID, BranchID> droppedToKeptAlias;
     for (auto const& product : prodList) {
       BranchDescription const& prod = product.second;
@@ -1735,10 +1854,22 @@ namespace edm {
         droppedToKeptAlias[prod.originalBranchID()] = prod.branchID();
       }
     }
+
+    // This object will select products based on the branchName and the
+    // keep and drop statements which are in the source configuration.
+    ProductSelector productSelector;
+    productSelector.initialize(rules, reg.allBranchDescriptions());
+
+    // In this pass, fill in a set of branches to be dropped.
+    // Don't drop anything yet.
+    std::set<BranchID> branchesToDrop;
+    std::vector<BranchDescription const*> associationDescriptions;
     for (auto const& product : prodList) {
       BranchDescription const& prod = product.second;
-      // Special handling for ThinnedAssociations
-      if (prod.unwrappedType() == typeid(ThinnedAssociation) && prod.present()) {
+      if (inputType != InputType::Primary && prod.branchType() == InProcess) {
+        markBranchToBeDropped(dropDescendants, prod, branchesToDrop, droppedToKeptAlias);
+      } else if (prod.unwrappedType() == typeid(ThinnedAssociation) && prod.present()) {
+        // Special handling for ThinnedAssociations
         if (inputType != InputType::SecondarySource) {
           associationDescriptions.push_back(&prod);
         } else {
@@ -1790,19 +1921,26 @@ namespace edm {
     }
 
     // On this pass, actually drop the branches.
+    std::set<std::string> processesWithKeptProcessBlockProducts;
     std::set<BranchID>::const_iterator branchesToDropEnd = branchesToDrop.end();
     for (ProductRegistry::ProductList::iterator it = prodList.begin(), itEnd = prodList.end(); it != itEnd;) {
       BranchDescription const& prod = it->second;
       bool drop = branchesToDrop.find(prod.branchID()) != branchesToDropEnd;
       if (drop) {
         if (!prod.dropped()) {
-          if (productSelector.selected(prod) && prod.unwrappedType() != typeid(ThinnedAssociation)) {
+          if (productSelector.selected(prod) && prod.unwrappedType() != typeid(ThinnedAssociation) &&
+              prod.branchType() != InProcess) {
             LogWarning("RootFile") << "Branch '" << prod.branchName() << "' is being dropped from the input\n"
                                    << "of file '" << file_ << "' because it is dependent on a branch\n"
                                    << "that was explicitly dropped.\n";
           }
-          // ProcessBlock input is not implemented yet
-          if (prod.branchType() != InProcess) {
+          if (prod.branchType() == InProcess) {
+            std::vector<std::string> const& processes = storedProcessBlockHelper.processesWithProcessBlockProducts();
+            auto it = std::find(processes.begin(), processes.end(), prod.processName());
+            assert(it != processes.end());
+            auto index = std::distance(processes.begin(), it);
+            processBlockTrees_[index]->dropBranch(newBranchToOldBranch(prod.branchName()));
+          } else {
             treePointers_[prod.branchType()]->dropBranch(newBranchToOldBranch(prod.branchName()));
           }
           hasNewlyDroppedBranch_[prod.branchType()] = true;
@@ -1811,9 +1949,14 @@ namespace edm {
         ++it;
         prodList.erase(icopy);
       } else {
+        if (prod.branchType() == InProcess && prod.present()) {
+          processesWithKeptProcessBlockProducts.insert(prod.processName());
+        }
         ++it;
       }
     }
+
+    dropProcessesAndReorder(storedProcessBlockHelper, processesWithKeptProcessBlockProducts, processBlockHelper);
 
     // Drop on input mergeable run and lumi products, this needs to be invoked for secondary file input
     if (inputType == InputType::SecondaryFile) {
@@ -1839,10 +1982,101 @@ namespace edm {
     }
   }
 
+  void RootFile::dropProcessesAndReorder(StoredProcessBlockHelper& storedProcessBlockHelper,
+                                         std::set<std::string> const& processesWithKeptProcessBlockProducts,
+                                         ProcessBlockHelper* processBlockHelper) {
+    // Modify storedProcessBlockHelper and processBlockTrees_
+    // This should account for dropOnInput and also make the
+    // order of process blocks in input files after the first
+    // be the same as the first. Processes with no ProcessBlock
+    // products should be removed. After this executes,
+    // the items in storedProcessBlockHelper
+    // and processBlockTrees should be in exact one to one
+    // correspondence and in the same order. For input files
+    // after the first, these items should be either the same
+    // as or a subset of the items in processBlockHelper and in
+    // the same order.
+
+    if (processBlockTrees_.empty()) {
+      // Nothing to do so just return.
+      // Note that if we do not return here, then processBlockHelper should always be non-null
+      // and the process vector in storedProcessBlockHelper should always be non-empty
+      // and the InputType must be Primary
+      return;
+    }
+
+    bool firstInputFile = !processBlockHelper->initializedFromInput();
+
+    std::vector<unsigned int> nEntries;
+    nEntries.reserve(processBlockTrees_.size());
+    for (auto const& processBlockTree : processBlockTrees_) {
+      nEntries.push_back(processBlockTree->entries());
+    }
+    // Translate from an index into the process list in the ProcessBlockHelper
+    // (established from the first file) to an index into the process list
+    // in the current StoredProcessBlockHelper.
+    std::vector<unsigned int> firstFileToStored;
+    bool isModified = storedProcessBlockHelper.dropProcessesAndReorder(
+        processesWithKeptProcessBlockProducts,
+        firstInputFile ? storedProcessBlockHelper.processesWithProcessBlockProducts()
+                       : processBlockHelper->processesWithProcessBlockProducts(),
+        processBlockHelper->nProcessesInFirstFile(),
+        nEntries,
+        firstFileToStored,
+        firstInputFile);
+    // For any process where all the ProcessBlock products were dropped also
+    // delete the corresponding RootTree object and remove the pointer to it
+    // from processBlockTrees_.
+    if (isModified) {
+      std::vector<edm::propagate_const<std::unique_ptr<RootTree>>> newProcessBlockTrees;
+      for (unsigned int j = 0; j < processBlockHelper->nProcessesInFirstFile(); ++j) {
+        unsigned int iStored = firstFileToStored[j];
+        if (iStored != StoredProcessBlockHelper::invalidProcessIndex()) {
+          newProcessBlockTrees.push_back(std::move(processBlockTrees_[iStored]));
+        }
+      }
+      processBlockTrees_.swap(newProcessBlockTrees);
+    }
+  }
+
+  void RootFile::initializeProcessBlockHelper(ProcessBlockHelper* processBlockHelper,
+                                              StoredProcessBlockHelper& storedProcessBlockHelper) {
+    std::vector<unsigned int> nEntries;
+    nEntries.reserve(processBlockTrees_.size());
+    for (auto const& processBlockTree : processBlockTrees_) {
+      nEntries.push_back(processBlockTree->entries());
+    }
+    processBlockHelper->initializeFromPrimaryInput(storedProcessBlockHelper, std::move(nEntries));
+  }
+
   void RootFile::setSignals(
       signalslot::Signal<void(StreamContext const&, ModuleCallingContext const&)> const* preEventReadSource,
       signalslot::Signal<void(StreamContext const&, ModuleCallingContext const&)> const* postEventReadSource) {
     eventTree_.setSignals(preEventReadSource, postEventReadSource);
+  }
+
+  void RootFile::makeProcessBlockRootTrees(std::shared_ptr<InputFile> filePtr,
+                                           int treeMaxVirtualSize,
+                                           bool enablePrefetching,
+                                           InputType inputType,
+                                           StoredProcessBlockHelper const& storedProcessBlockHelper) {
+    // When this functions returns there will be exactly a 1-to-1 correspondence between the
+    // processes listed in storedProcessBlockHelper and the RootTree objects created. processBlockTrees_
+    // has pointers to the RootTree's and will be filled in the same order. The RootTree constructor
+    // will throw an exception if one of these TTree's is not in the file and this should be all of
+    // the ProcessBlock TTree's in the file. (later in the RootFile constructor, dropOnInput might
+    // remove some and also reordering may occur).
+    for (auto const& process : storedProcessBlockHelper.processesWithProcessBlockProducts()) {
+      processBlockTrees_.emplace_back(std::make_unique<RootTree>(filePtr,
+                                                                 InProcess,
+                                                                 process,
+                                                                 1,
+                                                                 treeMaxVirtualSize,
+                                                                 roottree::defaultNonEventCacheSize,
+                                                                 roottree::defaultNonEventLearningEntries,
+                                                                 enablePrefetching,
+                                                                 inputType));
+    }
   }
 
   std::unique_ptr<MakeProvenanceReader> RootFile::makeProvenanceReaderMaker(InputType inputType) {

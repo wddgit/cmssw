@@ -454,7 +454,7 @@ namespace edmtest {
         }
       }
 
-      void beginProcessBlock(edm::ProcessBlock const& processBlock) const override {
+      void beginProcessBlock(edm::ProcessBlock const& processBlock) override {
         if (m_count != 0) {
           throw cms::Exception("transitions")
               << "ProcessBlockIntFilter::begin transitions " << m_count << " but it was supposed to be " << 0;
@@ -477,7 +477,7 @@ namespace edmtest {
         return true;
       }
 
-      void endProcessBlock(edm::ProcessBlock const& processBlock) const override {
+      void endProcessBlock(edm::ProcessBlock const& processBlock) override {
         ++m_count;
         if (m_count != trans_) {
           throw cms::Exception("transitions")
@@ -531,7 +531,7 @@ namespace edmtest {
         }
       }
 
-      void beginProcessBlockProduce(edm::ProcessBlock& processBlock) const override {
+      void beginProcessBlockProduce(edm::ProcessBlock& processBlock) override {
         if (m_count != 0) {
           throw cms::Exception("transitions")
               << "TestBeginProcessBlockFilter transitions " << m_count << " but it was supposed to be " << 0;
@@ -589,7 +589,7 @@ namespace edmtest {
         return true;
       }
 
-      void endProcessBlockProduce(edm::ProcessBlock& processBlock) const override {
+      void endProcessBlockProduce(edm::ProcessBlock& processBlock) override {
         ++m_count;
         if (m_count != trans_) {
           throw cms::Exception("transitions")

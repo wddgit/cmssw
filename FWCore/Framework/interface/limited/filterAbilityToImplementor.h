@@ -37,9 +37,9 @@ namespace edm {
         typedef edm::limited::impl::StreamCacheHolder<edm::limited::EDFilterBase, C> Type;
       };
 
-      template <typename C>
-      struct AbilityToImplementor<edm::InputProcessBlockCache<C>> {
-        typedef edm::limited::impl::InputProcessBlockCacheHolder<edm::limited::EDFilterBase, C> Type;
+      template <typename... Cs>
+      struct AbilityToImplementor<edm::InputProcessBlockCache<Cs...>> {
+        typedef edm::limited::impl::InputProcessBlockCacheHolder<edm::limited::EDFilterBase, Cs...> Type;
       };
 
       template <typename C>

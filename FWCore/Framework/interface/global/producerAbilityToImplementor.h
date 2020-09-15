@@ -37,9 +37,9 @@ namespace edm {
         typedef edm::global::impl::StreamCacheHolder<edm::global::EDProducerBase, C> Type;
       };
 
-      template <typename C>
-      struct AbilityToImplementor<edm::InputProcessBlockCache<C>> {
-        typedef edm::global::impl::InputProcessBlockCacheHolder<edm::global::EDProducerBase, C> Type;
+      template <typename... Cs>
+      struct AbilityToImplementor<edm::InputProcessBlockCache<Cs...>> {
+        typedef edm::global::impl::InputProcessBlockCacheHolder<edm::global::EDProducerBase, Cs...> Type;
       };
 
       template <typename C>
