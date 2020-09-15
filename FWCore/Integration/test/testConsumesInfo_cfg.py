@@ -442,20 +442,24 @@ copyProcess.intProducerEndProcessBlock = cms.EDProducer("IntProducerEndProcessBl
 
 copyProcess.processBlockTest1 = cms.EDAnalyzer("TestFindProduct",
   inputTags = cms.untracked.VInputTag(),
-  expectedSum = cms.untracked.int32(460034),
+  expectedSum = cms.untracked.int32(450034),
+  # This does not work in a SubProcess because the accessInputProcessBlock
+  # transition does not occur until after event processing is over
+  # expectedCache = cms.untracked.int32(110000),
   inputTagsBeginProcessBlock = cms.untracked.VInputTag(
     cms.InputTag("intProducerBeginProcessBlock"),
-    cms.InputTag("intProducerBeginProcessBlock", "", "PROD1"),
     cms.InputTag("intProducerBeginProcessBlock", "", "COPY")
   ),
   inputTagsEndProcessBlock = cms.untracked.VInputTag(
     cms.InputTag("intProducerBeginProcessBlock"),
-    cms.InputTag("intProducerBeginProcessBlock", "", "PROD1"),
     cms.InputTag("intProducerBeginProcessBlock", "", "COPY"),
     cms.InputTag("intProducerEndProcessBlock"),
-    cms.InputTag("intProducerEndProcessBlock", "", "PROD1"),
     cms.InputTag("intProducerEndProcessBlock", "", "COPY"),
     cms.InputTag("intProducerEndProcessBlock", "", cms.InputTag.currentProcess())
+  ),
+  inputTagsInputProcessBlock = cms.untracked.VInputTag(
+    cms.InputTag("intProducerBeginProcessBlock", "", "PROD1"),
+    cms.InputTag("intProducerEndProcessBlock", "", "PROD1")
   )
 )
 
