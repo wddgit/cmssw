@@ -6,11 +6,13 @@ edm::*Cache templates
 for testing purposes only.
 
 ----------------------------------------------------------------------*/
-#include <iostream>
 #include <atomic>
-#include <vector>
-#include <map>
 #include <functional>
+#include <iostream>
+#include <map>
+#include <tuple>
+#include <vector>
+
 #include "FWCore/Framework/interface/stream/EDAnalyzer.h"
 #include "FWCore/Framework/src/WorkerT.h"
 #include "FWCore/Framework/interface/HistoryAppender.h"
@@ -25,6 +27,7 @@ for testing purposes only.
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "FWCore/Utilities/interface/EDMException.h"
 #include "DataFormats/Provenance/interface/BranchDescription.h"
+#include "DataFormats/TestObjects/interface/ToyProducts.h"
 
 namespace edmtest {
   namespace stream {
@@ -497,10 +500,6 @@ namespace edmtest {
         }
       }
 
-      static std::shared_ptr<Cache> accessInputProcessBlock(edm::ProcessBlock const&, TestGlobalCacheAn*) {
-        return std::make_shared<Cache>();
-      }
-
       void analyze(edm::Event const&, edm::EventSetup const&) override {
         TestGlobalCacheAn const* testGlobalCache = globalCache();
         if (testGlobalCache->m_count < 1u) {
@@ -552,6 +551,124 @@ namespace edmtest {
       }
     };
 
+    class TestInputProcessBlockCache {
+    public:
+      long long int value_;
+    };
+
+    class InputProcessBlockIntAnalyzer
+        : public edm::stream::EDAnalyzer<edm::InputProcessBlockCache<int, TestInputProcessBlockCache>> {
+    public:
+      explicit InputProcessBlockIntAnalyzer(edm::ParameterSet const& pset) {}
+
+      static void accessInputProcessBlock(edm::ProcessBlock const&) {}
+
+      void analyze(edm::Event const&, edm::EventSetup const&) override {}
+    };
+
+    struct InputProcessBlockGlobalCacheAn {
+      CMS_THREAD_SAFE mutable edm::EDGetTokenT<IntProduct> getTokenBegin_;
+      CMS_THREAD_SAFE mutable edm::EDGetTokenT<IntProduct> getTokenEnd_;
+      CMS_THREAD_SAFE mutable edm::EDGetTokenT<IntProduct> getTokenBeginM_;
+      CMS_THREAD_SAFE mutable edm::EDGetTokenT<IntProduct> getTokenEndM_;
+      unsigned int trans_{0};
+      CMS_THREAD_SAFE mutable std::atomic<unsigned int> m_count{0};
+    };
+
+    // Same thing as previous class except with a GlobalCache added
+    class InputProcessBlockIntAnalyzerG
+        : public edm::stream::EDAnalyzer<edm::InputProcessBlockCache<int, TestInputProcessBlockCache>, edm::GlobalCache<InputProcessBlockGlobalCacheAn>> {
+    public:
+      explicit InputProcessBlockIntAnalyzerG(edm::ParameterSet const& pset, InputProcessBlockGlobalCacheAn const* testGlobalCache) {
+        {
+          auto tag = pset.getParameter<edm::InputTag>("consumesBeginProcessBlock");
+          if (not tag.label().empty()) {
+            testGlobalCache->getTokenBegin_ = consumes<IntProduct, edm::InProcess>(tag);
+          }
+        }
+        {
+          auto tag = pset.getParameter<edm::InputTag>("consumesEndProcessBlock");
+          if (not tag.label().empty()) {
+            testGlobalCache->getTokenEnd_ = consumes<IntProduct, edm::InProcess>(tag);
+          }
+        }
+        {
+          auto tag = pset.getParameter<edm::InputTag>("consumesBeginProcessBlockM");
+          if (not tag.label().empty()) {
+            testGlobalCache->getTokenBeginM_ = consumes<IntProduct, edm::InProcess>(tag);
+          }
+        }
+        {
+          auto tag = pset.getParameter<edm::InputTag>("consumesEndProcessBlockM");
+          if (not tag.label().empty()) {
+            testGlobalCache->getTokenEndM_ = consumes<IntProduct, edm::InProcess>(tag);
+          }
+        }
+        registerProcessBlockCacheFiller<int>(
+          testGlobalCache->getTokenBegin_,
+          [this](edm::ProcessBlock const& processBlock, std::shared_ptr<int> const& previousCache) {
+            auto returnValue = std::make_shared<int>(0);
+            *returnValue += processBlock.get(globalCache()->getTokenBegin_).value;
+            *returnValue += processBlock.get(globalCache()->getTokenEnd_).value;
+            std::cout << "IN LAMBDA " << *returnValue << std::endl;
+            return returnValue;
+        });
+      }
+
+      static std::unique_ptr<InputProcessBlockGlobalCacheAn> initializeGlobalCache(edm::ParameterSet const& pset) {
+        auto testGlobalCache = std::make_unique<InputProcessBlockGlobalCacheAn>();
+        testGlobalCache->trans_ = pset.getParameter<int>("transitions");
+        return testGlobalCache;
+      }
+
+      static void accessInputProcessBlock(edm::ProcessBlock const& processBlock, InputProcessBlockGlobalCacheAn* testGlobalCache) {
+        std::cout << processBlock.processName() << std::endl;
+        if (processBlock.processName() == "PROD1") {
+          std::cout << "InputProcessBlockIntAnalyzerG " << processBlock.get(testGlobalCache->getTokenBegin_).value << std::endl;
+          std::cout << "InputProcessBlockIntAnalyzerG " << processBlock.get(testGlobalCache->getTokenEnd_).value << std::endl;
+        }
+        if (processBlock.processName() == "MERGE") {
+          std::cout << "InputProcessBlockIntAnalyzerG " << processBlock.get(testGlobalCache->getTokenBeginM_).value << std::endl;
+          std::cout << "InputProcessBlockIntAnalyzerG " << processBlock.get(testGlobalCache->getTokenEndM_).value << std::endl;
+        }
+      }
+
+      void analyze(edm::Event const& event, edm::EventSetup const&) override {
+        auto cacheTuple = processBlockCaches(event);
+        std::cout << "from analyze " << *std::get<int const*>(cacheTuple) << std::endl;
+      }
+
+      static void globalEndJob(InputProcessBlockGlobalCacheAn* testGlobalCache) {
+        if (testGlobalCache->m_count != testGlobalCache->trans_) {
+          throw cms::Exception("transitions")
+              << "InputProcessBlockIntAnalyzerG transitions " << testGlobalCache->m_count
+              << " but it was supposed to be " << testGlobalCache->trans_;
+        }
+      }
+    };
+
+    // The next two test that modules without the
+    // static accessInputProcessBlock function will build.
+
+    class InputProcessBlockIntAnalyzerNS
+        : public edm::stream::EDAnalyzer<edm::InputProcessBlockCache<int, TestInputProcessBlockCache>> {
+    public:
+      explicit InputProcessBlockIntAnalyzerNS(edm::ParameterSet const& pset) {}
+      void analyze(edm::Event const&, edm::EventSetup const&) override {}
+    };
+
+    // Same thing as previous class except with a GlobalCache added
+    class InputProcessBlockIntAnalyzerGNS
+        : public edm::stream::EDAnalyzer<edm::InputProcessBlockCache<int, TestInputProcessBlockCache>, edm::GlobalCache<TestGlobalCacheAn>> {
+    public:
+      explicit InputProcessBlockIntAnalyzerGNS(edm::ParameterSet const& pset, TestGlobalCacheAn const* testGlobalCache) {}
+      static std::unique_ptr<TestGlobalCacheAn> initializeGlobalCache(edm::ParameterSet const&) {
+        return std::make_unique<TestGlobalCacheAn>();
+      }
+      void analyze(edm::Event const&, edm::EventSetup const&) override {}
+      static void globalEndJob(TestGlobalCacheAn* testGlobalCache) {}
+    };
+
   }  // namespace stream
 }  // namespace edmtest
 std::atomic<unsigned int> edmtest::stream::GlobalIntAnalyzer::m_count{0};
@@ -593,3 +710,7 @@ DEFINE_FWK_MODULE(edmtest::stream::LumiIntAnalyzer);
 DEFINE_FWK_MODULE(edmtest::stream::RunSummaryIntAnalyzer);
 DEFINE_FWK_MODULE(edmtest::stream::LumiSummaryIntAnalyzer);
 DEFINE_FWK_MODULE(edmtest::stream::ProcessBlockIntAnalyzer);
+DEFINE_FWK_MODULE(edmtest::stream::InputProcessBlockIntAnalyzer);
+DEFINE_FWK_MODULE(edmtest::stream::InputProcessBlockIntAnalyzerG);
+DEFINE_FWK_MODULE(edmtest::stream::InputProcessBlockIntAnalyzerNS);
+DEFINE_FWK_MODULE(edmtest::stream::InputProcessBlockIntAnalyzerGNS);

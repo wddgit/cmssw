@@ -103,6 +103,14 @@ namespace edm {
 
         void clearRegistration() { registrationInfo_.reset(); }
 
+        // The next two functions exist so that it is optional whether modules
+        // with this ability implement them.
+
+        static void accessInputProcessBlock(edm::ProcessBlock const&) {}
+
+        template <typename GlobalCacheType>
+        static void accessInputProcessBlock(edm::ProcessBlock const&, GlobalCacheType*) {}
+
       private:
         template <std::size_t ICacheType, typename CacheType, typename DataType, typename Func>
         void registerProcessBlockCacheFiller(EDGetTokenT<DataType> const& token, Func&& cacheFiller) {

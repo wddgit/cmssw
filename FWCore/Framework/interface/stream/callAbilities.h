@@ -78,7 +78,7 @@ namespace edm {
                       unsigned int iStreamModule) {
         static_cast<T*>(iProd)->setProcessBlockCache(iCaches->get());
         if (iStreamModule == 0 && iProd->cacheFillersRegistered()) {
-          (*iCaches)->copyProcessBlockCacheFiller(iProd->tokenInfos(), iProd->functors());
+          (*iCaches)->copyProcessBlockCacheFiller(iProd->tokenInfos(), iProd->cacheFillers());
         }
         iProd->clearRegistration();
       }
@@ -100,7 +100,7 @@ namespace edm {
       }
 
       static void clearCaches(typename impl::choose_unique_ptr<typename T::InputProcessBlockCache>::type& iCaches) {
-        iCaches.clearCaches();
+        iCaches->clearCaches();
       }
     };
 
@@ -112,7 +112,7 @@ namespace edm {
                       unsigned int iStreamModule) {
         static_cast<T*>(iProd)->setProcessBlockCache(iCaches->get());
         if (iStreamModule == 0 && iProd->cacheFillersRegistered()) {
-          (*iCaches)->copyProcessBlockCacheFiller(iProd->tokenInfos(), iProd->functors());
+          (*iCaches)->copyProcessBlockCacheFiller(iProd->tokenInfos(), iProd->cacheFillers());
         }
         iProd->clearRegistration();
       }
@@ -134,7 +134,7 @@ namespace edm {
       }
 
       static void clearCaches(typename impl::choose_unique_ptr<typename T::InputProcessBlockCache>::type& iCaches) {
-        iCaches.clearCaches();
+        iCaches->clearCaches();
       }
     };
 

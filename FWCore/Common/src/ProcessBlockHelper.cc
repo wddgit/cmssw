@@ -7,6 +7,8 @@
 #include <string>
 #include <utility>
 
+#include <iostream>
+
 namespace edm {
 
   ProcessBlockHelperBase const* ProcessBlockHelper::topProcessBlockHelper() const { return this; }
@@ -31,6 +33,18 @@ namespace edm {
 
   unsigned int ProcessBlockHelper::processBlockIndex(
       std::string const& processName, EventToProcessBlockIndexes const& eventToProcessBlockIndexes) const {
+    for (auto const& x : processBlockCacheIndices_) {
+      std::cout << "vector in processBlockCacheIndices_ ";
+      for (auto const& y : x) {
+        std::cout << y << " ";
+      }
+      std::cout << std::endl;
+    }
+    std::cout << "processName = " << processName << std::endl;
+    
+    for (unsigned int iProcess = 0; iProcess < nProcessesInFirstFile_; ++iProcess) {
+      std::cout << iProcess << " " << processesWithProcessBlockProducts()[iProcess] << std::endl;
+    }
     for (unsigned int iProcess = 0; iProcess < nProcessesInFirstFile_; ++iProcess) {
       if (processName == processesWithProcessBlockProducts()[iProcess]) {
         return processBlockCacheIndices_[eventToProcessBlockIndexes.index()][iProcess];
