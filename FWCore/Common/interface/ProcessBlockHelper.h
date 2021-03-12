@@ -36,6 +36,19 @@ namespace edm {
     void clearAfterOutputFilesClose();
 
   private:
+
+    // A general comment about this class and its data members.
+    // It was initially written to handle cases where all ProcessBlock
+    // products from some process were dropped in a file after
+    // the first input file but be present in the first input file.
+    // At the moment this comment is being written, the file merging
+    // rules do not allow this to happen and this situation never
+    // occurs. This class maintains support for this case, because
+    // we may find we need to change the file merging requirements
+    // in the future. So there is support for some indices to
+    // be invalid or other values to be zero even though at the
+    // moment this should never occur.
+
     // Events/Runs/Lumis hold an index into the outer vector
     // (an offset needs to added in the case of multiple input
     // files). The elements of the inner vector correspond to the
@@ -47,9 +60,7 @@ namespace edm {
     // the inner vector are the cache indices into the cache vectors
     // contained by user modules. This cache order is the same as the
     // processing order of ProcessBlocks in the current process.
-    // This inner vector can contain invalid cache index values
-    // if in a file merge step a file after the first has dropped
-    // ProcessBlock products that were present in the first file.
+    // It might contain invalid cache index values.
     std::vector<std::vector<unsigned int>> processBlockCacheIndices_;
 
     // Number of entries per ProcessBlock TTree.
@@ -57,7 +68,7 @@ namespace edm {
     // The inner vector elements correspond 1-to-1 with
     // processesWithProcessBlockProducts_ and in the same
     // order, except only the processes from the input files.
-    // This can contain zeroes.
+    // This might contain zeroes.
     std::vector<std::vector<unsigned int>> nEntries_;
 
     // The index into the next two vectors is the input file index

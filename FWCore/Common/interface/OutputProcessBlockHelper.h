@@ -35,7 +35,8 @@ namespace edm {
   private:
     void setStoredProcessOffset(unsigned int nStoredProcesses,
                                 std::vector<std::vector<unsigned int>> const& nEntries,
-                                std::vector<unsigned int>& storedProcessOffset) const;
+                                std::vector<unsigned int>& storedProcessOffset,
+                                unsigned int nInputProcesses) const;
 
     void setProcessOffset(unsigned int iFile,
                           unsigned int nStoredProcesses,

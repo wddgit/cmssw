@@ -5,7 +5,7 @@
 
 #include <algorithm>
 #include <cassert>
-
+#include <iostream>
 namespace edm {
 
   void OutputProcessBlockHelper::updateAfterProductSelection(
@@ -91,6 +91,20 @@ namespace edm {
     std::vector<unsigned int> const& cacheEntriesPerFile = processBlockHelper_->cacheEntriesPerFile();
     std::vector<std::vector<unsigned int>> const& nEntries = processBlockHelper_->nEntries();
 
+    assert(!cacheIndices.empty());
+    // Count processes in the input file with saved ProcessBlock products in the output
+    unsigned int nInputProcesses = 0;
+    for (unsigned int iStoredProcess = 0; iStoredProcess < nStoredProcesses; ++iStoredProcess) {
+      // The existing cache indices in processBlockHelper include only indices
+      // corresponding to the processes in the input files. If there are more, then
+      // they correspond to current process (and there only will be more if some
+      // of the newly produced ProcessBlock products are going to be kept).
+      // There will be at most 1 added process except in the case of SubProcesses.
+      if (translateFromStoredIndex_[iStoredProcess] < cacheIndices[0].size()) {
+        ++nInputProcesses;
+      }
+    }
+
     // The following are the 4 offsets. The first two are defined relative to the
     // cache sequence in this process. The second two offsets are defined relative
     // to the cache sequence when the output file we are writing is read.
@@ -102,16 +116,17 @@ namespace edm {
     // input file and before the process
     std::vector<unsigned int> processOffset(nStoredProcesses, 0);
 
-    // 3. For each process, the total number of cache entries in processes before the process.
+    // 3. For each stored input process, the total number of cache entries in earlier input processes.
     // Summed over all input files and including only processes in StoredProcessBlockHelper.
     // Plus an extra element at the end that includes all entries in all processes.
-    std::vector<unsigned int> storedProcessOffset(nStoredProcesses + 1, 0);
+    assert(!nEntries.empty());
+    std::vector<unsigned int> storedProcessOffset(nInputProcesses + 1, 0);
 
     // 4. For each process, the total number of cache entries in that process in all input files
     // before the current input file.
     std::vector<unsigned int> storedFileInProcessOffset(nStoredProcesses, 0);
 
-    setStoredProcessOffset(nStoredProcesses, nEntries, storedProcessOffset);
+    setStoredProcessOffset(nStoredProcesses, nEntries, storedProcessOffset, nInputProcesses);
 
     storedCacheIndices.reserve(cacheIndices.size() * nStoredProcesses);
 
@@ -140,18 +155,6 @@ namespace edm {
       }
       ++innerVectorsCurrentFile;
 
-      // Count processes in the input file with saved ProcessBlock products in the output
-      unsigned int nInputProcesses = 0;
-      for (unsigned int iStoredProcess = 0; iStoredProcess < nStoredProcesses; ++iStoredProcess) {
-        // The existing cache indices in processBlockHelper include only indices
-        // corresponding to the processes in the input files. If there are more, then
-        // they correspond to current process (and there only will be more if some
-        // of the newly produced ProcessBlock products are going to be kept).
-        // There will be at most 1 added process except in the case of SubProcesses.
-        if (translateFromStoredIndex_[iStoredProcess] < innerVectorOfCacheIndices.size()) {
-          ++nInputProcesses;
-        }
-      }
       assert(nInputProcesses + nAddedProcesses_ == nStoredProcesses);
 
       // Really fill the cache indices that will be stored in the output file in this loop
@@ -165,11 +168,15 @@ namespace edm {
             unsigned int inputOffset = fileOffset + processOffset[iStoredProcess];
             unsigned int storedOffset = storedProcessOffset[iStoredProcess] + storedFileInProcessOffset[iStoredProcess];
             storedCacheIndex = cacheIndex - inputOffset + storedOffset;
+        std::cout << "storedCacheIndex = " << storedCacheIndex << " = " << cacheIndex
+                  << " - " << inputOffset << " + " << storedOffset << std::endl;
           }
         } else {
           // This corresponds to the current process if it has newly produced
           // ProcessBlock products (plus possibly SubProcesses).
-          storedCacheIndex = storedProcessOffset[nStoredProcesses] + iStoredProcess - nInputProcesses;
+          storedCacheIndex = storedProcessOffset[nInputProcesses] + iStoredProcess - nInputProcesses;
+        std::cout << "storedCacheIndex = " << storedCacheIndex << " = " << storedProcessOffset[nInputProcesses]
+                  << " + " << iStoredProcess << " - " << nInputProcesses << std::endl;
         }
         storedCacheIndices.push_back(storedCacheIndex);
       }
@@ -178,14 +185,19 @@ namespace edm {
 
   void OutputProcessBlockHelper::setStoredProcessOffset(unsigned int nStoredProcesses,
                                                         std::vector<std::vector<unsigned int>> const& nEntries,
-                                                        std::vector<unsigned int>& storedProcessOffset) const {
-    for (unsigned int iStored = 0; iStored < nStoredProcesses + 1; ++iStored) {
+                                                        std::vector<unsigned int>& storedProcessOffset,
+                                                        unsigned int nInputProcesses) const {
+    for (unsigned int iStored = 0; iStored < nInputProcesses + 1; ++iStored) {
+      std::cout << "iStored = " << iStored << std::endl;
       storedProcessOffset[iStored] = 0;
-      // loop over input files
-      for (auto const& entries : nEntries) {
-        // loop over earlier processes
-        for (unsigned int jStored = 0; jStored < iStored; ++jStored) {
-          storedProcessOffset[iStored] += entries[translateFromStoredIndex_[jStored]];
+      // loop over earlier processes
+      for (unsigned int jStored = 0; jStored < iStored; ++jStored) {
+        unsigned int indexInEventProcessor = translateFromStoredIndex_[jStored];
+        // loop over input files
+        for (auto const& entries : nEntries) {
+          assert(indexInEventProcessor < entries.size());
+          storedProcessOffset[iStored] += entries[indexInEventProcessor];
+          std::cout << "storedProcessOffset[iStored] = " << storedProcessOffset[iStored] << std::endl;
         }
       }
     }
