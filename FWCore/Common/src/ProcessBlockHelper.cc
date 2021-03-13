@@ -7,8 +7,6 @@
 #include <string>
 #include <utility>
 
-#include <iostream>
-
 namespace edm {
 
   ProcessBlockHelperBase const* ProcessBlockHelper::topProcessBlockHelper() const { return this; }
@@ -33,18 +31,6 @@ namespace edm {
 
   unsigned int ProcessBlockHelper::processBlockIndex(
       std::string const& processName, EventToProcessBlockIndexes const& eventToProcessBlockIndexes) const {
-    for (auto const& x : processBlockCacheIndices_) {
-      std::cout << "vector in processBlockCacheIndices_ ";
-      for (auto const& y : x) {
-        std::cout << y << " ";
-      }
-      std::cout << std::endl;
-    }
-    std::cout << "processName = " << processName << std::endl;
-    std::cout << "eventToProcessBlockIndexes.index() = " << eventToProcessBlockIndexes.index() << std::endl;
-    for (unsigned int iProcess = 0; iProcess < nProcessesInFirstFile_; ++iProcess) {
-      std::cout << iProcess << " " << processesWithProcessBlockProducts()[iProcess] << std::endl;
-    }
     for (unsigned int iProcess = 0; iProcess < nProcessesInFirstFile_; ++iProcess) {
       if (processName == processesWithProcessBlockProducts()[iProcess]) {
         return processBlockCacheIndices_[eventToProcessBlockIndexes.index()][iProcess];
@@ -60,14 +46,6 @@ namespace edm {
 
   void ProcessBlockHelper::initializeFromPrimaryInput(StoredProcessBlockHelper const& storedProcessBlockHelper,
                                                       std::vector<unsigned int>&& nEntries) {
-    std::cout << "initializeFromPrimaryInput start" << std::endl;
-    for (auto const& x : processBlockCacheIndices_) {
-      std::cout << "vector in processBlockCacheIndices_ ";
-      for (auto const& y : x) {
-        std::cout << y << " ";
-      }
-      std::cout << std::endl;
-    }
     // The storedProcessBlockHelper holds information read from the input file.
 
     // Note that at the time this function is called drop on input has already
@@ -115,7 +93,6 @@ namespace edm {
       nEntries_.push_back(std::move(nEntries));
       cacheEntriesPerFile_.push_back(entriesThisFile);
       cacheIndexOffset_ += entriesThisFile;
-      std::cout << "cacheIndexOffset_ = " << cacheIndexOffset_ << std::endl;
 
     } else {
       // Initialization for input files after the first input file
@@ -148,7 +125,6 @@ namespace edm {
         unsigned int nCacheIndexVectors = storedCacheIndices.size() / storedProcesses.size();
         assert(storedProcesses.size() * nCacheIndexVectors == storedCacheIndices.size());
         processBlockCacheIndices_.resize(processBlockCacheIndices_.size() + nCacheIndexVectors);
-        std::cout << "processBlockCacheIndices_.size() = " << processBlockCacheIndices_.size() << std::endl;
         unsigned int storedIndex = 0;
         for (unsigned int k = 0; k < nCacheIndexVectors; ++k) {
           processBlockCacheIndices_[outerOffset_ + k].reserve(nProcessesInFirstFile_);
@@ -193,16 +169,6 @@ namespace edm {
       cacheEntriesPerFile_.push_back(entriesThisFile);
       cacheIndexOffset_ += entriesThisFile;
     }
-    std::cout << "initializeFromPrimaryInput end" << std::endl;
-    for (auto const& x : processBlockCacheIndices_) {
-      std::cout << "vector in processBlockCacheIndices_ ";
-      for (auto const& y : x) {
-        std::cout << y << " ";
-      }
-      std::cout << std::endl;
-    }
-      std::cout << "cacheIndexOffset_ = " << cacheIndexOffset_ << std::endl;
-
   }
 
   void ProcessBlockHelper::clearAfterOutputFilesClose() {

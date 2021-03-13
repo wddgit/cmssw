@@ -1284,7 +1284,11 @@ namespace edm {
 
   void RootFile::fillEventToProcessBlockIndexes() {
     if (eventToProcessBlockIndexesBranch_ == nullptr) {
-      eventToProcessBlockIndexes_.setIndex(0);
+      if (processBlockHelper_.get() == nullptr) {
+        eventToProcessBlockIndexes_.setIndex(0);
+      } else {
+        eventToProcessBlockIndexes_.setIndex(processBlockHelper_->outerOffset());
+      }
     } else {
       EventToProcessBlockIndexes* pEventToProcessBlockIndexes = &eventToProcessBlockIndexes_;
       eventTree_.fillBranchEntry(eventToProcessBlockIndexesBranch_, pEventToProcessBlockIndexes);

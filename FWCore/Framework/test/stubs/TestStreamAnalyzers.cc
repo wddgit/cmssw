@@ -571,8 +571,11 @@ namespace edmtest {
       CMS_THREAD_SAFE mutable edm::EDGetTokenT<IntProduct> getTokenEnd_;
       CMS_THREAD_SAFE mutable edm::EDGetTokenT<IntProduct> getTokenBeginM_;
       CMS_THREAD_SAFE mutable edm::EDGetTokenT<IntProduct> getTokenEndM_;
-      unsigned int trans_{0};
-      CMS_THREAD_SAFE mutable std::atomic<unsigned int> m_count{0};
+      CMS_THREAD_SAFE mutable std::atomic<unsigned int> transitions_{0};
+      int sum_{0};
+      unsigned int expectedTransitions_{0};
+      std::vector<int> expectedByRun_;
+      int expectedSum_{0};
     };
 
     // Same thing as previous class except with a GlobalCache added
@@ -610,41 +613,58 @@ namespace edmtest {
             auto returnValue = std::make_shared<int>(0);
             *returnValue += processBlock.get(globalCache()->getTokenBegin_).value;
             *returnValue += processBlock.get(globalCache()->getTokenEnd_).value;
-            std::cout << "IN LAMBDA " << *returnValue << std::endl;
+            ++globalCache()->transitions_;
             return returnValue;
         });
       }
 
       static std::unique_ptr<InputProcessBlockGlobalCacheAn> initializeGlobalCache(edm::ParameterSet const& pset) {
         auto testGlobalCache = std::make_unique<InputProcessBlockGlobalCacheAn>();
-        testGlobalCache->trans_ = pset.getParameter<int>("transitions");
+        testGlobalCache->expectedTransitions_ = pset.getParameter<int>("transitions");
+        testGlobalCache->expectedByRun_ = pset.getParameter<std::vector<int>>("expectedByRun");
+        testGlobalCache->expectedSum_ = pset.getParameter<int>("expectedSum");
         return testGlobalCache;
       }
 
       static void accessInputProcessBlock(edm::ProcessBlock const& processBlock, InputProcessBlockGlobalCacheAn* testGlobalCache) {
-        std::cout << processBlock.processName() << std::endl;
         if (processBlock.processName() == "PROD1") {
-          std::cout << "InputProcessBlockIntAnalyzerG " << processBlock.get(testGlobalCache->getTokenBegin_).value << std::endl;
-          std::cout << "InputProcessBlockIntAnalyzerG " << processBlock.get(testGlobalCache->getTokenEnd_).value << std::endl;
+          testGlobalCache->sum_ += processBlock.get(testGlobalCache->getTokenBegin_).value;
+          testGlobalCache->sum_ += processBlock.get(testGlobalCache->getTokenEnd_).value;
         }
         if (processBlock.processName() == "MERGE") {
-          std::cout << "InputProcessBlockIntAnalyzerG " << processBlock.get(testGlobalCache->getTokenBeginM_).value << std::endl;
-          std::cout << "InputProcessBlockIntAnalyzerG " << processBlock.get(testGlobalCache->getTokenEndM_).value << std::endl;
+          testGlobalCache->sum_ += processBlock.get(testGlobalCache->getTokenBeginM_).value;
+          testGlobalCache->sum_ += processBlock.get(testGlobalCache->getTokenEndM_).value;
         }
+        ++testGlobalCache->transitions_;
       }
 
       void analyze(edm::Event const& event, edm::EventSetup const&) override {
         auto cacheTuple = processBlockCaches(event);
-        std::cout << "from analyze " << *std::get<int const*>(cacheTuple) << std::endl;
+        auto testGlobalCache = globalCache();
+        if (!testGlobalCache->expectedByRun_.empty()) {
+          if (testGlobalCache->expectedByRun_[event.run()] != *std::get<int const*>(cacheTuple)) {
+            throw cms::Exception("UnexpectedValue")
+              << "InputProcessBlockIntAnalyzerG::analyze cached value was " << *std::get<int const*>(cacheTuple)
+              << " but it was supposed to be " << testGlobalCache->expectedByRun_[event.run()];
+          }
+        }
+        ++testGlobalCache->transitions_;
       }
 
       static void globalEndJob(InputProcessBlockGlobalCacheAn* testGlobalCache) {
-        if (testGlobalCache->m_count != testGlobalCache->trans_) {
+        if (testGlobalCache->transitions_ != testGlobalCache->expectedTransitions_) {
           throw cms::Exception("transitions")
-              << "InputProcessBlockIntAnalyzerG transitions " << testGlobalCache->m_count
-              << " but it was supposed to be " << testGlobalCache->trans_;
+              << "InputProcessBlockIntAnalyzerG transitions " << testGlobalCache->transitions_
+              << " but it was supposed to be " << testGlobalCache->expectedTransitions_;
+        }
+
+        if (testGlobalCache->sum_ != testGlobalCache->expectedSum_) {
+          throw cms::Exception("UnexpectedValue")
+              << "InputProcessBlockIntAnalyzerG sum " << testGlobalCache->sum_
+              << " but it was supposed to be " << testGlobalCache->expectedSum_;
         }
       }
+
     };
 
     // The next two test that modules without the

@@ -19,9 +19,9 @@ process.out = cms.OutputModule("PoolOutputModule",
     fileName = cms.untracked.string('testProcessBlockMerge.root')
 )
 
-process.intProducerBeginProcessBlockM = cms.EDProducer("IntProducerBeginProcessBlock", ivalue = cms.int32(3))
+process.intProducerBeginProcessBlockM = cms.EDProducer("IntProducerBeginProcessBlock", ivalue = cms.int32(4))
 
-process.intProducerEndProcessBlockM = cms.EDProducer("IntProducerEndProcessBlock", ivalue = cms.int32(30))
+process.intProducerEndProcessBlockM = cms.EDProducer("IntProducerEndProcessBlock", ivalue = cms.int32(40))
 
 process.p = cms.Path(process.intProducerBeginProcessBlockM *
                      process.intProducerEndProcessBlockM)

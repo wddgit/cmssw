@@ -26,8 +26,6 @@
 #include <utility>
 #include <vector>
 
-#include <iostream>
-
 namespace edm {
 
   class Event;
@@ -91,7 +89,6 @@ namespace edm {
           I<sizeof...(CacheTypes), void>::type fillTuple(std::tuple<CacheTypes const*...>& cachePointers,
                                                          Event const& event) const {
         unsigned int index = eventProcessBlockIndex(event, processNames_[I]);
-        std::cout << " fillTuple index = " << index << " " << processNames_[I] << std::endl;
         if (index != ProcessBlockHelperBase::invalidCacheIndex()) {
           std::get<I>(cachePointers) = std::get<I>(caches_.at(index).cacheTuple_).get();
         }

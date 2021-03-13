@@ -47,7 +47,7 @@ pushd ${LOCAL_TMP_DIR}
   cmsRun -p ${LOCAL_TEST_DIR}/testProcessBlockFailMerge_cfg.py > /dev/null 2>&1 && die "cmsRun testProcessBlockFailMerge_cfg.py" $?
 
   echo "testProcessBlockRead"
-  cmsRun -p ${LOCAL_TEST_DIR}/testProcessBlockRead_cfg.py > /dev/null 2>&1 || die "cmsRun testProcessBlockRead_cfg.py" $?
+  cmsRun -p ${LOCAL_TEST_DIR}/testProcessBlockRead_cfg.py > /dev/null || die "cmsRun testProcessBlockRead_cfg.py" $?
 
   rm testProcessBlock1ContentsM.txt
   rm testProcessBlock1ContentsE.txt

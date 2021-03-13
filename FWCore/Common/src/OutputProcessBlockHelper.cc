@@ -5,7 +5,7 @@
 
 #include <algorithm>
 #include <cassert>
-#include <iostream>
+
 namespace edm {
 
   void OutputProcessBlockHelper::updateAfterProductSelection(
@@ -168,15 +168,11 @@ namespace edm {
             unsigned int inputOffset = fileOffset + processOffset[iStoredProcess];
             unsigned int storedOffset = storedProcessOffset[iStoredProcess] + storedFileInProcessOffset[iStoredProcess];
             storedCacheIndex = cacheIndex - inputOffset + storedOffset;
-        std::cout << "storedCacheIndex = " << storedCacheIndex << " = " << cacheIndex
-                  << " - " << inputOffset << " + " << storedOffset << std::endl;
           }
         } else {
           // This corresponds to the current process if it has newly produced
           // ProcessBlock products (plus possibly SubProcesses).
           storedCacheIndex = storedProcessOffset[nInputProcesses] + iStoredProcess - nInputProcesses;
-        std::cout << "storedCacheIndex = " << storedCacheIndex << " = " << storedProcessOffset[nInputProcesses]
-                  << " + " << iStoredProcess << " - " << nInputProcesses << std::endl;
         }
         storedCacheIndices.push_back(storedCacheIndex);
       }
@@ -188,7 +184,6 @@ namespace edm {
                                                         std::vector<unsigned int>& storedProcessOffset,
                                                         unsigned int nInputProcesses) const {
     for (unsigned int iStored = 0; iStored < nInputProcesses + 1; ++iStored) {
-      std::cout << "iStored = " << iStored << std::endl;
       storedProcessOffset[iStored] = 0;
       // loop over earlier processes
       for (unsigned int jStored = 0; jStored < iStored; ++jStored) {
@@ -197,7 +192,6 @@ namespace edm {
         for (auto const& entries : nEntries) {
           assert(indexInEventProcessor < entries.size());
           storedProcessOffset[iStored] += entries[indexInEventProcessor];
-          std::cout << "storedProcessOffset[iStored] = " << storedProcessOffset[iStored] << std::endl;
         }
       }
     }
