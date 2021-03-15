@@ -33,18 +33,17 @@ namespace edm {
     static constexpr unsigned int invalidCacheIndex() { return 0xffffffff; }
 
   private:
-    void setStoredProcessOffset(unsigned int nStoredProcesses,
+    void setStoredProcessOffset(unsigned int nInputProcesses,
                                 std::vector<std::vector<unsigned int>> const& nEntries,
-                                std::vector<unsigned int>& storedProcessOffset,
-                                unsigned int nInputProcesses) const;
+                                std::vector<unsigned int>& storedProcessOffset) const;
 
     void setProcessOffset(unsigned int iFile,
-                          unsigned int nStoredProcesses,
+                          unsigned int nInputProcesses,
                           std::vector<std::vector<unsigned int>> const& nEntries,
                           std::vector<unsigned int>& processOffset) const;
 
     void setStoredFileInProcessOffset(unsigned int iFile,
-                                      unsigned int nStoredProcesses,
+                                      unsigned int nInputProcesses,
                                       std::vector<std::vector<unsigned int>> const& nEntries,
                                       std::vector<unsigned int>& storedFileInProcessOffset) const;
 

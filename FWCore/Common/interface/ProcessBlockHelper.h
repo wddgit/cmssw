@@ -40,14 +40,14 @@ namespace edm {
     // A general comment about this class and its data members.
     // It was initially written to handle cases where all ProcessBlock
     // products from some process were dropped in a file after
-    // the first input file but be present in the first input file.
+    // the first input file but were present in the first input file.
     // At the moment this comment is being written, the file merging
     // rules do not allow this to happen and this situation never
-    // occurs. This class maintains support for this case, because
-    // we may find we need to change the file merging requirements
-    // in the future. So there is support for some indices to
-    // be invalid or other values to be zero even though at the
-    // moment this should never occur.
+    // occurs. However, this class intentionally maintains support
+    // for this case, because we may find we need to change the file
+    // merging requirements in the future. So there is support for
+    // some indices to be invalid or other values to be zero even
+    // though at the moment this should never occur.
 
     // Events/Runs/Lumis hold an index into the outer vector
     // (an offset needs to added in the case of multiple input

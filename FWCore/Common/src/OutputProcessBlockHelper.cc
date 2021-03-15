@@ -114,19 +114,22 @@ namespace edm {
 
     // 2. For each process, the total number of cache entries in processes in the current
     // input file and before the process
-    std::vector<unsigned int> processOffset(nStoredProcesses, 0);
+    std::vector<unsigned int> processOffset(nInputProcesses, 0);
 
-    // 3. For each stored input process, the total number of cache entries in earlier input processes.
+    // 3. For each input process with ProcessBlock products stored by this
+    // output module, the total number of cache entries in earlier input processes
+    // that have ProcessBlock products stored by this output module.
     // Summed over all input files and including only processes in StoredProcessBlockHelper.
-    // Plus an extra element at the end that includes all entries in all processes.
+    // Plus an extra element at the end that includes all entries in all such processes.
     assert(!nEntries.empty());
     std::vector<unsigned int> storedProcessOffset(nInputProcesses + 1, 0);
 
-    // 4. For each process, the total number of cache entries in that process in all input files
-    // before the current input file.
-    std::vector<unsigned int> storedFileInProcessOffset(nStoredProcesses, 0);
+    // 4. For each process with ProcessBlock products stored by this output module,
+    // the total number of cache entries in that process in all input files before
+    // the current input file.
+    std::vector<unsigned int> storedFileInProcessOffset(nInputProcesses, 0);
 
-    setStoredProcessOffset(nStoredProcesses, nEntries, storedProcessOffset, nInputProcesses);
+    setStoredProcessOffset(nInputProcesses, nEntries, storedProcessOffset);
 
     storedCacheIndices.reserve(cacheIndices.size() * nStoredProcesses);
 
@@ -150,8 +153,8 @@ namespace edm {
       }
       if (innerVectorsCurrentFile == 0) {
         // Call these when the input file changes
-        setProcessOffset(iFile, nStoredProcesses, nEntries, processOffset);
-        setStoredFileInProcessOffset(iFile, nStoredProcesses, nEntries, storedFileInProcessOffset);
+        setProcessOffset(iFile, nInputProcesses, nEntries, processOffset);
+        setStoredFileInProcessOffset(iFile, nInputProcesses, nEntries, storedFileInProcessOffset);
       }
       ++innerVectorsCurrentFile;
 
@@ -179,10 +182,9 @@ namespace edm {
     }
   }
 
-  void OutputProcessBlockHelper::setStoredProcessOffset(unsigned int nStoredProcesses,
+  void OutputProcessBlockHelper::setStoredProcessOffset(unsigned int nInputProcesses,
                                                         std::vector<std::vector<unsigned int>> const& nEntries,
-                                                        std::vector<unsigned int>& storedProcessOffset,
-                                                        unsigned int nInputProcesses) const {
+                                                        std::vector<unsigned int>& storedProcessOffset) const {
     for (unsigned int iStored = 0; iStored < nInputProcesses + 1; ++iStored) {
       storedProcessOffset[iStored] = 0;
       // loop over earlier processes
@@ -198,10 +200,10 @@ namespace edm {
   }
 
   void OutputProcessBlockHelper::setProcessOffset(unsigned int iFile,
-                                                  unsigned int nStoredProcesses,
+                                                  unsigned int nInputProcesses,
                                                   std::vector<std::vector<unsigned int>> const& nEntries,
                                                   std::vector<unsigned int>& processOffset) const {
-    for (unsigned int iStored = 0; iStored < nStoredProcesses; ++iStored) {
+    for (unsigned int iStored = 0; iStored < nInputProcesses; ++iStored) {
       processOffset[iStored] = 0;
       unsigned int iProcess = translateFromStoredIndex_[iStored];
       for (unsigned int jProcess = 0; jProcess < iProcess; ++jProcess) {
@@ -212,14 +214,16 @@ namespace edm {
 
   void OutputProcessBlockHelper::setStoredFileInProcessOffset(
       unsigned int iFile,
-      unsigned int nStoredProcesses,
+      unsigned int nInputProcesses,
       std::vector<std::vector<unsigned int>> const& nEntries,
       std::vector<unsigned int>& storedFileInProcessOffset) const {
-    for (unsigned int iStored = 0; iStored < nStoredProcesses; ++iStored) {
+    for (unsigned int iStored = 0; iStored < nInputProcesses; ++iStored) {
       storedFileInProcessOffset[iStored] = 0;
+      unsigned int indexInEventProcessor = translateFromStoredIndex_[iStored];
       // loop over input files before current input file
       for (unsigned int jFile = 0; jFile < iFile; ++jFile) {
-        storedFileInProcessOffset[iStored] += nEntries[jFile][translateFromStoredIndex_[iStored]];
+        assert(indexInEventProcessor < nEntries[jFile].size());
+        storedFileInProcessOffset[iStored] += nEntries[jFile][indexInEventProcessor];
       }
     }
   }
