@@ -24,8 +24,14 @@ process.intProducerEndProcessBlockR = cms.EDProducer("IntProducerEndProcessBlock
 
 process.readProcessBlocks = cms.EDAnalyzer("edmtest::stream::InputProcessBlockIntAnalyzer")
 
+process.readProcessBlocks = cms.EDAnalyzer("edmtest::stream::InputProcessBlockIntAnalyzer",
+                                            consumesBeginProcessBlock = cms.InputTag("intProducerBeginProcessBlock", ""),
+                                            consumesEndProcessBlock = cms.InputTag("intProducerEndProcessBlock", ""),
+                                            expectedByRun = cms.vint32(0, 11, 22)
+)
+
 process.readProcessBlocksG = cms.EDAnalyzer("edmtest::stream::InputProcessBlockIntAnalyzerG",
-                                            transitions = cms.int32(11),
+                                            transitions = cms.int32(15),
                                             consumesBeginProcessBlock = cms.InputTag("intProducerBeginProcessBlock", ""),
                                             consumesEndProcessBlock = cms.InputTag("intProducerEndProcessBlock", ""),
                                             consumesBeginProcessBlockM = cms.InputTag("intProducerBeginProcessBlockM", ""),
@@ -36,6 +42,7 @@ process.readProcessBlocksG = cms.EDAnalyzer("edmtest::stream::InputProcessBlockI
 
 process.p = cms.Path(process.intProducerBeginProcessBlockR *
                      process.intProducerEndProcessBlockR *
+                     process.readProcessBlocks *
                      process.readProcessBlocks *
                      process.readProcessBlocksG
 )

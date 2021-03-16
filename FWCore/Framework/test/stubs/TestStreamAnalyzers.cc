@@ -553,20 +553,74 @@ namespace edmtest {
 
     class TestInputProcessBlockCache {
     public:
-      long long int value_;
+      long long int value_ = 0;
+    };
+
+    class TestInputProcessBlockCache1 {
+    public:
+      long long int value_ = 0;
     };
 
     class InputProcessBlockIntAnalyzer
-        : public edm::stream::EDAnalyzer<edm::InputProcessBlockCache<int, TestInputProcessBlockCache>> {
+      : public edm::stream::EDAnalyzer<edm::InputProcessBlockCache<int, TestInputProcessBlockCache, TestInputProcessBlockCache1>> {
     public:
-      explicit InputProcessBlockIntAnalyzer(edm::ParameterSet const& pset) {}
+      explicit InputProcessBlockIntAnalyzer(edm::ParameterSet const& pset) {
+        {
+          expectedByRun_ = pset.getParameter<std::vector<int>>("expectedByRun");
+          auto tag = pset.getParameter<edm::InputTag>("consumesBeginProcessBlock");
+          if (not tag.label().empty()) {
+            getTokenBegin_ = consumes<IntProduct, edm::InProcess>(tag);
+          }
+        }
+        {
+          auto tag = pset.getParameter<edm::InputTag>("consumesEndProcessBlock");
+          if (not tag.label().empty()) {
+            getTokenEnd_ = consumes<IntProduct, edm::InProcess>(tag);
+          }
+        }
+        registerProcessBlockCacheFiller<TestInputProcessBlockCache1>(
+          getTokenBegin_,
+          [this](edm::ProcessBlock const& processBlock, std::shared_ptr<TestInputProcessBlockCache1> const& previousCache) {
+            auto returnValue = std::make_shared<TestInputProcessBlockCache1>();
+            returnValue->value_ += processBlock.get(getTokenBegin_).value;
+            returnValue->value_ += processBlock.get(getTokenEnd_).value;
+            return returnValue;
+        });
+      }
 
       static void accessInputProcessBlock(edm::ProcessBlock const&) {}
 
-      void analyze(edm::Event const&, edm::EventSetup const&) override {}
+      void analyze(edm::Event const& event, edm::EventSetup const&) override {
+        auto cacheTuple = processBlockCaches(event);
+        if (!expectedByRun_.empty()) {
+          if (expectedByRun_[event.run()] != std::get<TestInputProcessBlockCache1 const*>(cacheTuple)->value_) {
+            throw cms::Exception("UnexpectedValue")
+              << "InputProcessBlockIntAnalyzer::analyze third cached value was " << std::get<TestInputProcessBlockCache1 const*>(cacheTuple)->value_
+              << " but it was supposed to be " << expectedByRun_[event.run()];
+          }
+        }
+      }
+
+    private:
+      edm::EDGetTokenT<IntProduct> getTokenBegin_;
+      edm::EDGetTokenT<IntProduct> getTokenEnd_;
+      std::vector<int> expectedByRun_;
     };
 
     struct InputProcessBlockGlobalCacheAn {
+      // The tokens are duplicated in this test module to prove that they
+      // work both as GlobalCache members and module data members.
+      // We need them as GlobalCache members for accessInputProcessBlock.
+      // In registerProcessBlockCacheFiller we use tokens that are member
+      // variables of the class and because the lambda captures the "this"
+      // pointer of the zeroth stream module instance. We always
+      // use the zeroth EDConsumer. In the case of registerProcessBlockCacheFiller,
+      // either set of tokens would work. Note that in the GlobalCache case
+      // there is a slight weirdness that the zeroth consumer is used but
+      // the token comes from the last consumer instance. It works because
+      // all the stream module instances have EDConsumer base classes with
+      // containers with the same contents in the same order (not 100% guaranteed,
+      // but it would be difficult to implement a module where this isn't true).
       CMS_THREAD_SAFE mutable edm::EDGetTokenT<IntProduct> getTokenBegin_;
       CMS_THREAD_SAFE mutable edm::EDGetTokenT<IntProduct> getTokenEnd_;
       CMS_THREAD_SAFE mutable edm::EDGetTokenT<IntProduct> getTokenBeginM_;
@@ -580,39 +634,61 @@ namespace edmtest {
 
     // Same thing as previous class except with a GlobalCache added
     class InputProcessBlockIntAnalyzerG
-        : public edm::stream::EDAnalyzer<edm::InputProcessBlockCache<int, TestInputProcessBlockCache>, edm::GlobalCache<InputProcessBlockGlobalCacheAn>> {
+      : public edm::stream::EDAnalyzer<edm::InputProcessBlockCache<int, TestInputProcessBlockCache, TestInputProcessBlockCache1>, edm::GlobalCache<InputProcessBlockGlobalCacheAn>> {
     public:
       explicit InputProcessBlockIntAnalyzerG(edm::ParameterSet const& pset, InputProcessBlockGlobalCacheAn const* testGlobalCache) {
         {
           auto tag = pset.getParameter<edm::InputTag>("consumesBeginProcessBlock");
           if (not tag.label().empty()) {
-            testGlobalCache->getTokenBegin_ = consumes<IntProduct, edm::InProcess>(tag);
+            getTokenBegin_ = consumes<IntProduct, edm::InProcess>(tag);
+            testGlobalCache->getTokenBegin_ = getTokenBegin_;
           }
         }
         {
           auto tag = pset.getParameter<edm::InputTag>("consumesEndProcessBlock");
           if (not tag.label().empty()) {
-            testGlobalCache->getTokenEnd_ = consumes<IntProduct, edm::InProcess>(tag);
+            getTokenEnd_ = consumes<IntProduct, edm::InProcess>(tag);
+            testGlobalCache->getTokenEnd_ = getTokenEnd_;
           }
         }
         {
           auto tag = pset.getParameter<edm::InputTag>("consumesBeginProcessBlockM");
           if (not tag.label().empty()) {
-            testGlobalCache->getTokenBeginM_ = consumes<IntProduct, edm::InProcess>(tag);
+            getTokenBeginM_ = consumes<IntProduct, edm::InProcess>(tag);
+            testGlobalCache->getTokenBeginM_ = getTokenBeginM_;
           }
         }
         {
           auto tag = pset.getParameter<edm::InputTag>("consumesEndProcessBlockM");
           if (not tag.label().empty()) {
-            testGlobalCache->getTokenEndM_ = consumes<IntProduct, edm::InProcess>(tag);
+            getTokenEndM_ = consumes<IntProduct, edm::InProcess>(tag);
+            testGlobalCache->getTokenEndM_ = getTokenEndM_;
           }
         }
         registerProcessBlockCacheFiller<int>(
-          testGlobalCache->getTokenBegin_,
+          getTokenBegin_,
           [this](edm::ProcessBlock const& processBlock, std::shared_ptr<int> const& previousCache) {
             auto returnValue = std::make_shared<int>(0);
-            *returnValue += processBlock.get(globalCache()->getTokenBegin_).value;
-            *returnValue += processBlock.get(globalCache()->getTokenEnd_).value;
+            *returnValue += processBlock.get(getTokenBegin_).value;
+            *returnValue += processBlock.get(getTokenEnd_).value;
+            ++globalCache()->transitions_;
+            return returnValue;
+        });
+        registerProcessBlockCacheFiller<1>(
+          getTokenBegin_,
+          [this](edm::ProcessBlock const& processBlock, std::shared_ptr<TestInputProcessBlockCache> const& previousCache) {
+            auto returnValue = std::make_shared<TestInputProcessBlockCache>();
+            returnValue->value_ += processBlock.get(getTokenBegin_).value;
+            returnValue->value_ += processBlock.get(getTokenEnd_).value;
+            ++globalCache()->transitions_;
+            return returnValue;
+        });
+        registerProcessBlockCacheFiller<TestInputProcessBlockCache1>(
+          getTokenBegin_,
+          [this](edm::ProcessBlock const& processBlock, std::shared_ptr<TestInputProcessBlockCache1> const& previousCache) {
+            auto returnValue = std::make_shared<TestInputProcessBlockCache1>();
+            returnValue->value_ += processBlock.get(getTokenBegin_).value;
+            returnValue->value_ += processBlock.get(getTokenEnd_).value;
             ++globalCache()->transitions_;
             return returnValue;
         });
@@ -647,6 +723,16 @@ namespace edmtest {
               << "InputProcessBlockIntAnalyzerG::analyze cached value was " << *std::get<int const*>(cacheTuple)
               << " but it was supposed to be " << testGlobalCache->expectedByRun_[event.run()];
           }
+          if (testGlobalCache->expectedByRun_[event.run()] != std::get<1>(cacheTuple)->value_) {
+            throw cms::Exception("UnexpectedValue")
+              << "InputProcessBlockIntAnalyzerG::analyze second cached value was " << std::get<1>(cacheTuple)->value_
+              << " but it was supposed to be " << testGlobalCache->expectedByRun_[event.run()];
+          }
+          if (testGlobalCache->expectedByRun_[event.run()] != std::get<TestInputProcessBlockCache1 const*>(cacheTuple)->value_) {
+            throw cms::Exception("UnexpectedValue")
+              << "InputProcessBlockIntAnalyzerG::analyze third cached value was " << std::get<TestInputProcessBlockCache1 const*>(cacheTuple)->value_
+              << " but it was supposed to be " << testGlobalCache->expectedByRun_[event.run()];
+          }
         }
         ++testGlobalCache->transitions_;
       }
@@ -665,6 +751,11 @@ namespace edmtest {
         }
       }
 
+    private:
+      edm::EDGetTokenT<IntProduct> getTokenBegin_;
+      edm::EDGetTokenT<IntProduct> getTokenEnd_;
+      edm::EDGetTokenT<IntProduct> getTokenBeginM_;
+      edm::EDGetTokenT<IntProduct> getTokenEndM_;
     };
 
     // The next two test that modules without the
