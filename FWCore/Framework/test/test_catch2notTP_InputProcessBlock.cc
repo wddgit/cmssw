@@ -1,7 +1,10 @@
 #include "catch.hpp"
 
+#include "FWCore/Framework/interface/InputProcessBlockCacheImpl.h"
 #include "FWCore/Framework/interface/moduleAbilities.h"
 #include "FWCore/Framework/interface/stream/EDAnalyzer.h"
+
+#include <type_traits>
 
 namespace edmtest {
 
@@ -16,6 +19,8 @@ TEST_CASE("test InputProcessBlock", "[InputProcessBlock]") {
   SECTION("test HasAbility") {
     REQUIRE(edmtest::TestAnalyzerWithInputProcessBlockAbility::HasAbility::kInputProcessBlockCache);
     REQUIRE(!edmtest::TestAnalyzerWithoutInputProcessBlockAbility::HasAbility::kInputProcessBlockCache);
+    REQUIRE(std::is_same<edmtest::TestAnalyzerWithInputProcessBlockAbility::InputProcessBlockCache, edm::impl::InputProcessBlockCacheImpl<int, unsigned int, int>>());
+    REQUIRE(std::is_same<edmtest::TestAnalyzerWithoutInputProcessBlockAbility::InputProcessBlockCache, void>());
   }
 
 }

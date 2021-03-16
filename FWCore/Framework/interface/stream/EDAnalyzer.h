@@ -18,49 +18,38 @@
 //         Created:  Thu, 01 Aug 2013 21:41:42 GMT
 //
 
-// system include files
-
-// user include files
 #include "FWCore/Framework/interface/stream/AbilityToImplementor.h"
 #include "FWCore/Framework/interface/stream/CacheContexts.h"
 #include "FWCore/Framework/interface/stream/Contexts.h"
 #include "FWCore/Framework/interface/stream/AbilityChecker.h"
 #include "FWCore/Framework/interface/stream/EDAnalyzerBase.h"
-// forward declarations
+
 namespace edm {
   namespace stream {
+
     template <typename... T>
     class EDAnalyzer : public AbilityToImplementor<T>::Type..., public EDAnalyzerBase {
     public:
-      typedef CacheContexts<T...> CacheTypes;
 
-      typedef typename CacheTypes::GlobalCache GlobalCache;
-      typedef typename CacheTypes::InputProcessBlockCache InputProcessBlockCache;
-      typedef typename CacheTypes::RunCache RunCache;
-      typedef typename CacheTypes::LuminosityBlockCache LuminosityBlockCache;
-      typedef RunContextT<RunCache, GlobalCache> RunContext;
-      typedef LuminosityBlockContextT<LuminosityBlockCache, RunCache, GlobalCache> LuminosityBlockContext;
-      typedef typename CacheTypes::RunSummaryCache RunSummaryCache;
-      typedef typename CacheTypes::LuminosityBlockSummaryCache LuminosityBlockSummaryCache;
+      using CacheTypes = CacheContexts<T...>;
 
-      typedef AbilityChecker<T...> HasAbility;
+      using GlobalCache = typename CacheTypes::GlobalCache;
+      using InputProcessBlockCache = typename CacheTypes::InputProcessBlockCache;
+      using RunCache = typename CacheTypes::RunCache;
+      using LuminosityBlockCache = typename CacheTypes::LuminosityBlockCache;
+      using RunContext = RunContextT<RunCache, GlobalCache>;
+      using LuminosityBlockContext = LuminosityBlockContextT<LuminosityBlockCache, RunCache, GlobalCache>;
+      using RunSummaryCache = typename CacheTypes::RunSummaryCache;
+      using LuminosityBlockSummaryCache = typename CacheTypes::LuminosityBlockSummaryCache;
+
+      using HasAbility = AbilityChecker<T...>;
 
       EDAnalyzer() = default;
 
-      // ---------- const member functions ---------------------
-
-      // ---------- static member functions --------------------
-
-      // ---------- member functions ---------------------------
+      EDAnalyzer(const EDAnalyzer&) = delete;
+      const EDAnalyzer& operator=(const EDAnalyzer&) = delete;
 
       using EDAnalyzerBase::callWhenNewProductsRegistered;
-
-    private:
-      EDAnalyzer(const EDAnalyzer&) = delete;  // stop default
-
-      const EDAnalyzer& operator=(const EDAnalyzer&) = delete;  // stop default
-
-      // ---------- member data --------------------------------
     };
 
   }  // namespace stream
