@@ -119,8 +119,6 @@ namespace edm {
             tokenInfos().resize(sizeof...(CacheTypes));
           }
 
-          static_assert(ICacheType < sizeof...(CacheTypes), "ICacheType out of range");
-
           if (!tokenInfos()[ICacheType].token_.isUninitialized()) {
             throw Exception(errors::LogicError)
                 << "registerProcessBlockCacheFiller should only be called once per cache type";

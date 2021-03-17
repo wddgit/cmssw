@@ -21,6 +21,7 @@
 // system include files
 #include <memory>
 #include <type_traits>
+
 // user include files
 #include "DataFormats/Provenance/interface/ProvenanceFwd.h"
 #include "FWCore/Common/interface/FWCoreCommonFwd.h"
@@ -72,11 +73,10 @@ namespace edm {
     //********************************
     template <typename T, bool, bool>
     struct CallInputProcessBlockImpl {
-      template <typename B>
-      static void set(B* iProd,
+      static void set(T* iProd,
                       typename impl::choose_unique_ptr<typename T::InputProcessBlockCache>::type const* iCaches,
                       unsigned int iStreamModule) {
-        static_cast<T*>(iProd)->setProcessBlockCache(iCaches->get());
+        iProd->setProcessBlockCache(iCaches->get());
         if (iStreamModule == 0 && iProd->cacheFillersRegistered()) {
           (*iCaches)->copyProcessBlockCacheFiller(iProd->tokenInfos(), iProd->cacheFillers());
         }
@@ -106,11 +106,10 @@ namespace edm {
 
     template <typename T>
     struct CallInputProcessBlockImpl<T, true, false> {
-      template <typename B>
-      static void set(B* iProd,
+      static void set(T* iProd,
                       typename impl::choose_unique_ptr<typename T::InputProcessBlockCache>::type const* iCaches,
                       unsigned int iStreamModule) {
-        static_cast<T*>(iProd)->setProcessBlockCache(iCaches->get());
+        iProd->setProcessBlockCache(iCaches->get());
         if (iStreamModule == 0 && iProd->cacheFillersRegistered()) {
           (*iCaches)->copyProcessBlockCacheFiller(iProd->tokenInfos(), iProd->cacheFillers());
         }

@@ -61,7 +61,7 @@ namespace edm {
         typename T::GlobalCache const* dummy = nullptr;
         m_global = impl::makeGlobal<T>(iPSet, dummy);
         typename T::InputProcessBlockCache const* dummyInputProcessBlockCacheImpl = nullptr;
-        m_inputProcessBlocks = impl::makeInputProcessBlockCacheImpl<T>(dummyInputProcessBlockCacheImpl);
+        m_inputProcessBlocks = impl::makeInputProcessBlockCacheImpl(dummyInputProcessBlockCacheImpl);
       }
       EDAnalyzerAdaptor(const EDAnalyzerAdaptor&) = delete;                   // stop default
       const EDAnalyzerAdaptor& operator=(const EDAnalyzerAdaptor&) = delete;  // stop default

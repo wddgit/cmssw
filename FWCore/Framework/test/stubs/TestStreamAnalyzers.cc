@@ -11,6 +11,7 @@ for testing purposes only.
 #include <iostream>
 #include <map>
 #include <tuple>
+#include <unistd.h>
 #include <vector>
 
 #include "FWCore/Framework/interface/stream/EDAnalyzer.h"
@@ -23,6 +24,7 @@ for testing purposes only.
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/Framework/interface/ProcessBlock.h"
 #include "FWCore/Framework/interface/TriggerNamesService.h"
+#include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "FWCore/Utilities/interface/EDMException.h"
@@ -567,6 +569,7 @@ namespace edmtest {
       explicit InputProcessBlockIntAnalyzer(edm::ParameterSet const& pset) {
         {
           expectedByRun_ = pset.getParameter<std::vector<int>>("expectedByRun");
+          sleepTime_ = pset.getParameter<unsigned int>("sleepTime");
           auto tag = pset.getParameter<edm::InputTag>("consumesBeginProcessBlock");
           if (not tag.label().empty()) {
             getTokenBegin_ = consumes<IntProduct, edm::InProcess>(tag);
@@ -588,7 +591,7 @@ namespace edmtest {
         });
       }
 
-      static void accessInputProcessBlock(edm::ProcessBlock const&) {}
+      static void accessInputProcessBlock(edm::ProcessBlock const&) { edm::LogAbsolute("InputProcessBlockIntAnalyzer") << "InputProcessBlockIntAnalyzer::accessInputProcessBlock"; }
 
       void analyze(edm::Event const& event, edm::EventSetup const&) override {
         auto cacheTuple = processBlockCaches(event);
@@ -599,12 +602,17 @@ namespace edmtest {
               << " but it was supposed to be " << expectedByRun_[event.run()];
           }
         }
+        // Force events to be processed concurrently
+        if (sleepTime_ > 0) {
+          usleep(sleepTime_);
+        }
       }
 
     private:
       edm::EDGetTokenT<IntProduct> getTokenBegin_;
       edm::EDGetTokenT<IntProduct> getTokenEnd_;
       std::vector<int> expectedByRun_;
+      unsigned int sleepTime_{0};
     };
 
     struct InputProcessBlockGlobalCacheAn {
@@ -630,6 +638,7 @@ namespace edmtest {
       unsigned int expectedTransitions_{0};
       std::vector<int> expectedByRun_;
       int expectedSum_{0};
+      unsigned int sleepTime_{0};
     };
 
     // Same thing as previous class except with a GlobalCache added
@@ -699,6 +708,7 @@ namespace edmtest {
         testGlobalCache->expectedTransitions_ = pset.getParameter<int>("transitions");
         testGlobalCache->expectedByRun_ = pset.getParameter<std::vector<int>>("expectedByRun");
         testGlobalCache->expectedSum_ = pset.getParameter<int>("expectedSum");
+        testGlobalCache->sleepTime_ = pset.getParameter<unsigned int>("sleepTime");
         return testGlobalCache;
       }
 
@@ -735,6 +745,11 @@ namespace edmtest {
           }
         }
         ++testGlobalCache->transitions_;
+
+        // Force events to be processed concurrently
+        if (testGlobalCache->sleepTime_ > 0) {
+          usleep(testGlobalCache->sleepTime_);
+        }
       }
 
       static void globalEndJob(InputProcessBlockGlobalCacheAn* testGlobalCache) {
@@ -760,6 +775,7 @@ namespace edmtest {
 
     // The next two test that modules without the
     // static accessInputProcessBlock function will build.
+    // And also that modules with no functor registered run.
 
     class InputProcessBlockIntAnalyzerNS
         : public edm::stream::EDAnalyzer<edm::InputProcessBlockCache<int, TestInputProcessBlockCache>> {

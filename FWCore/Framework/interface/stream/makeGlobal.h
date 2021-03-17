@@ -18,12 +18,9 @@
 //         Created:  Thu, 22 May 2014 13:55:01 GMT
 //
 
-// system include files
 #include <memory>
-// user include files
-#include "FWCore/Framework/interface/stream/dummy_helpers.h"
 
-// forward declarations
+#include "FWCore/Framework/interface/stream/dummy_helpers.h"
 
 namespace edm {
   class ParameterSet;
@@ -48,12 +45,12 @@ namespace edm {
         return new T(iPSet);
       }
 
-      template <typename T, typename G>
-      std::unique_ptr<G> makeInputProcessBlockCacheImpl(G const*) {
+      template <typename G>
+      inline std::unique_ptr<G> makeInputProcessBlockCacheImpl(G const*) {
         return std::make_unique<G>();
       }
-      template <typename T>
-      dummy_ptr makeInputProcessBlockCacheImpl(void const*) {
+
+      inline dummy_ptr makeInputProcessBlockCacheImpl(void const*) {
         return dummy_ptr();
       }
 
