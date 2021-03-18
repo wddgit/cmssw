@@ -44,12 +44,11 @@ namespace edm {
 
       using HasAbility = AbilityChecker<T...>;
 
-      EDAnalyzer() = default;
+      using EDAnalyzerBase::callWhenNewProductsRegistered;
 
+      EDAnalyzer() = default;
       EDAnalyzer(const EDAnalyzer&) = delete;
       const EDAnalyzer& operator=(const EDAnalyzer&) = delete;
-
-      using EDAnalyzerBase::callWhenNewProductsRegistered;
     };
 
   }  // namespace stream

@@ -598,7 +598,7 @@ namespace edmtest {
         if (!expectedByRun_.empty()) {
           if (expectedByRun_[event.run()] != std::get<TestInputProcessBlockCache1 const*>(cacheTuple)->value_) {
             throw cms::Exception("UnexpectedValue")
-              << "InputProcessBlockIntAnalyzer::analyze third cached value was " << std::get<TestInputProcessBlockCache1 const*>(cacheTuple)->value_
+              << "InputProcessBlockIntAnalyzer::analyze cached value was " << std::get<TestInputProcessBlockCache1 const*>(cacheTuple)->value_
               << " but it was supposed to be " << expectedByRun_[event.run()];
           }
         }

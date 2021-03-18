@@ -49,6 +49,8 @@ pushd ${LOCAL_TMP_DIR}
   echo "testProcessBlockRead"
   cmsRun -p ${LOCAL_TEST_DIR}/testProcessBlockRead_cfg.py &> testProcessBlockRead.log || die "cmsRun testProcessBlockRead_cfg.py" $?
   grep "InputProcessBlockIntAnalyzer::accessInputProcessBlock" testProcessBlockRead.log || die "Check that InputProcessBlockIntAnalyzer::accessInputProcessBlock was called" $?
+  grep "InputProcessBlockIntFilter::accessInputProcessBlock" testProcessBlockRead.log || die "Check that InputProcessBlockIntFilter::accessInputProcessBlock was called" $?
+  grep "InputProcessBlockIntProducer::accessInputProcessBlock" testProcessBlockRead.log || die "Check that InputProcessBlockIntProducer::accessInputProcessBlock was called" $?
 
   rm testProcessBlock1ContentsM.txt
   rm testProcessBlock1ContentsE.txt
@@ -56,6 +58,7 @@ pushd ${LOCAL_TMP_DIR}
   rm testProcessBlock2ContentsE.txt
   rm testProcessBlockMContentsM.txt
   rm testProcessBlockMContentsE.txt
+  rm testProcessBlockRead.log
 
   rm testProcessBlock1.root
   rm testProcessBlock2.root

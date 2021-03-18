@@ -46,12 +46,52 @@ process.readProcessBlocksG = cms.EDAnalyzer("edmtest::stream::InputProcessBlockI
 process.readProcessBlocksNS = cms.EDAnalyzer("edmtest::stream::InputProcessBlockIntAnalyzerNS")
 process.readProcessBlocksGNS = cms.EDAnalyzer("edmtest::stream::InputProcessBlockIntAnalyzerGNS")
 
+process.readProcessBlocksStreamFilter = cms.EDFilter("edmtest::stream::InputProcessBlockIntFilter",
+                                            consumesBeginProcessBlock = cms.InputTag("intProducerBeginProcessBlock", ""),
+                                            consumesEndProcessBlock = cms.InputTag("intProducerEndProcessBlock", ""),
+                                            expectedByRun = cms.vint32(0, 11, 22),
+                                            sleepTime = cms.uint32(10000)
+)
+
+process.readProcessBlocksGStreamFilter = cms.EDFilter("edmtest::stream::InputProcessBlockIntFilterG",
+                                            transitions = cms.int32(15),
+                                            consumesBeginProcessBlock = cms.InputTag("intProducerBeginProcessBlock", ""),
+                                            consumesEndProcessBlock = cms.InputTag("intProducerEndProcessBlock", ""),
+                                            consumesBeginProcessBlockM = cms.InputTag("intProducerBeginProcessBlockM", ""),
+                                            consumesEndProcessBlockM = cms.InputTag("intProducerEndProcessBlockM", ""),
+                                            expectedByRun = cms.vint32(0, 11, 22),
+                                            expectedSum = cms.int32(77),
+                                            sleepTime = cms.uint32(10000)
+)
+
+process.readProcessBlocksStreamProducer = cms.EDProducer("edmtest::stream::InputProcessBlockIntProducer",
+                                            consumesBeginProcessBlock = cms.InputTag("intProducerBeginProcessBlock", ""),
+                                            consumesEndProcessBlock = cms.InputTag("intProducerEndProcessBlock", ""),
+                                            expectedByRun = cms.vint32(0, 11, 22),
+                                            sleepTime = cms.uint32(10000)
+)
+
+process.readProcessBlocksGStreamProducer = cms.EDProducer("edmtest::stream::InputProcessBlockIntProducerG",
+                                            transitions = cms.int32(15),
+                                            consumesBeginProcessBlock = cms.InputTag("intProducerBeginProcessBlock", ""),
+                                            consumesEndProcessBlock = cms.InputTag("intProducerEndProcessBlock", ""),
+                                            consumesBeginProcessBlockM = cms.InputTag("intProducerBeginProcessBlockM", ""),
+                                            consumesEndProcessBlockM = cms.InputTag("intProducerEndProcessBlockM", ""),
+                                            expectedByRun = cms.vint32(0, 11, 22),
+                                            expectedSum = cms.int32(77),
+                                            sleepTime = cms.uint32(10000)
+)
+
 process.p = cms.Path(process.intProducerBeginProcessBlockR *
                      process.intProducerEndProcessBlockR *
                      process.readProcessBlocks *
                      process.readProcessBlocksG *
                      process.readProcessBlocksNS *
-                     process.readProcessBlocksGNS
+                     process.readProcessBlocksGNS *
+                     process.readProcessBlocksStreamFilter *
+                     process.readProcessBlocksGStreamFilter *
+                     process.readProcessBlocksStreamProducer *
+                     process.readProcessBlocksGStreamProducer
 )
 
 process.e = cms.EndPath(process.out)
