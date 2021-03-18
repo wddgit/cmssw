@@ -69,7 +69,6 @@ namespace edm {
       bool hasAbilityToProduceInEndLumis() const final { return HasAbilityToProduceInEndLumis<T...>::value; }
 
     private:
-
       void doAcquire_(Event const& ev, EventSetup const& es, WaitingTaskWithArenaHolder& holder) final {
         doAcquireIfNeeded(this, ev, es, holder);
       }

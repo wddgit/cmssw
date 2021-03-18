@@ -36,7 +36,6 @@ namespace edm {
     void clearAfterOutputFilesClose();
 
   private:
-
     // A general comment about this class and its data members.
     // It was initially written to handle cases where all ProcessBlock
     // products from some process were dropped in a file after

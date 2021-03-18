@@ -30,7 +30,6 @@ namespace edm {
     template <typename... T>
     class EDAnalyzer : public AbilityToImplementor<T>::Type..., public EDAnalyzerBase {
     public:
-
       using CacheTypes = CacheContexts<T...>;
 
       using GlobalCache = typename CacheTypes::GlobalCache;

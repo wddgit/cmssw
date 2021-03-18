@@ -906,7 +906,8 @@ namespace edmtest {
     };
 
     class InputProcessBlockIntFilter
-      : public edm::stream::EDFilter<edm::InputProcessBlockCache<int, TestInputProcessBlockCache, TestInputProcessBlockCache1>> {
+        : public edm::stream::EDFilter<
+              edm::InputProcessBlockCache<int, TestInputProcessBlockCache, TestInputProcessBlockCache1>> {
     public:
       explicit InputProcessBlockIntFilter(edm::ParameterSet const& pset) {
         {
@@ -924,24 +925,27 @@ namespace edmtest {
           }
         }
         registerProcessBlockCacheFiller<TestInputProcessBlockCache1>(
-          getTokenBegin_,
-          [this](edm::ProcessBlock const& processBlock, std::shared_ptr<TestInputProcessBlockCache1> const& previousCache) {
-            auto returnValue = std::make_shared<TestInputProcessBlockCache1>();
-            returnValue->value_ += processBlock.get(getTokenBegin_).value;
-            returnValue->value_ += processBlock.get(getTokenEnd_).value;
-            return returnValue;
-        });
+            getTokenBegin_,
+            [this](edm::ProcessBlock const& processBlock,
+                   std::shared_ptr<TestInputProcessBlockCache1> const& previousCache) {
+              auto returnValue = std::make_shared<TestInputProcessBlockCache1>();
+              returnValue->value_ += processBlock.get(getTokenBegin_).value;
+              returnValue->value_ += processBlock.get(getTokenEnd_).value;
+              return returnValue;
+            });
       }
 
-      static void accessInputProcessBlock(edm::ProcessBlock const&) { edm::LogAbsolute("InputProcessBlockIntFilter") << "InputProcessBlockIntFilter::accessInputProcessBlock"; }
+      static void accessInputProcessBlock(edm::ProcessBlock const&) {
+        edm::LogAbsolute("InputProcessBlockIntFilter") << "InputProcessBlockIntFilter::accessInputProcessBlock";
+      }
 
       bool filter(edm::Event& event, edm::EventSetup const&) override {
         auto cacheTuple = processBlockCaches(event);
         if (!expectedByRun_.empty()) {
           if (expectedByRun_[event.run()] != std::get<TestInputProcessBlockCache1 const*>(cacheTuple)->value_) {
-            throw cms::Exception("UnexpectedValue")
-              << "InputProcessBlockIntFilter::filter cached value was " << std::get<TestInputProcessBlockCache1 const*>(cacheTuple)->value_
-              << " but it was supposed to be " << expectedByRun_[event.run()];
+            throw cms::Exception("UnexpectedValue") << "InputProcessBlockIntFilter::filter cached value was "
+                                                    << std::get<TestInputProcessBlockCache1 const*>(cacheTuple)->value_
+                                                    << " but it was supposed to be " << expectedByRun_[event.run()];
           }
         }
         // Force events to be processed concurrently
@@ -986,9 +990,12 @@ namespace edmtest {
 
     // Same thing as previous class except with a GlobalCache added
     class InputProcessBlockIntFilterG
-      : public edm::stream::EDFilter<edm::InputProcessBlockCache<int, TestInputProcessBlockCache, TestInputProcessBlockCache1>, edm::GlobalCache<InputProcessBlockGlobalCacheAn>> {
+        : public edm::stream::EDFilter<
+              edm::InputProcessBlockCache<int, TestInputProcessBlockCache, TestInputProcessBlockCache1>,
+              edm::GlobalCache<InputProcessBlockGlobalCacheAn>> {
     public:
-      explicit InputProcessBlockIntFilterG(edm::ParameterSet const& pset, InputProcessBlockGlobalCacheAn const* testGlobalCache) {
+      explicit InputProcessBlockIntFilterG(edm::ParameterSet const& pset,
+                                           InputProcessBlockGlobalCacheAn const* testGlobalCache) {
         {
           auto tag = pset.getParameter<edm::InputTag>("consumesBeginProcessBlock");
           if (not tag.label().empty()) {
@@ -1018,32 +1025,32 @@ namespace edmtest {
           }
         }
         registerProcessBlockCacheFiller<int>(
-          getTokenBegin_,
-          [this](edm::ProcessBlock const& processBlock, std::shared_ptr<int> const& previousCache) {
-            auto returnValue = std::make_shared<int>(0);
-            *returnValue += processBlock.get(getTokenBegin_).value;
-            *returnValue += processBlock.get(getTokenEnd_).value;
-            ++globalCache()->transitions_;
-            return returnValue;
-        });
-        registerProcessBlockCacheFiller<1>(
-          getTokenBegin_,
-          [this](edm::ProcessBlock const& processBlock, std::shared_ptr<TestInputProcessBlockCache> const& previousCache) {
-            auto returnValue = std::make_shared<TestInputProcessBlockCache>();
-            returnValue->value_ += processBlock.get(getTokenBegin_).value;
-            returnValue->value_ += processBlock.get(getTokenEnd_).value;
-            ++globalCache()->transitions_;
-            return returnValue;
-        });
+            getTokenBegin_, [this](edm::ProcessBlock const& processBlock, std::shared_ptr<int> const& previousCache) {
+              auto returnValue = std::make_shared<int>(0);
+              *returnValue += processBlock.get(getTokenBegin_).value;
+              *returnValue += processBlock.get(getTokenEnd_).value;
+              ++globalCache()->transitions_;
+              return returnValue;
+            });
+        registerProcessBlockCacheFiller<1>(getTokenBegin_,
+                                           [this](edm::ProcessBlock const& processBlock,
+                                                  std::shared_ptr<TestInputProcessBlockCache> const& previousCache) {
+                                             auto returnValue = std::make_shared<TestInputProcessBlockCache>();
+                                             returnValue->value_ += processBlock.get(getTokenBegin_).value;
+                                             returnValue->value_ += processBlock.get(getTokenEnd_).value;
+                                             ++globalCache()->transitions_;
+                                             return returnValue;
+                                           });
         registerProcessBlockCacheFiller<TestInputProcessBlockCache1>(
-          getTokenBegin_,
-          [this](edm::ProcessBlock const& processBlock, std::shared_ptr<TestInputProcessBlockCache1> const& previousCache) {
-            auto returnValue = std::make_shared<TestInputProcessBlockCache1>();
-            returnValue->value_ += processBlock.get(getTokenBegin_).value;
-            returnValue->value_ += processBlock.get(getTokenEnd_).value;
-            ++globalCache()->transitions_;
-            return returnValue;
-        });
+            getTokenBegin_,
+            [this](edm::ProcessBlock const& processBlock,
+                   std::shared_ptr<TestInputProcessBlockCache1> const& previousCache) {
+              auto returnValue = std::make_shared<TestInputProcessBlockCache1>();
+              returnValue->value_ += processBlock.get(getTokenBegin_).value;
+              returnValue->value_ += processBlock.get(getTokenEnd_).value;
+              ++globalCache()->transitions_;
+              return returnValue;
+            });
       }
 
       static std::unique_ptr<InputProcessBlockGlobalCacheAn> initializeGlobalCache(edm::ParameterSet const& pset) {
@@ -1055,7 +1062,8 @@ namespace edmtest {
         return testGlobalCache;
       }
 
-      static void accessInputProcessBlock(edm::ProcessBlock const& processBlock, InputProcessBlockGlobalCacheAn* testGlobalCache) {
+      static void accessInputProcessBlock(edm::ProcessBlock const& processBlock,
+                                          InputProcessBlockGlobalCacheAn* testGlobalCache) {
         if (processBlock.processName() == "PROD1") {
           testGlobalCache->sum_ += processBlock.get(testGlobalCache->getTokenBegin_).value;
           testGlobalCache->sum_ += processBlock.get(testGlobalCache->getTokenEnd_).value;
@@ -1073,18 +1081,20 @@ namespace edmtest {
         if (!testGlobalCache->expectedByRun_.empty()) {
           if (testGlobalCache->expectedByRun_[event.run()] != *std::get<int const*>(cacheTuple)) {
             throw cms::Exception("UnexpectedValue")
-              << "InputProcessBlockIntFilterG::filter cached value was " << *std::get<int const*>(cacheTuple)
-              << " but it was supposed to be " << testGlobalCache->expectedByRun_[event.run()];
+                << "InputProcessBlockIntFilterG::filter cached value was " << *std::get<int const*>(cacheTuple)
+                << " but it was supposed to be " << testGlobalCache->expectedByRun_[event.run()];
           }
           if (testGlobalCache->expectedByRun_[event.run()] != std::get<1>(cacheTuple)->value_) {
             throw cms::Exception("UnexpectedValue")
-              << "InputProcessBlockIntFilterG::filter second cached value was " << std::get<1>(cacheTuple)->value_
-              << " but it was supposed to be " << testGlobalCache->expectedByRun_[event.run()];
+                << "InputProcessBlockIntFilterG::filter second cached value was " << std::get<1>(cacheTuple)->value_
+                << " but it was supposed to be " << testGlobalCache->expectedByRun_[event.run()];
           }
-          if (testGlobalCache->expectedByRun_[event.run()] != std::get<TestInputProcessBlockCache1 const*>(cacheTuple)->value_) {
+          if (testGlobalCache->expectedByRun_[event.run()] !=
+              std::get<TestInputProcessBlockCache1 const*>(cacheTuple)->value_) {
             throw cms::Exception("UnexpectedValue")
-              << "InputProcessBlockIntFilterG::filter third cached value was " << std::get<TestInputProcessBlockCache1 const*>(cacheTuple)->value_
-              << " but it was supposed to be " << testGlobalCache->expectedByRun_[event.run()];
+                << "InputProcessBlockIntFilterG::filter third cached value was "
+                << std::get<TestInputProcessBlockCache1 const*>(cacheTuple)->value_ << " but it was supposed to be "
+                << testGlobalCache->expectedByRun_[event.run()];
           }
         }
         ++testGlobalCache->transitions_;
@@ -1104,9 +1114,8 @@ namespace edmtest {
         }
 
         if (testGlobalCache->sum_ != testGlobalCache->expectedSum_) {
-          throw cms::Exception("UnexpectedValue")
-              << "InputProcessBlockIntFilterG sum " << testGlobalCache->sum_
-              << " but it was supposed to be " << testGlobalCache->expectedSum_;
+          throw cms::Exception("UnexpectedValue") << "InputProcessBlockIntFilterG sum " << testGlobalCache->sum_
+                                                  << " but it was supposed to be " << testGlobalCache->expectedSum_;
         }
       }
 

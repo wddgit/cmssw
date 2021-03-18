@@ -50,9 +50,7 @@ namespace edm {
         return std::make_unique<G>();
       }
 
-      inline dummy_ptr makeInputProcessBlockCacheImpl(void const*) {
-        return dummy_ptr();
-      }
+      inline dummy_ptr makeInputProcessBlockCacheImpl(void const*) { return dummy_ptr(); }
 
     }  // namespace impl
   }    // namespace stream
