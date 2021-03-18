@@ -484,10 +484,6 @@ namespace edmtest {
         }
       }
 
-      static std::shared_ptr<Cache> accessInputProcessBlock(edm::ProcessBlock const&, TestGlobalCacheFil*) {
-        return std::make_shared<Cache>();
-      }
-
       bool filter(edm::Event&, edm::EventSetup const&) override {
         TestGlobalCacheFil const* testGlobalCache = globalCache();
         if (testGlobalCache->m_count < 1u) {

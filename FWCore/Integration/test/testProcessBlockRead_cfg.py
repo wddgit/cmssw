@@ -82,6 +82,16 @@ process.readProcessBlocksGStreamProducer = cms.EDProducer("edmtest::stream::Inpu
                                             sleepTime = cms.uint32(10000)
 )
 
+process.readProcessBlocksOneAnalyzer = cms.EDAnalyzer("edmtest::one::InputProcessBlockIntAnalyzer",
+                                            transitions = cms.int32(15),
+                                            consumesBeginProcessBlock = cms.InputTag("intProducerBeginProcessBlock", ""),
+                                            consumesEndProcessBlock = cms.InputTag("intProducerEndProcessBlock", ""),
+                                            consumesBeginProcessBlockM = cms.InputTag("intProducerBeginProcessBlockM", ""),
+                                            consumesEndProcessBlockM = cms.InputTag("intProducerEndProcessBlockM", ""),
+                                            expectedByRun = cms.vint32(0, 11, 22),
+                                            expectedSum = cms.int32(77)
+)
+
 process.p = cms.Path(process.intProducerBeginProcessBlockR *
                      process.intProducerEndProcessBlockR *
                      process.readProcessBlocks *
@@ -91,7 +101,8 @@ process.p = cms.Path(process.intProducerBeginProcessBlockR *
                      process.readProcessBlocksStreamFilter *
                      process.readProcessBlocksGStreamFilter *
                      process.readProcessBlocksStreamProducer *
-                     process.readProcessBlocksGStreamProducer
+                     process.readProcessBlocksGStreamProducer *
+                     process.readProcessBlocksOneAnalyzer
 )
 
 process.e = cms.EndPath(process.out)
