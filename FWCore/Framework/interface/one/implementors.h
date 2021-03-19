@@ -19,18 +19,19 @@
 //
 
 // system include files
+#include <cstddef>
 #include <memory>
-#include <string>
 #include <set>
+#include <string>
 #include <tuple>
 #include <utility>
 
 // user include files
 #include "FWCore/Common/interface/FWCoreCommonFwd.h"
+#include "FWCore/Concurrency/interface/SerialTaskQueue.h"
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/InputProcessBlockCacheImpl.h"
 #include "FWCore/Framework/interface/LuminosityBlock.h"
-#include "FWCore/Concurrency/interface/SerialTaskQueue.h"
 #include "FWCore/Utilities/interface/EDGetToken.h"
 #include "FWCore/Utilities/interface/ProcessBlockIndex.h"
 #include "FWCore/Utilities/interface/RunIndex.h"
@@ -238,7 +239,7 @@ namespace edm {
 
       private:
         void doSelectInputProcessBlocks(ProductRegistry const& productRegistry,
-                                        ProcessBlockHelperBase const& processBlockHelperBase) override {
+                                        ProcessBlockHelperBase const& processBlockHelperBase) final {
           cacheImpl_.selectInputProcessBlocks(productRegistry, processBlockHelperBase, *this);
         }
 

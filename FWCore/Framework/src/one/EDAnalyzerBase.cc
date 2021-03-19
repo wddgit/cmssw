@@ -156,8 +156,6 @@ namespace edm {
       this->doEndLuminosityBlock_(cnstLb, c);
     }
 
-    void EDAnalyzerBase::doRespondToCloseOutputFile() { clearInputProcessBlockCaches(); }
-
     void EDAnalyzerBase::doBeginProcessBlock_(ProcessBlock const&) {}
     void EDAnalyzerBase::doAccessInputProcessBlock_(ProcessBlock const&) {}
     void EDAnalyzerBase::doEndProcessBlock_(ProcessBlock const&) {}
