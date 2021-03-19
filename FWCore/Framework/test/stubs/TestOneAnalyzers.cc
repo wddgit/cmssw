@@ -7,31 +7,25 @@ for testing purposes only.
 
 ----------------------------------------------------------------------*/
 #include <atomic>
-#include <functional>
 #include <iostream>
-#include <map>
 #include <memory>
+#include <tuple>
 #include <vector>
 
 #include "DataFormats/Provenance/interface/BranchDescription.h"
 #include "DataFormats/TestObjects/interface/ToyProducts.h"
 #include "FWCore/Framework/interface/Event.h"
-#include "FWCore/Framework/interface/HistoryAppender.h"
 #include "FWCore/Framework/interface/LuminosityBlock.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/Framework/interface/moduleAbilities.h"
 #include "FWCore/Framework/interface/one/EDAnalyzer.h"
 #include "FWCore/Framework/interface/ProcessBlock.h"
 #include "FWCore/Framework/interface/Run.h"
-#include "FWCore/Framework/src/WorkerT.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/ServiceRegistry/interface/ParentContext.h"
-#include "FWCore/ServiceRegistry/interface/StreamContext.h"
 #include "FWCore/Utilities/interface/BranchType.h"
 #include "FWCore/Utilities/interface/EDMException.h"
 #include "FWCore/Utilities/interface/EDGetToken.h"
 #include "FWCore/Utilities/interface/InputTag.h"
-#include "FWCore/Utilities/interface/GlobalIdentifier.h"
 
 namespace edmtest {
   namespace one {

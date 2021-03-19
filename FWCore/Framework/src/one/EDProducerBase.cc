@@ -174,8 +174,6 @@ namespace edm {
       commit_(lb);
     }
 
-    void EDProducerBase::doRespondToCloseOutputFile() { clearInputProcessBlockCaches(); }
-
     void EDProducerBase::doBeginProcessBlock_(ProcessBlock const&) {}
     void EDProducerBase::doAccessInputProcessBlock_(ProcessBlock const&) {}
     void EDProducerBase::doEndProcessBlock_(ProcessBlock const&) {}

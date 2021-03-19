@@ -174,8 +174,6 @@ namespace edm {
       commit_(lb);
     }
 
-    void EDFilterBase::doRespondToCloseOutputFile() { clearInputProcessBlockCaches(); }
-
     void EDFilterBase::doBeginProcessBlock_(ProcessBlock const&) {}
     void EDFilterBase::doAccessInputProcessBlock_(ProcessBlock const&) {}
     void EDFilterBase::doEndProcessBlock_(ProcessBlock const&) {}
