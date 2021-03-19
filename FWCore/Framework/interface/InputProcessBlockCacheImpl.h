@@ -184,6 +184,7 @@ namespace edm {
       }
 
       void clearCaches() { caches_.clear(); }
+      auto cacheSize() const { return caches_.size(); }
 
     private:
       template <std::size_t ICacheType, typename CacheType, typename DataType, typename Func>

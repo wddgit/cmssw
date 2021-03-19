@@ -436,6 +436,10 @@ namespace edmtest {
           throw cms::Exception("UnexpectedValue") << "InputProcessBlockIntAnalyzer sum " << sum_
                                                   << " but it was supposed to be " << expectedSum_;
         }
+        if (cacheSize() > 0u) {
+          throw cms::Exception("UnexpectedValue") << "InputProcessBlockIntAnalyzer cache size not zero at endJob "
+                                                  << cacheSize();
+        }
       }
 
     private:

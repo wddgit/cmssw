@@ -68,9 +68,6 @@ namespace edm {
         InputProcessBlockCacheHolder() = default;
         InputProcessBlockCacheHolder(InputProcessBlockCacheHolder const&) = delete;
         InputProcessBlockCacheHolder& operator=(InputProcessBlockCacheHolder const&) = delete;
-        void setProcessBlockCache(edm::impl::InputProcessBlockCacheImpl<CacheTypes...> const* cacheImpl) {
-          cacheImpl_ = cacheImpl;
-        }
 
         std::tuple<CacheTypes const*...> processBlockCaches(Event const& event) const {
           return cacheImpl_->processBlockCaches(event);
@@ -97,6 +94,13 @@ namespace edm {
           registerProcessBlockCacheFiller<I, CacheType, DataType, Func>(token, std::forward<Func>(cacheFiller));
         }
 
+      private:
+        template <typename T, bool, bool> friend struct edm::stream::CallInputProcessBlockImpl;
+
+        void setProcessBlockCache(edm::impl::InputProcessBlockCacheImpl<CacheTypes...> const* cacheImpl) {
+          cacheImpl_ = cacheImpl;
+        }
+
         bool cacheFillersRegistered() const { return registrationInfo_ ? true : false; }
         std::vector<edm::impl::TokenInfo>& tokenInfos() { return registrationInfo_->tokenInfos_; }
         std::tuple<edm::impl::CacheFiller<CacheTypes>...>& cacheFillers() { return registrationInfo_->cacheFillers_; }
@@ -111,7 +115,6 @@ namespace edm {
         template <typename GlobalCacheType>
         static void accessInputProcessBlock(edm::ProcessBlock const&, GlobalCacheType*) {}
 
-      private:
         template <std::size_t ICacheType, typename CacheType, typename DataType, typename Func>
         void registerProcessBlockCacheFiller(EDGetTokenT<DataType> const& token, Func&& cacheFiller) {
           if (!registrationInfo_) {
