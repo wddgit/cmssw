@@ -511,7 +511,6 @@ namespace edm {
 
     if (parentProducedProductIsKept(parentPrincipal, processBlockPrincipal)) {
       auto runEndProcessBlock = make_waiting_task(
-          tbb::task::allocate_root(),
           [this, iWait = std::move(iHolder), info = transitionInfo, cleaningUpAfterException](
               std::exception_ptr const* iPtr) mutable {
             if (iPtr) {
@@ -522,7 +521,7 @@ namespace edm {
                   std::move(iWait), *schedule_, info, serviceToken_, subProcesses_, cleaningUpAfterException);
             }
           });
-      WaitingTaskHolder holder(runEndProcessBlock);
+      WaitingTaskHolder holder(*iHolder.group(), runEndProcessBlock);
 
       using TraitsInput = OccurrenceTraits<ProcessBlockPrincipal, BranchActionProcessBlockInput>;
       beginGlobalTransitionAsync<TraitsInput>(
