@@ -243,8 +243,6 @@ namespace edm {
       this->doStreamEndLuminosityBlockSummary_(id, lb, c);
     }
 
-    void EDFilterBase::doRespondToCloseOutputFile() { clearInputProcessBlockCaches(); }
-
     void EDFilterBase::preallocStreams(unsigned int) {}
     void EDFilterBase::preallocLumis(unsigned int) {}
     void EDFilterBase::preallocLumisSummary(unsigned int) {}

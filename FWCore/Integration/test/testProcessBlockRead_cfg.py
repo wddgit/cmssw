@@ -122,6 +122,26 @@ process.readProcessBlocksGlobalAnalyzer = cms.EDAnalyzer("edmtest::global::Input
                                             expectedSum = cms.int32(77)
 )
 
+process.readProcessBlocksGlobalFilter = cms.EDFilter("edmtest::global::InputProcessBlockIntFilter",
+                                            transitions = cms.int32(15),
+                                            consumesBeginProcessBlock = cms.InputTag("intProducerBeginProcessBlock", ""),
+                                            consumesEndProcessBlock = cms.InputTag("intProducerEndProcessBlock", ""),
+                                            consumesBeginProcessBlockM = cms.InputTag("intProducerBeginProcessBlockM", ""),
+                                            consumesEndProcessBlockM = cms.InputTag("intProducerEndProcessBlockM", ""),
+                                            expectedByRun = cms.vint32(0, 11, 22),
+                                            expectedSum = cms.int32(77)
+)
+
+process.readProcessBlocksGlobalProducer = cms.EDProducer("edmtest::global::InputProcessBlockIntProducer",
+                                            transitions = cms.int32(15),
+                                            consumesBeginProcessBlock = cms.InputTag("intProducerBeginProcessBlock", ""),
+                                            consumesEndProcessBlock = cms.InputTag("intProducerEndProcessBlock", ""),
+                                            consumesBeginProcessBlockM = cms.InputTag("intProducerBeginProcessBlockM", ""),
+                                            consumesEndProcessBlockM = cms.InputTag("intProducerEndProcessBlockM", ""),
+                                            expectedByRun = cms.vint32(0, 11, 22),
+                                            expectedSum = cms.int32(77)
+)
+
 process.p = cms.Path(process.intProducerBeginProcessBlockR *
                      process.intProducerEndProcessBlockR *
                      process.readProcessBlocks *
@@ -135,7 +155,9 @@ process.p = cms.Path(process.intProducerBeginProcessBlockR *
                      process.readProcessBlocksOneAnalyzer *
                      process.readProcessBlocksOneFilter *
                      process.readProcessBlocksOneProducer *
-                     process.readProcessBlocksGlobalAnalyzer
+                     process.readProcessBlocksGlobalAnalyzer *
+                     process.readProcessBlocksGlobalFilter *
+                     process.readProcessBlocksGlobalProducer
 )
 
 process.e = cms.EndPath(process.out)
