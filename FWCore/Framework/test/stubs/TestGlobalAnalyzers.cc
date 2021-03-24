@@ -573,6 +573,29 @@ namespace edmtest {
       int expectedSum_{0};
     };
 
+    class InputProcessBlockIntAnalyzerNoRegistration
+        : public edm::global::EDAnalyzer<
+              edm::InputProcessBlockCache<int, TestInputProcessBlockCache, TestInputProcessBlockCache1>> {
+    public:
+      explicit InputProcessBlockIntAnalyzerNoRegistration(edm::ParameterSet const& pset) {
+        expectedTransitions_ = pset.getParameter<int>("transitions");
+      }
+
+      void analyze(edm::StreamID, edm::Event const& event, edm::EventSetup const&) const override {
+        auto cacheTuple = processBlockCaches(event);
+        ++transitions_;
+      }
+
+      void endJob() override {
+        if (transitions_ != expectedTransitions_) {
+          throw cms::Exception("transitions") << "InputProcessBlockIntAnalyzerNoRegistration transitions " << transitions_
+                                              << " but it was supposed to be " << expectedTransitions_;
+        }
+      }
+    private:
+      CMS_THREAD_SAFE mutable std::atomic<unsigned int> transitions_{0};
+    };
+
   }  // namespace global
 }  // namespace edmtest
 
@@ -583,3 +606,4 @@ DEFINE_FWK_MODULE(edmtest::global::RunSummaryIntAnalyzer);
 DEFINE_FWK_MODULE(edmtest::global::LumiSummaryIntAnalyzer);
 DEFINE_FWK_MODULE(edmtest::global::ProcessBlockIntAnalyzer);
 DEFINE_FWK_MODULE(edmtest::global::InputProcessBlockIntAnalyzer);
+DEFINE_FWK_MODULE(edmtest::global::InputProcessBlockIntAnalyzerNoRegistration);

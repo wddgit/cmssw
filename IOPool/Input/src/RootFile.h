@@ -16,12 +16,12 @@ RootFile.h // used by ROOT input sources
 #include "DataFormats/Provenance/interface/EventEntryDescription.h"  // backward compatibility
 #include "DataFormats/Provenance/interface/EventProcessHistoryID.h"  // backward compatibility
 #include "DataFormats/Provenance/interface/EventSelectionID.h"
+#include "DataFormats/Provenance/interface/EventToProcessBlockIndexes.h"
 #include "DataFormats/Provenance/interface/FileFormatVersion.h"
 #include "DataFormats/Provenance/interface/FileID.h"
 #include "DataFormats/Provenance/interface/History.h"
 #include "DataFormats/Provenance/interface/IndexIntoFile.h"
 #include "DataFormats/Provenance/interface/ProvenanceFwd.h"
-#include "DataFormats/Provenance/interface/ToProcessBlockIndexes.h"
 #include "FWCore/Common/interface/FWCoreCommonFwd.h"
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/InputSource.h"

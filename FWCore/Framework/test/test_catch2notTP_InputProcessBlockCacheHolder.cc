@@ -1,11 +1,15 @@
 #include "catch.hpp"
 
+#include "DataFormats/Provenance/interface/ModuleDescription.h"
+#include "DataFormats/Provenance/interface/ProvenanceFwd.h"
+#include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/InputProcessBlockCacheImpl.h"
 #include "FWCore/Framework/interface/global/EDProducerBase.h"
 #include "FWCore/Framework/interface/global/implementors.h"
 #include "FWCore/Utilities/interface/StreamID.h"
 
 #include <iostream>
+#include <memory>
 
 namespace edm {
   class Event;
@@ -160,7 +164,6 @@ TEST_CASE("test InputProcessBlockCacheHolder", "[InputProcessBlockCacheHolder]")
   }
 
   SECTION("test constructor") {
-    std::cout << "Hello world 2" << std::endl;
     edmtest::TestInputBlockCacheHolder0 holder0;
     edmtest::TestInputBlockCacheHolder1 holder1;
     edmtest::TestInputBlockCacheHolder2 holder2;

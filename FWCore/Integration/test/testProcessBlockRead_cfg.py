@@ -175,6 +175,10 @@ process.readProcessBlocksLimitedProducer = cms.EDProducer("edmtest::limited::Inp
                                             concurrencyLimit = cms.untracked.uint32(4)
 )
 
+process.readProcessBlocksGlobalAnalyzerNoRegistration = cms.EDAnalyzer("edmtest::global::InputProcessBlockIntAnalyzerNoRegistration",
+                                            transitions = cms.int32(7),
+)
+
 process.p = cms.Path(process.intProducerBeginProcessBlockR *
                      process.intProducerEndProcessBlockR *
                      process.readProcessBlocks *
@@ -193,7 +197,8 @@ process.p = cms.Path(process.intProducerBeginProcessBlockR *
                      process.readProcessBlocksGlobalProducer *
                      process.readProcessBlocksLimitedAnalyzer *
                      process.readProcessBlocksLimitedFilter *
-                     process.readProcessBlocksLimitedProducer
+                     process.readProcessBlocksLimitedProducer *
+                     process.readProcessBlocksGlobalAnalyzerNoRegistration
 )
 
 process.e = cms.EndPath(process.out)

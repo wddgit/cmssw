@@ -1,7 +1,7 @@
 #include "FWCore/Common/interface/ProcessBlockHelper.h"
 
+#include "DataFormats/Provenance/interface/EventToProcessBlockIndexes.h"
 #include "DataFormats/Provenance/interface/StoredProcessBlockHelper.h"
-#include "DataFormats/Provenance/interface/ToProcessBlockIndexes.h"
 
 #include <cassert>
 #include <string>

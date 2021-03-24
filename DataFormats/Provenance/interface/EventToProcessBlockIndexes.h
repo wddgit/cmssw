@@ -1,5 +1,5 @@
-#ifndef DataFormats_Provenance_ToProcessBlockIndexes_h
-#define DataFormats_Provenance_ToProcessBlockIndexes_h
+#ifndef DataFormats_Provenance_EventToProcessBlockIndexes_h
+#define DataFormats_Provenance_EventToProcessBlockIndexes_h
 
 /**
 

@@ -25,6 +25,7 @@
 #include "DataFormats/Provenance/interface/EventAuxiliary.h"
 #include "DataFormats/Provenance/interface/EventEntryDescription.h"  // kludge to allow compilation
 #include "DataFormats/Provenance/interface/EventSelectionID.h"
+#include "DataFormats/Provenance/interface/EventToProcessBlockIndexes.h"
 #include "DataFormats/Provenance/interface/FileFormatVersion.h"
 #include "DataFormats/Provenance/interface/LuminosityBlockAuxiliary.h"
 #include "DataFormats/Provenance/interface/ModuleDescription.h"
@@ -35,7 +36,6 @@
 #include "DataFormats/Provenance/interface/ProductRegistry.h"
 #include "DataFormats/Provenance/interface/RunAuxiliary.h"
 #include "DataFormats/Provenance/interface/ThinnedAssociationsHelper.h"
-#include "DataFormats/Provenance/interface/ToProcessBlockIndexes.h"
 #include "FWCore/Framework/interface/DelayedReader.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventPrincipal.h"

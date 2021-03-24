@@ -210,11 +210,6 @@ void EDConsumerBase::updateLookup(eventsetup::ESRecordsToProxyIndices const& iPI
   }
 }
 
-void EDConsumerBase::selectInputProcessBlocks(ProductRegistry const& productRegistry,
-                                              ProcessBlockHelperBase const& processBlockHelperBase) {
-  doSelectInputProcessBlocks(productRegistry, processBlockHelperBase);
-}
-
 ESTokenIndex EDConsumerBase::recordESConsumes(Transition iTrans,
                                               eventsetup::EventSetupRecordKey const& iRecord,
                                               eventsetup::heterocontainer::HCTypeTag const& iDataType,
@@ -420,6 +415,8 @@ void EDConsumerBase::throwESConsumesInProcessBlock() const {
       << "A module declared it consumes an EventSetup product during a ProcessBlock transition.\n"
       << "EventSetup products can only be consumed in Event, Lumi, or Run transitions.\n";
 }
+
+void EDConsumerBase::doSelectInputProcessBlocks(ProductRegistry const&, ProcessBlockHelperBase const&) {}
 
 namespace {
   struct CharStarComp {

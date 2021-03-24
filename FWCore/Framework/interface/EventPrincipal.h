@@ -17,7 +17,7 @@ is the DataBlock.
 #include "DataFormats/Provenance/interface/ProductProvenanceRetriever.h"
 #include "DataFormats/Provenance/interface/EventAuxiliary.h"
 #include "DataFormats/Provenance/interface/EventSelectionID.h"
-#include "DataFormats/Provenance/interface/ToProcessBlockIndexes.h"
+#include "DataFormats/Provenance/interface/EventToProcessBlockIndexes.h"
 #include "FWCore/Common/interface/FWCoreCommonFwd.h"
 #include "FWCore/Utilities/interface/StreamID.h"
 #include "FWCore/Utilities/interface/Signal.h"
