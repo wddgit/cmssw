@@ -107,11 +107,6 @@ namespace edm {
           return cacheImpl_.processBlockCaches(event);
         }
 
-        void doSelectInputProcessBlocks(ProductRegistry const& productRegistry,
-                                        ProcessBlockHelperBase const& processBlockHelperBase) override {
-          cacheImpl_.selectInputProcessBlocks(productRegistry, processBlockHelperBase, *this);
-        }
-
         template <std::size_t ICacheType, typename DataType, typename Func>
         void registerProcessBlockCacheFiller(EDGetTokenT<DataType> const& token, Func&& func) {
           cacheImpl_.template registerProcessBlockCacheFiller<ICacheType, DataType, Func>(token,
@@ -124,19 +119,27 @@ namespace edm {
                                                                                          std::forward<Func>(func));
         }
 
-        void clearInputProcessBlockCaches() final { cacheImpl_.clearCaches(); }
+        // This is intended for use by Framework unit tests only
+        unsigned int cacheSize() const { return cacheImpl_.cacheSize(); }
 
       private:
-        edm::impl::InputProcessBlockCacheImpl<CacheTypes...> cacheImpl_;
-
-        // Alternate method to access ProcessBlocks without using the caches
-        // Mostly intended for unit testing, but might have other uses...
-        virtual void accessInputProcessBlock(ProcessBlock const&) {}
+        void doSelectInputProcessBlocks(ProductRegistry const& productRegistry,
+                                        ProcessBlockHelperBase const& processBlockHelperBase) final {
+          cacheImpl_.selectInputProcessBlocks(productRegistry, processBlockHelperBase, *this);
+        }
 
         void doAccessInputProcessBlock_(ProcessBlock const& pb) final {
           cacheImpl_.accessInputProcessBlock(pb);
           accessInputProcessBlock(pb);
         }
+
+        // Alternate method to access ProcessBlocks without using the caches
+        // Mostly intended for unit testing, but might have other uses...
+        virtual void accessInputProcessBlock(ProcessBlock const&) {}
+
+        void clearInputProcessBlockCaches() final { cacheImpl_.clearCaches(); }
+
+        edm::impl::InputProcessBlockCacheImpl<CacheTypes...> cacheImpl_;
       };
 
       template <typename T, typename C>

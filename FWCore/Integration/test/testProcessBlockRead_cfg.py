@@ -142,6 +142,39 @@ process.readProcessBlocksGlobalProducer = cms.EDProducer("edmtest::global::Input
                                             expectedSum = cms.int32(77)
 )
 
+process.readProcessBlocksLimitedAnalyzer = cms.EDAnalyzer("edmtest::limited::InputProcessBlockIntAnalyzer",
+                                            transitions = cms.int32(15),
+                                            consumesBeginProcessBlock = cms.InputTag("intProducerBeginProcessBlock", ""),
+                                            consumesEndProcessBlock = cms.InputTag("intProducerEndProcessBlock", ""),
+                                            consumesBeginProcessBlockM = cms.InputTag("intProducerBeginProcessBlockM", ""),
+                                            consumesEndProcessBlockM = cms.InputTag("intProducerEndProcessBlockM", ""),
+                                            expectedByRun = cms.vint32(0, 11, 22),
+                                            expectedSum = cms.int32(77),
+                                            concurrencyLimit = cms.untracked.uint32(4)
+)
+
+process.readProcessBlocksLimitedFilter = cms.EDFilter("edmtest::limited::InputProcessBlockIntFilter",
+                                            transitions = cms.int32(15),
+                                            consumesBeginProcessBlock = cms.InputTag("intProducerBeginProcessBlock", ""),
+                                            consumesEndProcessBlock = cms.InputTag("intProducerEndProcessBlock", ""),
+                                            consumesBeginProcessBlockM = cms.InputTag("intProducerBeginProcessBlockM", ""),
+                                            consumesEndProcessBlockM = cms.InputTag("intProducerEndProcessBlockM", ""),
+                                            expectedByRun = cms.vint32(0, 11, 22),
+                                            expectedSum = cms.int32(77),
+                                            concurrencyLimit = cms.untracked.uint32(4)
+)
+
+process.readProcessBlocksLimitedProducer = cms.EDProducer("edmtest::limited::InputProcessBlockIntProducer",
+                                            transitions = cms.int32(15),
+                                            consumesBeginProcessBlock = cms.InputTag("intProducerBeginProcessBlock", ""),
+                                            consumesEndProcessBlock = cms.InputTag("intProducerEndProcessBlock", ""),
+                                            consumesBeginProcessBlockM = cms.InputTag("intProducerBeginProcessBlockM", ""),
+                                            consumesEndProcessBlockM = cms.InputTag("intProducerEndProcessBlockM", ""),
+                                            expectedByRun = cms.vint32(0, 11, 22),
+                                            expectedSum = cms.int32(77),
+                                            concurrencyLimit = cms.untracked.uint32(4)
+)
+
 process.p = cms.Path(process.intProducerBeginProcessBlockR *
                      process.intProducerEndProcessBlockR *
                      process.readProcessBlocks *
@@ -157,7 +190,10 @@ process.p = cms.Path(process.intProducerBeginProcessBlockR *
                      process.readProcessBlocksOneProducer *
                      process.readProcessBlocksGlobalAnalyzer *
                      process.readProcessBlocksGlobalFilter *
-                     process.readProcessBlocksGlobalProducer
+                     process.readProcessBlocksGlobalProducer *
+                     process.readProcessBlocksLimitedAnalyzer *
+                     process.readProcessBlocksLimitedFilter *
+                     process.readProcessBlocksLimitedProducer
 )
 
 process.e = cms.EndPath(process.out)
