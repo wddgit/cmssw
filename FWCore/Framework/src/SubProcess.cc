@@ -510,9 +510,9 @@ namespace edm {
     ProcessBlockTransitionInfo transitionInfo(processBlockPrincipal);
 
     if (parentProducedProductIsKept(parentPrincipal, processBlockPrincipal)) {
-      auto runEndProcessBlock = make_waiting_task(
-          [this, iWait = std::move(iHolder), info = transitionInfo, cleaningUpAfterException](
-              std::exception_ptr const* iPtr) mutable {
+      auto runEndProcessBlock =
+          make_waiting_task([this, iWait = std::move(iHolder), info = transitionInfo, cleaningUpAfterException](
+                                std::exception_ptr const* iPtr) mutable {
             if (iPtr) {
               iWait.doneWaiting(*iPtr);
             } else {

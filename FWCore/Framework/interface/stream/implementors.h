@@ -95,7 +95,8 @@ namespace edm {
         }
 
       private:
-        template <typename T, bool, bool> friend struct edm::stream::CallInputProcessBlockImpl;
+        template <typename T, bool, bool>
+        friend struct edm::stream::CallInputProcessBlockImpl;
 
         void setProcessBlockCache(edm::impl::InputProcessBlockCacheImpl<CacheTypes...> const* cacheImpl) {
           cacheImpl_ = cacheImpl;

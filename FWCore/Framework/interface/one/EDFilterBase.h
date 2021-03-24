@@ -94,7 +94,7 @@ namespace edm {
 
       void doRespondToOpenInputFile(FileBlock const&) {}
       void doRespondToCloseInputFile(FileBlock const&) {}
-      void doRespondToCloseOutputFile()  { clearInputProcessBlockCaches(); }
+      void doRespondToCloseOutputFile() { clearInputProcessBlockCaches(); }
       void doRegisterThinnedAssociations(ProductRegistry const&, ThinnedAssociationsHelper&) {}
 
       void registerProductsAndCallbacks(EDFilterBase* module, ProductRegistry* reg) {

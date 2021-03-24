@@ -409,12 +409,10 @@ namespace edmtest {
                 << "InputProcessBlockIntAnalyzer::analyze second cached value was " << std::get<1>(cacheTuple)->value_
                 << " but it was supposed to be " << expectedByRun_[event.run()];
           }
-          if (expectedByRun_[event.run()] !=
-              std::get<TestInputProcessBlockCache1 const*>(cacheTuple)->value_) {
-            throw cms::Exception("UnexpectedValue")
-                << "InputProcessBlockIntAnalyzer::analyze third cached value was "
-                << std::get<TestInputProcessBlockCache1 const*>(cacheTuple)->value_ << " but it was supposed to be "
-                << expectedByRun_[event.run()];
+          if (expectedByRun_[event.run()] != std::get<TestInputProcessBlockCache1 const*>(cacheTuple)->value_) {
+            throw cms::Exception("UnexpectedValue") << "InputProcessBlockIntAnalyzer::analyze third cached value was "
+                                                    << std::get<TestInputProcessBlockCache1 const*>(cacheTuple)->value_
+                                                    << " but it was supposed to be " << expectedByRun_[event.run()];
           }
         }
         ++transitions_;
@@ -422,17 +420,16 @@ namespace edmtest {
 
       void endJob() override {
         if (transitions_ != expectedTransitions_) {
-          throw cms::Exception("transitions")
-              << "InputProcessBlockIntAnalyzer transitions " << transitions_
-              << " but it was supposed to be " << expectedTransitions_;
+          throw cms::Exception("transitions") << "InputProcessBlockIntAnalyzer transitions " << transitions_
+                                              << " but it was supposed to be " << expectedTransitions_;
         }
         if (sum_ != expectedSum_) {
-          throw cms::Exception("UnexpectedValue") << "InputProcessBlockIntAnalyzer sum " << sum_
-                                                  << " but it was supposed to be " << expectedSum_;
+          throw cms::Exception("UnexpectedValue")
+              << "InputProcessBlockIntAnalyzer sum " << sum_ << " but it was supposed to be " << expectedSum_;
         }
         if (cacheSize() > 0u) {
-          throw cms::Exception("UnexpectedValue") << "InputProcessBlockIntAnalyzer cache size not zero at endJob "
-                                                  << cacheSize();
+          throw cms::Exception("UnexpectedValue")
+              << "InputProcessBlockIntAnalyzer cache size not zero at endJob " << cacheSize();
         }
       }
 
