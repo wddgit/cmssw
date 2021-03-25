@@ -26,7 +26,6 @@ namespace edm {
   class RunID;
   class StableProvenance;
   class StoredProcessBlockHelper;
-  class ThinnedAssociationsHelper;
   class Timestamp;
   class ProductProvenanceRetriever;
 }  // namespace edm

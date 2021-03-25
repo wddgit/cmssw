@@ -1,15 +1,11 @@
 #include "catch.hpp"
 
-#include "DataFormats/Provenance/interface/ModuleDescription.h"
-#include "DataFormats/Provenance/interface/ProvenanceFwd.h"
-#include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/InputProcessBlockCacheImpl.h"
 #include "FWCore/Framework/interface/global/EDProducerBase.h"
 #include "FWCore/Framework/interface/global/implementors.h"
 #include "FWCore/Utilities/interface/StreamID.h"
 
 #include <iostream>
-#include <memory>
 
 namespace edm {
   class Event;

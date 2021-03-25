@@ -14,6 +14,7 @@
 #include "DataFormats/Common/interface/Handle.h"
 #include "DataFormats/Provenance/interface/Provenance.h"
 #include "DataFormats/TestObjects/interface/ToyProducts.h"
+#include "FWCore/Framework/interface/CacheHandle.h"
 #include "FWCore/Framework/interface/one/EDAnalyzer.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/getProducerParameterSet.h"
@@ -280,16 +281,16 @@ namespace edmtest {
     }
 
     if (expectedCache_ != 0) {
-      std::tuple<int const*, const long long int*> valueTuple = processBlockCaches(event);
+      std::tuple<edm::CacheHandle<int>, edm::CacheHandle<long long int>> valueTuple = processBlockCaches(event);
       {
-        int const* value = std::get<0>(valueTuple);
+        edm::CacheHandle<int> value = std::get<0>(valueTuple);
         if (*value != expectedCache_) {
           throw cms::Exception("TestFail") << "TestFindProduct::analyze 0 ProcessBlock cache has unexpected value "
                                            << *value << " expected = " << expectedCache_;
         }
       }
       {
-        long long int const* value = std::get<1>(valueTuple);
+        edm::CacheHandle<long long int> value = std::get<1>(valueTuple);
         if (*value != expectedCache_) {
           throw cms::Exception("TestFail") << "TestFindProduct::analyze 1 ProcessBlock cache has unexpected value "
                                            << *value << " expected = " << expectedCache_;

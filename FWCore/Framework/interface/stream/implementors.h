@@ -27,6 +27,7 @@
 #include <vector>
 
 // user include files
+#include "FWCore/Framework/interface/CacheHandle.h"
 #include "FWCore/Framework/interface/stream/EDProducerBase.h"
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/InputProcessBlockCacheImpl.h"
@@ -69,7 +70,7 @@ namespace edm {
         InputProcessBlockCacheHolder(InputProcessBlockCacheHolder const&) = delete;
         InputProcessBlockCacheHolder& operator=(InputProcessBlockCacheHolder const&) = delete;
 
-        std::tuple<CacheTypes const*...> processBlockCaches(Event const& event) const {
+        std::tuple<CacheHandle<CacheTypes>...> processBlockCaches(Event const& event) const {
           return cacheImpl_->processBlockCaches(event);
         }
 

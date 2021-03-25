@@ -3,12 +3,17 @@ import FWCore.ParameterSet.Config as cms
 process = cms.Process("READ")
 
 #process.Tracer = cms.Service("Tracer")
+process.Tracer = cms.Service("Tracer")
 
 process.options = cms.untracked.PSet(
-    numberOfStreams = cms.untracked.uint32(4),
-    numberOfThreads = cms.untracked.uint32(4),
+    #numberOfStreams = cms.untracked.uint32(4),
+    #numberOfThreads = cms.untracked.uint32(4),
+    #numberOfConcurrentRuns = cms.untracked.uint32(1),
+    #numberOfConcurrentLuminosityBlocks = cms.untracked.uint32(4)
+    numberOfStreams = cms.untracked.uint32(1),
+    numberOfThreads = cms.untracked.uint32(1),
     numberOfConcurrentRuns = cms.untracked.uint32(1),
-    numberOfConcurrentLuminosityBlocks = cms.untracked.uint32(4)
+    numberOfConcurrentLuminosityBlocks = cms.untracked.uint32(1)
 )
 
 process.source = cms.Source("PoolSource",
@@ -176,7 +181,20 @@ process.readProcessBlocksLimitedProducer = cms.EDProducer("edmtest::limited::Inp
 )
 
 process.readProcessBlocksGlobalAnalyzerNoRegistration = cms.EDAnalyzer("edmtest::global::InputProcessBlockIntAnalyzerNoRegistration",
-                                            transitions = cms.int32(7),
+                                            transitions = cms.int32(6),
+)
+
+process.readProcessBlocksDoesNotExist = cms.EDAnalyzer("edmtest::global::InputProcessBlockAnalyzerThreeTags",
+                                            transitions = cms.int32(6),
+                                            consumesBeginProcessBlock0 = cms.InputTag("doesNotExist", ""),
+                                            consumesEndProcessBlock0 = cms.InputTag("doesNotExist", ""),
+                                            consumesBeginProcessBlock1 = cms.InputTag("doesNotExist", ""),
+                                            consumesEndProcessBlock1 = cms.InputTag("doesNotExist", ""),
+                                            consumesBeginProcessBlock2 = cms.InputTag("doesNotExist", ""),
+                                            consumesEndProcessBlock2 = cms.InputTag("doesNotExist", ""),
+                                            expectedByRun0 = cms.vint32(),
+                                            expectedByRun1 = cms.vint32(),
+                                            expectedByRun2 = cms.vint32(0, 11, 22)
 )
 
 process.p = cms.Path(process.intProducerBeginProcessBlockR *
@@ -198,6 +216,7 @@ process.p = cms.Path(process.intProducerBeginProcessBlockR *
                      process.readProcessBlocksLimitedAnalyzer *
                      process.readProcessBlocksLimitedFilter *
                      process.readProcessBlocksLimitedProducer *
+                     process.readProcessBlocksDoesNotExist *
                      process.readProcessBlocksGlobalAnalyzerNoRegistration
 )
 

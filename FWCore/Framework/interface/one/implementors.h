@@ -29,6 +29,7 @@
 // user include files
 #include "FWCore/Common/interface/FWCoreCommonFwd.h"
 #include "FWCore/Concurrency/interface/SerialTaskQueue.h"
+#include "FWCore/Framework/interface/CacheHandle.h"
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/InputProcessBlockCacheImpl.h"
 #include "FWCore/Framework/interface/LuminosityBlock.h"
@@ -218,7 +219,7 @@ namespace edm {
         InputProcessBlockCacheHolder& operator=(InputProcessBlockCacheHolder const&) = delete;
         ~InputProcessBlockCacheHolder() override {}
 
-        std::tuple<CacheTypes const*...> processBlockCaches(Event const& event) const {
+        std::tuple<CacheHandle<CacheTypes>...> processBlockCaches(Event const& event) const {
           return cacheImpl_.processBlockCaches(event);
         }
 

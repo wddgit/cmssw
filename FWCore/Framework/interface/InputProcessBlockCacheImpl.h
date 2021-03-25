@@ -9,6 +9,7 @@
 
 #include "DataFormats/Provenance/interface/ProvenanceFwd.h"
 #include "FWCore/Common/interface/ProcessBlockHelperBase.h"
+#include "FWCore/Framework/interface/CacheHandle.h"
 #include "FWCore/Framework/interface/EDConsumerBase.h"
 #include "FWCore/Framework/interface/ProcessBlock.h"
 #include "FWCore/Framework/interface/processBlockUtilities.h"
@@ -25,6 +26,8 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
+
+#include <iostream>
 
 namespace edm {
 
@@ -81,26 +84,33 @@ namespace edm {
       InputProcessBlockCacheImpl& operator=(InputProcessBlockCacheImpl const&) = delete;
 
       template <std::size_t I>
-      typename std::enable_if<I == sizeof...(CacheTypes), void>::type fillTuple(std::tuple<CacheTypes const*...>&,
+      typename std::enable_if<I == sizeof...(CacheTypes), void>::type fillTuple(std::tuple<CacheHandle<CacheTypes>...>&,
                                                                                 Event const&) const {}
 
       template <std::size_t I>
           typename std::enable_if <
-          I<sizeof...(CacheTypes), void>::type fillTuple(std::tuple<CacheTypes const*...>& cachePointers,
+          I<sizeof...(CacheTypes), void>::type fillTuple(std::tuple<CacheHandle<CacheTypes>...>& cacheHandles,
                                                          Event const& event) const {
         unsigned int index = eventProcessBlockIndex(event, processNames_[I]);
+        // If the branch associated with the token was passed to registerProcessBlockCacheFiller
+        // was not in the input file, then the index will be invalid. Note the branch (including
+        // its process name) is selected using the first input file. Also note that even if
+        // the branch is present and this index is valid, the product might not be there.
+        // The functor in the CacheFiller must deal with that case.
         if (index != ProcessBlockHelperBase::invalidCacheIndex()) {
-          std::get<I>(cachePointers) = std::get<I>(caches_.at(index).cacheTuple_).get();
+          std::get<I>(cacheHandles) = CacheHandle(std::get<I>(caches_.at(index).cacheTuple_).get());
         }
-        fillTuple<I + 1>(cachePointers, event);
+        fillTuple<I + 1>(cacheHandles, event);
       }
 
       std::tuple<CacheTypes const*...> processBlockCaches(Event const& event) const {
-        std::tuple<CacheTypes const*...> cachePointers;
+        std::tuple<CacheHandle<CacheTypes>...> cacheHandles;
+        // processNames will be empty if and only if registerProcessBlockCacheFiller
+        // was never called by the module constructor
         if (!processNames_.empty()) {
-          fillTuple<0>(cachePointers, event);
+          fillTuple<0>(cacheHandles, event);
         }
-        return cachePointers;
+        return cacheHandles;
       }
 
       void selectInputProcessBlocks(ProductRegistry const& productRegistry,
