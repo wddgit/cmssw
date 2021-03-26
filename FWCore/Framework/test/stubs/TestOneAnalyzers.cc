@@ -14,6 +14,7 @@ for testing purposes only.
 
 #include "DataFormats/Provenance/interface/BranchDescription.h"
 #include "DataFormats/TestObjects/interface/ToyProducts.h"
+#include "FWCore/Framework/interface/CacheHandle.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/LuminosityBlock.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
@@ -399,9 +400,9 @@ namespace edmtest {
       void analyze(edm::Event const& event, edm::EventSetup const&) override {
         auto cacheTuple = processBlockCaches(event);
         if (!expectedByRun_.empty()) {
-          if (expectedByRun_[event.run()] != *std::get<int const*>(cacheTuple)) {
+          if (expectedByRun_[event.run()] != *std::get<edm::CacheHandle<int>>(cacheTuple)) {
             throw cms::Exception("UnexpectedValue")
-                << "InputProcessBlockIntAnalyzer::analyze cached value was " << *std::get<int const*>(cacheTuple)
+                << "InputProcessBlockIntAnalyzer::analyze cached value was " << *std::get<edm::CacheHandle<int>>(cacheTuple)
                 << " but it was supposed to be " << expectedByRun_[event.run()];
           }
           if (expectedByRun_[event.run()] != std::get<1>(cacheTuple)->value_) {
@@ -409,9 +410,9 @@ namespace edmtest {
                 << "InputProcessBlockIntAnalyzer::analyze second cached value was " << std::get<1>(cacheTuple)->value_
                 << " but it was supposed to be " << expectedByRun_[event.run()];
           }
-          if (expectedByRun_[event.run()] != std::get<TestInputProcessBlockCache1 const*>(cacheTuple)->value_) {
+          if (expectedByRun_[event.run()] != std::get<edm::CacheHandle<TestInputProcessBlockCache1>>(cacheTuple)->value_) {
             throw cms::Exception("UnexpectedValue") << "InputProcessBlockIntAnalyzer::analyze third cached value was "
-                                                    << std::get<TestInputProcessBlockCache1 const*>(cacheTuple)->value_
+                                                    << std::get<edm::CacheHandle<TestInputProcessBlockCache1>>(cacheTuple)->value_
                                                     << " but it was supposed to be " << expectedByRun_[event.run()];
           }
         }

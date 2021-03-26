@@ -15,6 +15,7 @@ for testing purposes only.
 
 #include "DataFormats/Provenance/interface/BranchDescription.h"
 #include "DataFormats/TestObjects/interface/ToyProducts.h"
+#include "FWCore/Framework/interface/CacheHandle.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/LuminosityBlock.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
@@ -527,9 +528,9 @@ namespace edmtest {
       void analyze(edm::StreamID, edm::Event const& event, edm::EventSetup const&) const override {
         auto cacheTuple = processBlockCaches(event);
         if (!expectedByRun_.empty()) {
-          if (expectedByRun_[event.run()] != *std::get<CacheHandle<int>>(cacheTuple)) {
+          if (expectedByRun_[event.run()] != *std::get<edm::CacheHandle<int>>(cacheTuple)) {
             throw cms::Exception("UnexpectedValue")
-              << "InputProcessBlockIntAnalyzer::analyze cached value was " << *std::get<CacheHandle<int>>(cacheTuple)
+              << "InputProcessBlockIntAnalyzer::analyze cached value was " << *std::get<edm::CacheHandle<int>>(cacheTuple)
                 << " but it was supposed to be " << expectedByRun_[event.run()];
           }
           if (expectedByRun_[event.run()] != std::get<1>(cacheTuple)->value_) {
@@ -537,9 +538,9 @@ namespace edmtest {
                 << "InputProcessBlockIntAnalyzer::analyze second cached value was " << std::get<1>(cacheTuple)->value_
                 << " but it was supposed to be " << expectedByRun_[event.run()];
           }
-          if (expectedByRun_[event.run()] != std::get<CacheHandle<TestInputProcessBlockCache1>>(cacheTuple)->value_) {
+          if (expectedByRun_[event.run()] != std::get<edm::CacheHandle<TestInputProcessBlockCache1>>(cacheTuple)->value_) {
             throw cms::Exception("UnexpectedValue") << "InputProcessBlockIntAnalyzer::analyze third cached value was "
-                                                    << std::get<CacheHandle<TestInputProcessBlockCache1>>(cacheTuple)->value_
+                                                    << std::get<edm::CacheHandle<TestInputProcessBlockCache1>>(cacheTuple)->value_
                                                     << " but it was supposed to be " << expectedByRun_[event.run()];
           }
         }
@@ -650,35 +651,35 @@ namespace edmtest {
       void analyze(edm::StreamID, edm::Event const& event, edm::EventSetup const&) const override {
         auto cacheTuple = processBlockCaches(event);
         if (expectedByRun0_.empty()) {
-          if (nullptr != std::get<TestInputProcessBlockCache1 const*>(cacheTuple)) {
-            throw cms::Exception("UnexpectedValue") << "InputProcessBlockIntAnalyzer::analyze expected nullptr for cache 0";
+          if (std::get<edm::CacheHandle<int>>(cacheTuple).isValid()) {
+            throw cms::Exception("UnexpectedValue") << "InputProcessBlockAnalyzerThreeTags::analyze expected invalid CacheHandle for cache 0";
           }
         } else {
-          if (expectedByRun0_[event.run()] != *std::get<int const*>(cacheTuple)) {
+          if (expectedByRun0_[event.run()] != *std::get<edm::CacheHandle<int>>(cacheTuple)) {
             throw cms::Exception("UnexpectedValue")
-                << "InputProcessBlockIntAnalyzer::analyze zeroth cached value was " << *std::get<int const*>(cacheTuple)
+                << "InputProcessBlockAnalyzerThreeTags::analyze zeroth cached value was " << *std::get<edm::CacheHandle<int>>(cacheTuple)
                 << " but it was supposed to be " << expectedByRun0_[event.run()];
           }
         }
         if (expectedByRun1_.empty()) {
-          if (nullptr != std::get<TestInputProcessBlockCache1 const*>(cacheTuple)) {
-            throw cms::Exception("UnexpectedValue") << "InputProcessBlockIntAnalyzer::analyze expected nullptr for cache 1";
+          if (std::get<1>(cacheTuple).isValid()) {
+            throw cms::Exception("UnexpectedValue") << "InputProcessBlockAnalyzerThreeTags::analyze expected invalid CacheHandle for cache 1";
           }
         } else {
           if (expectedByRun1_[event.run()] != std::get<1>(cacheTuple)->value_) {
             throw cms::Exception("UnexpectedValue")
-                << "InputProcessBlockIntAnalyzer::analyze first cached value was " << std::get<1>(cacheTuple)->value_
+                << "InputProcessBlockAnalyzerThreeTags::analyze first cached value was " << std::get<1>(cacheTuple)->value_
                 << " but it was supposed to be " << expectedByRun1_[event.run()];
           }
         }
         if (expectedByRun2_.empty()) {
-          if (nullptr != std::get<TestInputProcessBlockCache1 const*>(cacheTuple)) {
-            throw cms::Exception("UnexpectedValue") << "InputProcessBlockIntAnalyzer::analyze expected nullptr for cache 2";
+          if (std::get<edm::CacheHandle<TestInputProcessBlockCache1>>(cacheTuple).isValid()) {
+            throw cms::Exception("UnexpectedValue") << "InputProcessBlockAnalyzerThreeTags::analyze expected invalid CacheHandle for cache 2";
           }
         } else {
-          if (expectedByRun2_[event.run()] != std::get<TestInputProcessBlockCache1 const*>(cacheTuple)->value_) {
-            throw cms::Exception("UnexpectedValue") << "InputProcessBlockIntAnalyzer::analyze second cached value was "
-                                                    << std::get<TestInputProcessBlockCache1 const*>(cacheTuple)->value_
+          if (expectedByRun2_[event.run()] != std::get<edm::CacheHandle<TestInputProcessBlockCache1>>(cacheTuple)->value_) {
+            throw cms::Exception("UnexpectedValue") << "InputProcessBlockAnalyzerThreeTags::analyze second cached value was "
+                                                    << std::get<edm::CacheHandle<TestInputProcessBlockCache1>>(cacheTuple)->value_
                                                     << " but it was supposed to be " << expectedByRun2_[event.run()];
           }
         }
@@ -710,6 +711,72 @@ namespace edmtest {
       std::vector<int> expectedByRun2_;
     };
 
+    class InputProcessBlockAnalyzerReuseCache
+        : public edm::global::EDAnalyzer<
+              edm::InputProcessBlockCache<int, TestInputProcessBlockCache, TestInputProcessBlockCache1>> {
+    public:
+      explicit InputProcessBlockAnalyzerReuseCache(edm::ParameterSet const& pset) {
+        expectedTransitions_ = pset.getParameter<int>("transitions");
+        expectedByRun_ = pset.getParameter<std::vector<int>>("expectedByRun");
+        {
+          auto tag = pset.getParameter<edm::InputTag>("consumesBeginProcessBlock");
+          if (not tag.label().empty()) {
+            getTokenBegin_ = consumes<IntProduct, edm::InProcess>(tag);
+          }
+        }
+        {
+          auto tag = pset.getParameter<edm::InputTag>("consumesEndProcessBlock");
+          if (not tag.label().empty()) {
+            getTokenEnd_ = consumes<IntProduct, edm::InProcess>(tag);
+          }
+        }
+        registerProcessBlockCacheFiller<TestInputProcessBlockCache1>(
+            getTokenBegin_,
+            [this](edm::ProcessBlock const& processBlock,
+                   std::shared_ptr<TestInputProcessBlockCache1> const& previousCache) {
+              ++transitions_;
+              auto returnValue = std::make_shared<TestInputProcessBlockCache1>();
+              if (previousCache) {
+                returnValue = previousCache;
+                return returnValue;
+              }
+              returnValue->value_ += processBlock.get(getTokenBegin_).value;
+              returnValue->value_ += processBlock.get(getTokenEnd_).value;
+              return returnValue;
+            });
+      }
+
+      void analyze(edm::StreamID, edm::Event const& event, edm::EventSetup const&) const override {
+        auto cacheTuple = processBlockCaches(event);
+        if (!expectedByRun_.empty()) {
+          if (expectedByRun_[event.run()] != std::get<edm::CacheHandle<TestInputProcessBlockCache1>>(cacheTuple)->value_) {
+            throw cms::Exception("UnexpectedValue") << "InputProcessBlockAnalyzerReuseCache::analyze cached value was "
+                                                    << std::get<edm::CacheHandle<TestInputProcessBlockCache1>>(cacheTuple)->value_
+                                                    << " but it was supposed to be " << expectedByRun_[event.run()];
+          }
+        }
+        ++transitions_;
+      }
+
+      void endJob() override {
+        if (transitions_ != expectedTransitions_) {
+          throw cms::Exception("transitions") << "InputProcessBlockAnalyzerReuseCache transitions " << transitions_
+                                              << " but it was supposed to be " << expectedTransitions_;
+        }
+        if (cacheSize() > 0u) {
+          throw cms::Exception("UnexpectedValue")
+              << "InputProcessBlockAnalyzerReuseCache cache size not zero at endJob " << cacheSize();
+        }
+      }
+
+    private:
+      edm::EDGetTokenT<IntProduct> getTokenBegin_;
+      edm::EDGetTokenT<IntProduct> getTokenEnd_;
+      CMS_THREAD_SAFE mutable std::atomic<unsigned int> transitions_{0};
+      unsigned int expectedTransitions_{0};
+      std::vector<int> expectedByRun_;
+    };
+
     class InputProcessBlockIntAnalyzerNoRegistration
         : public edm::global::EDAnalyzer<
               edm::InputProcessBlockCache<int, TestInputProcessBlockCache, TestInputProcessBlockCache1>> {
@@ -721,11 +788,11 @@ namespace edmtest {
       void analyze(edm::StreamID, edm::Event const& event, edm::EventSetup const&) const override {
         auto cacheTuple = processBlockCaches(event);
         ++transitions_;
-        if (std::get<0>(cacheTuple) != nullptr ||
-            std::get<1>(cacheTuple) != nullptr ||
-            std::get<2>(cacheTuple) != nullptr) {
+        if (std::get<0>(cacheTuple).isValid() ||
+            std::get<1>(cacheTuple).isValid() ||
+            std::get<2>(cacheTuple).isValid()) {
           throw cms::Exception("LogicError")
-              << "InputProcessBlockIntAnalyzerNoRegistration expected cacheTuple full of nullptr's";
+              << "InputProcessBlockIntAnalyzerNoRegistration expected cacheTuple full of invalid CacheHandles";
         }
       }
 
@@ -751,4 +818,5 @@ DEFINE_FWK_MODULE(edmtest::global::LumiSummaryIntAnalyzer);
 DEFINE_FWK_MODULE(edmtest::global::ProcessBlockIntAnalyzer);
 DEFINE_FWK_MODULE(edmtest::global::InputProcessBlockIntAnalyzer);
 DEFINE_FWK_MODULE(edmtest::global::InputProcessBlockAnalyzerThreeTags);
+DEFINE_FWK_MODULE(edmtest::global::InputProcessBlockAnalyzerReuseCache);
 DEFINE_FWK_MODULE(edmtest::global::InputProcessBlockIntAnalyzerNoRegistration);

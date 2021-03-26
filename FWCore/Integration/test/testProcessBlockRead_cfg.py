@@ -3,7 +3,6 @@ import FWCore.ParameterSet.Config as cms
 process = cms.Process("READ")
 
 #process.Tracer = cms.Service("Tracer")
-process.Tracer = cms.Service("Tracer")
 
 process.options = cms.untracked.PSet(
     #numberOfStreams = cms.untracked.uint32(4),
@@ -185,16 +184,49 @@ process.readProcessBlocksGlobalAnalyzerNoRegistration = cms.EDAnalyzer("edmtest:
 )
 
 process.readProcessBlocksDoesNotExist = cms.EDAnalyzer("edmtest::global::InputProcessBlockAnalyzerThreeTags",
-                                            transitions = cms.int32(6),
-                                            consumesBeginProcessBlock0 = cms.InputTag("doesNotExist", ""),
-                                            consumesEndProcessBlock0 = cms.InputTag("doesNotExist", ""),
+                                            transitions = cms.int32(9),
+                                            consumesBeginProcessBlock0 = cms.InputTag("intProducerBeginProcessBlock", ""),
+                                            consumesEndProcessBlock0 = cms.InputTag("intProducerEndProcessBlock", ""),
                                             consumesBeginProcessBlock1 = cms.InputTag("doesNotExist", ""),
                                             consumesEndProcessBlock1 = cms.InputTag("doesNotExist", ""),
-                                            consumesBeginProcessBlock2 = cms.InputTag("doesNotExist", ""),
-                                            consumesEndProcessBlock2 = cms.InputTag("doesNotExist", ""),
-                                            expectedByRun0 = cms.vint32(),
+                                            consumesBeginProcessBlock2 = cms.InputTag("intProducerBeginProcessBlockM", ""),
+                                            consumesEndProcessBlock2 = cms.InputTag("intProducerEndProcessBlockM", ""),
+                                            expectedByRun0 = cms.vint32(0, 11, 22),
                                             expectedByRun1 = cms.vint32(),
-                                            expectedByRun2 = cms.vint32(0, 11, 22)
+                                            expectedByRun2 = cms.vint32(0, 44, 44)
+)
+
+process.readProcessBlocksExplicitProcess = cms.EDAnalyzer("edmtest::global::InputProcessBlockAnalyzerThreeTags",
+                                            transitions = cms.int32(10),
+                                            consumesBeginProcessBlock0 = cms.InputTag("intProducerBeginProcessBlockB", ""),
+                                            consumesEndProcessBlock0 = cms.InputTag("intProducerEndProcessBlockB", ""),
+                                            consumesBeginProcessBlock1 = cms.InputTag("intProducerBeginProcessBlockB", "", "PROD1"),
+                                            consumesEndProcessBlock1 = cms.InputTag("intProducerEndProcessBlockB", "", "PROD1"),
+                                            consumesBeginProcessBlock2 = cms.InputTag("intProducerBeginProcessBlockB", "", "MERGE"),
+                                            consumesEndProcessBlock2 = cms.InputTag("intProducerEndProcessBlockB", "", "MERGE"),
+                                            expectedByRun0 = cms.vint32(0, 88, 88),
+                                            expectedByRun1 = cms.vint32(0, 55, 77),
+                                            expectedByRun2 = cms.vint32(0, 88, 88)
+)
+
+process.readProcessBlocksExplicitProcess2 = cms.EDAnalyzer("edmtest::global::InputProcessBlockAnalyzerThreeTags",
+                                            transitions = cms.int32(11),
+                                            consumesBeginProcessBlock0 = cms.InputTag("intProducerBeginProcessBlock", ""),
+                                            consumesEndProcessBlock0 = cms.InputTag("intProducerEndProcessBlock", ""),
+                                            consumesBeginProcessBlock1 = cms.InputTag("intProducerBeginProcessBlock", "", "PROD1"),
+                                            consumesEndProcessBlock1 = cms.InputTag("intProducerEndProcessBlock", "", "PROD1"),
+                                            consumesBeginProcessBlock2 = cms.InputTag("intProducerBeginProcessBlockM", "", "MERGE"),
+                                            consumesEndProcessBlock2 = cms.InputTag("intProducerEndProcessBlockM", "", "MERGE"),
+                                            expectedByRun0 = cms.vint32(0, 11, 22),
+                                            expectedByRun1 = cms.vint32(0, 11, 22),
+                                            expectedByRun2 = cms.vint32(0, 44, 44)
+)
+
+process.readProcessBlocksReuseCache = cms.EDAnalyzer("edmtest::global::InputProcessBlockAnalyzerReuseCache",
+                                            transitions = cms.int32(8),
+                                            consumesBeginProcessBlock = cms.InputTag("intProducerBeginProcessBlock", ""),
+                                            consumesEndProcessBlock = cms.InputTag("intProducerEndProcessBlock", ""),
+                                            expectedByRun = cms.vint32(0, 11, 11)
 )
 
 process.p = cms.Path(process.intProducerBeginProcessBlockR *
@@ -217,7 +249,10 @@ process.p = cms.Path(process.intProducerBeginProcessBlockR *
                      process.readProcessBlocksLimitedFilter *
                      process.readProcessBlocksLimitedProducer *
                      process.readProcessBlocksDoesNotExist *
-                     process.readProcessBlocksGlobalAnalyzerNoRegistration
+                     process.readProcessBlocksGlobalAnalyzerNoRegistration *
+                     process.readProcessBlocksExplicitProcess *
+                     process.readProcessBlocksExplicitProcess2 *
+                     process.readProcessBlocksReuseCache
 )
 
 process.e = cms.EndPath(process.out)

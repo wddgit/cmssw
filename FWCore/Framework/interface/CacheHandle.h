@@ -14,6 +14,7 @@ namespace edm {
   template <typename T>
   class CacheHandle {
   public:
+    CacheHandle() : data_(nullptr) {}
     CacheHandle(T const* data) : data_(data) {}
 
     T const* get() const {
@@ -25,7 +26,7 @@ namespace edm {
     T const* operator->() const { return get(); }
     T const& operator*() const { return *get(); }
 
-    bool isValid() { return data_ != nullptr; }
+    bool isValid() const { return data_ != nullptr; }
 
   private:
     T const* data_;

@@ -23,7 +23,14 @@ process.intProducerBeginProcessBlock = cms.EDProducer("IntProducerBeginProcessBl
 
 process.intProducerEndProcessBlock = cms.EDProducer("IntProducerEndProcessBlock", ivalue = cms.int32(20))
 
+process.intProducerBeginProcessBlockB = cms.EDProducer("IntProducerBeginProcessBlock", ivalue = cms.int32(7))
+
+process.intProducerEndProcessBlockB = cms.EDProducer("IntProducerEndProcessBlock", ivalue = cms.int32(70))
+
 process.p = cms.Path(process.intProducerBeginProcessBlock *
-                     process.intProducerEndProcessBlock)
+                     process.intProducerEndProcessBlock *
+                     process.intProducerBeginProcessBlockB *
+                     process.intProducerEndProcessBlockB
+)
 
 process.e = cms.EndPath(process.out)

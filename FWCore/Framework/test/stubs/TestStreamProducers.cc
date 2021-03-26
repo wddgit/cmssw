@@ -15,6 +15,7 @@ for testing purposes only.
 #include <unistd.h>
 #include <vector>
 
+#include "FWCore/Framework/interface/CacheHandle.h"
 #include "FWCore/Framework/interface/stream/EDProducer.h"
 #include "FWCore/Framework/src/WorkerT.h"
 #include "FWCore/Framework/interface/HistoryAppender.h"
@@ -1013,9 +1014,9 @@ namespace edmtest {
       void produce(edm::Event& event, edm::EventSetup const&) override {
         auto cacheTuple = processBlockCaches(event);
         if (!expectedByRun_.empty()) {
-          if (expectedByRun_[event.run()] != std::get<TestInputProcessBlockCache1 const*>(cacheTuple)->value_) {
+          if (expectedByRun_[event.run()] != std::get<edm::CacheHandle<TestInputProcessBlockCache1>>(cacheTuple)->value_) {
             throw cms::Exception("UnexpectedValue") << "InputProcessBlockIntProducer::produce cached value was "
-                                                    << std::get<TestInputProcessBlockCache1 const*>(cacheTuple)->value_
+                                                    << std::get<edm::CacheHandle<TestInputProcessBlockCache1>>(cacheTuple)->value_
                                                     << " but it was supposed to be " << expectedByRun_[event.run()];
           }
         }
@@ -1149,9 +1150,9 @@ namespace edmtest {
         auto cacheTuple = processBlockCaches(event);
         auto testGlobalCache = globalCache();
         if (!testGlobalCache->expectedByRun_.empty()) {
-          if (testGlobalCache->expectedByRun_[event.run()] != *std::get<int const*>(cacheTuple)) {
+          if (testGlobalCache->expectedByRun_[event.run()] != *std::get<edm::CacheHandle<int>>(cacheTuple)) {
             throw cms::Exception("UnexpectedValue")
-                << "InputProcessBlockIntProducerG::produce cached value was " << *std::get<int const*>(cacheTuple)
+                << "InputProcessBlockIntProducerG::produce cached value was " << *std::get<edm::CacheHandle<int>>(cacheTuple)
                 << " but it was supposed to be " << testGlobalCache->expectedByRun_[event.run()];
           }
           if (testGlobalCache->expectedByRun_[event.run()] != std::get<1>(cacheTuple)->value_) {
@@ -1160,10 +1161,10 @@ namespace edmtest {
                 << " but it was supposed to be " << testGlobalCache->expectedByRun_[event.run()];
           }
           if (testGlobalCache->expectedByRun_[event.run()] !=
-              std::get<TestInputProcessBlockCache1 const*>(cacheTuple)->value_) {
+              std::get<edm::CacheHandle<TestInputProcessBlockCache1>>(cacheTuple)->value_) {
             throw cms::Exception("UnexpectedValue")
                 << "InputProcessBlockIntProducerG::produce third cached value was "
-                << std::get<TestInputProcessBlockCache1 const*>(cacheTuple)->value_ << " but it was supposed to be "
+                << std::get<edm::CacheHandle<TestInputProcessBlockCache1>>(cacheTuple)->value_ << " but it was supposed to be "
                 << testGlobalCache->expectedByRun_[event.run()];
           }
         }

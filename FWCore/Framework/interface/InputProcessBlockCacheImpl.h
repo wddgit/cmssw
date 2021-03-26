@@ -27,8 +27,6 @@
 #include <utility>
 #include <vector>
 
-#include <iostream>
-
 namespace edm {
 
   class Event;
@@ -92,6 +90,7 @@ namespace edm {
           I<sizeof...(CacheTypes), void>::type fillTuple(std::tuple<CacheHandle<CacheTypes>...>& cacheHandles,
                                                          Event const& event) const {
         unsigned int index = eventProcessBlockIndex(event, processNames_[I]);
+
         // If the branch associated with the token was passed to registerProcessBlockCacheFiller
         // was not in the input file, then the index will be invalid. Note the branch (including
         // its process name) is selected using the first input file. Also note that even if
@@ -103,7 +102,7 @@ namespace edm {
         fillTuple<I + 1>(cacheHandles, event);
       }
 
-      std::tuple<CacheTypes const*...> processBlockCaches(Event const& event) const {
+      std::tuple<CacheHandle<CacheTypes>...> processBlockCaches(Event const& event) const {
         std::tuple<CacheHandle<CacheTypes>...> cacheHandles;
         // processNames will be empty if and only if registerProcessBlockCacheFiller
         // was never called by the module constructor
@@ -187,8 +186,13 @@ namespace edm {
       void accessInputProcessBlock(ProcessBlock const& pb) {
         if (sizeof...(CacheTypes) > 0 && !processNames_.empty()) {
           CacheTuple cacheTuple;
-          CacheTuple const& previousCacheTuple = caches_.back();
-          fillCache<0>(pb, previousCacheTuple, cacheTuple);
+          if (caches_.empty()) {
+            CacheTuple firstCacheTuple;
+            fillCache<0>(pb, firstCacheTuple, cacheTuple);
+          } else {
+            CacheTuple const& previousCacheTuple = caches_.back();
+            fillCache<0>(pb, previousCacheTuple, cacheTuple);
+          }
           caches_.push_back(std::move(cacheTuple));
         }
       }
@@ -202,7 +206,6 @@ namespace edm {
         static_assert(ICacheType < sizeof...(CacheTypes), "ICacheType out of range");
         processNames_.resize(sizeof...(CacheTypes));
         tokenInfos_.resize(sizeof...(CacheTypes));
-
         if (!tokenInfos_[ICacheType].token_.isUninitialized()) {
           throw Exception(errors::LogicError)
               << "registerProcessBlockCacheFiller should only be called once per cache type";
