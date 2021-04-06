@@ -264,12 +264,6 @@ namespace edm {
       return provRecorder_.processBlockIndex(processName);
     }
 
-    std::vector<unsigned int> const& processBlockIndexes() const { return provRecorder_.processBlockIndexes(); }
-
-    std::vector<std::string> const& processesWithProcessBlockProducts() const {
-      return provRecorder_.processesWithProcessBlockProducts();
-    }
-
   private:
     //for testing
     friend class ::testEventGetRefBeforePut;

@@ -89,14 +89,6 @@ namespace edm {
     return principal_.processBlockIndex(processName);
   }
 
-  std::vector<unsigned int> const& PrincipalGetAdapter::processBlockIndexes() const {
-    return principal_.processBlockIndexes();
-  }
-
-  std::vector<std::string> const& PrincipalGetAdapter::processesWithProcessBlockProducts() const {
-    return principal_.processesWithProcessBlockProducts();
-  }
-
   BasicHandle PrincipalGetAdapter::makeFailToGetException(KindOfType kindOfType,
                                                           TypeID const& productType,
                                                           EDGetToken token) const {

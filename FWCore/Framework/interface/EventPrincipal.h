@@ -158,8 +158,6 @@ namespace edm {
     using Base::getStableProvenance;
 
     unsigned int processBlockIndex(std::string const& processName) const override;
-    std::vector<unsigned int> const& processBlockIndexes() const override;
-    std::vector<std::string> const& processesWithProcessBlockProducts() const override;
 
   private:
     BranchID pidToBid(ProductID const& pid) const;

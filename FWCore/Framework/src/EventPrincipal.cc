@@ -261,14 +261,6 @@ namespace edm {
     return processBlockHelper_->processBlockIndex(processName, eventToProcessBlockIndexes_);
   }
 
-  std::vector<unsigned int> const& EventPrincipal::processBlockIndexes() const {
-    return processBlockHelper_->processBlockIndexes(eventToProcessBlockIndexes_);
-  }
-
-  std::vector<std::string> const& EventPrincipal::processesWithProcessBlockProducts() const {
-    return processBlockHelper_->topProcessesWithProcessBlockProducts();
-  }
-
   unsigned int EventPrincipal::transitionIndex_() const { return streamID_.value(); }
 
   void EventPrincipal::changedIndexes_() { provRetrieverPtr_->update(productRegistry()); }

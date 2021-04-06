@@ -220,10 +220,6 @@ namespace edm {
 
     unsigned int processBlockIndex(std::string const& processName) const;
 
-    std::vector<unsigned int> const& processBlockIndexes() const;
-
-    std::vector<std::string> const& processesWithProcessBlockProducts() const;
-
   private:
     // Is this an Event, a LuminosityBlock, or a Run.
     BranchType const& branchType() const;
