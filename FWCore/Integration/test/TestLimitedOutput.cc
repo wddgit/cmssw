@@ -23,6 +23,7 @@ namespace edm {
     void write(EventForOutput const& e) override;
     void writeLuminosityBlock(LuminosityBlockForOutput const&) override;
     void writeRun(RunForOutput const&) override;
+    void writeProcessBlock(ProcessBlockForOutput const&) override;
 
     void respondToOpenInputFile(FileBlock const&) override;
     void respondToCloseInputFile(FileBlock const&) override;
@@ -47,6 +48,8 @@ namespace edm {
   }
 
   void TestLimitedOutput::writeRun(RunForOutput const&) { LogAbsolute("TestLimitedOutput") << "limited writeRun"; }
+
+  void TestLimitedOutput::writeProcessBlock(ProcessBlockForOutput const&) { LogAbsolute("TestLimitedOutput") << "limited writeProcessBlock"; }
 
   void TestLimitedOutput::respondToOpenInputFile(FileBlock const&) {
     LogAbsolute("TestLimitedOutput") << "limited respondToOpenInputFile";
