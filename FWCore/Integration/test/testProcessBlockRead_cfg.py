@@ -2,13 +2,7 @@ import FWCore.ParameterSet.Config as cms
 
 process = cms.Process("READ")
 
-#process.Tracer = cms.Service("Tracer")
-
 process.options = cms.untracked.PSet(
-    #numberOfStreams = cms.untracked.uint32(4),
-    #numberOfThreads = cms.untracked.uint32(4),
-    #numberOfConcurrentRuns = cms.untracked.uint32(1),
-    #numberOfConcurrentLuminosityBlocks = cms.untracked.uint32(4)
     numberOfStreams = cms.untracked.uint32(1),
     numberOfThreads = cms.untracked.uint32(1),
     numberOfConcurrentRuns = cms.untracked.uint32(1),
@@ -17,12 +11,34 @@ process.options = cms.untracked.PSet(
 
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-        'file:testProcessBlockMerge.root'
+        'file:testProcessBlockTest.root'
     )
 )
 
 process.out = cms.OutputModule("PoolOutputModule",
     fileName = cms.untracked.string('testProcessBlockRead.root')
+)
+
+process.testGlobalOutput = cms.OutputModule("TestGlobalOutput",
+    verbose = cms.untracked.bool(False),
+    expectedProcessesWithProcessBlockProducts = cms.untracked.vstring('PROD1', 'MERGE', 'READ'),
+    expectedWriteProcessBlockTransitions = cms.untracked.int32(4),
+    outputCommands = cms.untracked.vstring(
+        "keep *",
+        "drop *_*_beginProcessBlock_*",
+        "drop *_*_endProcessBlock_*"
+    )
+)
+
+process.testLimitedOutput = cms.OutputModule("TestLimitedOutput",
+    verbose = cms.untracked.bool(False),
+    expectedProcessesWithProcessBlockProducts = cms.untracked.vstring('PROD1', 'MERGE', 'READ'),
+    expectedWriteProcessBlockTransitions = cms.untracked.int32(4),
+    outputCommands = cms.untracked.vstring(
+        "keep *",
+        "drop *_*_beginProcessBlock_*",
+        "drop *_*_endProcessBlock_*"
+    )
 )
 
 process.intProducerBeginProcessBlockR = cms.EDProducer("IntProducerBeginProcessBlock", ivalue = cms.int32(5))
@@ -255,4 +271,4 @@ process.p = cms.Path(process.intProducerBeginProcessBlockR *
                      process.readProcessBlocksReuseCache
 )
 
-process.e = cms.EndPath(process.out)
+process.e = cms.EndPath(process.out * process.testGlobalOutput * process.testLimitedOutput)

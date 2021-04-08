@@ -1,5 +1,5 @@
 
-#include "FWCore/Framework/interface/global/OutputModule.h"
+#include "FWCore/Framework/interface/one/OutputModule.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ParameterSet/interface/ConfigurationDescriptions.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
@@ -14,10 +14,10 @@
 
 namespace edm {
 
-  class TestGlobalOutput : public global::OutputModule<WatchInputFiles, RunCache<int>, LuminosityBlockCache<int>> {
+  class TestOneOutput : public one::OutputModule<WatchInputFiles, RunCache<int>, LuminosityBlockCache<int>> {
   public:
-    explicit TestGlobalOutput(ParameterSet const& pset);
-    ~TestGlobalOutput() override;
+    explicit TestOneOutput(ParameterSet const& pset);
+    ~TestOneOutput() override;
     static void fillDescriptions(ConfigurationDescriptions& descriptions);
 
   private:
@@ -30,10 +30,10 @@ namespace edm {
     void respondToCloseInputFile(FileBlock const&) override;
 
     std::shared_ptr<int> globalBeginRun(RunForOutput const&) const override;
-    void globalEndRun(RunForOutput const&) const override;
+    void globalEndRun(RunForOutput const&) override;
 
     std::shared_ptr<int> globalBeginLuminosityBlock(LuminosityBlockForOutput const&) const override;
-    void globalEndLuminosityBlock(LuminosityBlockForOutput const&) const override;
+    void globalEndLuminosityBlock(LuminosityBlockForOutput const&) override;
     void endJob() override;
 
     bool verbose_;
@@ -42,98 +42,98 @@ namespace edm {
     int countWriteProcessBlockTransitions_ = 0;
   };
 
-  TestGlobalOutput::TestGlobalOutput(ParameterSet const& pset)
-      : global::OutputModuleBase(pset),
-        global::OutputModule<WatchInputFiles, RunCache<int>, LuminosityBlockCache<int>>(pset),
+  TestOneOutput::TestOneOutput(ParameterSet const& pset)
+      : one::OutputModuleBase(pset),
+        one::OutputModule<WatchInputFiles, RunCache<int>, LuminosityBlockCache<int>>(pset),
         verbose_(pset.getUntrackedParameter<bool>("verbose")),
         expectedProcessesWithProcessBlockProducts_(pset.getUntrackedParameter<std::vector<std::string>>("expectedProcessesWithProcessBlockProducts")),
         expectedWriteProcessBlockTransitions_(pset.getUntrackedParameter<int>("expectedWriteProcessBlockTransitions")) {}
 
-  TestGlobalOutput::~TestGlobalOutput() {}
+  TestOneOutput::~TestOneOutput() {}
 
-  void TestGlobalOutput::write(EventForOutput const& e) {
+  void TestOneOutput::write(EventForOutput const& e) {
     if (verbose_) {
-      LogAbsolute("TestGlobalOutput") << "global write event";
+      LogAbsolute("TestOneOutput") << "one write event";
     }
   }
 
-  void TestGlobalOutput::writeLuminosityBlock(LuminosityBlockForOutput const&) {
+  void TestOneOutput::writeLuminosityBlock(LuminosityBlockForOutput const&) {
     if (verbose_) {
-      LogAbsolute("TestGlobalOutput") << "global writeLuminosityBlock";
+      LogAbsolute("TestOneOutput") << "one writeLuminosityBlock";
     }
   }
 
-  void TestGlobalOutput::writeRun(RunForOutput const&) { LogAbsolute("TestGlobalOutput") << "global writeRun"; }
+  void TestOneOutput::writeRun(RunForOutput const&) { LogAbsolute("TestOneOutput") << "one writeRun"; }
 
-  void TestGlobalOutput::writeProcessBlock(ProcessBlockForOutput const&) {
-    LogAbsolute("TestGlobalOutput") << "global writeProcessBlock";
+  void TestOneOutput::writeProcessBlock(ProcessBlockForOutput const&) {
+    LogAbsolute("TestOneOutput") << "one writeProcessBlock";
     ++countWriteProcessBlockTransitions_;
     if (!expectedProcessesWithProcessBlockProducts_.empty()) {
       for (auto const& x : outputProcessBlockHelper().processesWithProcessBlockProducts()) {
-        LogAbsolute("TestGlobalOutput") << "global writeProcessBlock " << x;
+        LogAbsolute("TestOneOutput") << "one writeProcessBlock " << x;
       }
       if (expectedProcessesWithProcessBlockProducts_ != outputProcessBlockHelper().processesWithProcessBlockProducts()) {
-        throw cms::Exception("TestFailure") << "TestGlobalOutput::writeProcessBlock unexpected process name list";
+        throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected process name list";
       }
     }
   }
 
-  void TestGlobalOutput::respondToOpenInputFile(FileBlock const&) {
+  void TestOneOutput::respondToOpenInputFile(FileBlock const&) {
     if (verbose_) {
-      LogAbsolute("TestGlobalOutput") << "global respondToOpenInputFile";
+      LogAbsolute("TestOneOutput") << "one respondToOpenInputFile";
     }
   }
 
-  void TestGlobalOutput::respondToCloseInputFile(FileBlock const&) {
+  void TestOneOutput::respondToCloseInputFile(FileBlock const&) {
     if (verbose_) {
-      LogAbsolute("TestGlobalOutput") << "global respondToCloseInputFile";
+      LogAbsolute("TestOneOutput") << "one respondToCloseInputFile";
     }
   }
 
-  std::shared_ptr<int> TestGlobalOutput::globalBeginRun(RunForOutput const&) const {
-    LogAbsolute("TestGlobalOutput") << "global globalBeginRun";
+  std::shared_ptr<int> TestOneOutput::globalBeginRun(RunForOutput const&) const {
+    LogAbsolute("TestOneOutput") << "one globalBeginRun";
     if (verbose_) {
       BranchIDLists const* theBranchIDLists = branchIDLists();
       for (auto const& branchIDList : *theBranchIDLists) {
-        LogAbsolute("TestGlobalOutput") << "A branchID list";
+        LogAbsolute("TestOneOutput") << "A branchID list";
         for (auto const& branchID : branchIDList) {
-          LogAbsolute("TestGlobalOutput") << "  global branchID " << branchID;
+          LogAbsolute("TestOneOutput") << "  one branchID " << branchID;
         }
       }
       edm::Service<edm::ConstProductRegistry> reg;
       for (auto const& it : reg->productList()) {
-        LogAbsolute("TestGlobalOutput") << it.second;
+        LogAbsolute("TestOneOutput") << it.second;
       }
     }
     return std::make_shared<int>(0);
   }
 
-  void TestGlobalOutput::globalEndRun(RunForOutput const&) const {
-    LogAbsolute("TestGlobalOutput") << "global globalEndRun";
+  void TestOneOutput::globalEndRun(RunForOutput const&) {
+    LogAbsolute("TestOneOutput") << "one globalEndRun";
   }
 
-  std::shared_ptr<int> TestGlobalOutput::globalBeginLuminosityBlock(LuminosityBlockForOutput const&) const {
+  std::shared_ptr<int> TestOneOutput::globalBeginLuminosityBlock(LuminosityBlockForOutput const&) const {
     if (verbose_) {
-      LogAbsolute("TestGlobalOutput") << "global globalBeginLuminosityBlock";
+      LogAbsolute("TestOneOutput") << "one globalBeginLuminosityBlock";
     }
     return std::make_shared<int>(0);
   }
 
-  void TestGlobalOutput::globalEndLuminosityBlock(LuminosityBlockForOutput const&) const {
+  void TestOneOutput::globalEndLuminosityBlock(LuminosityBlockForOutput const&) {
     if (verbose_) {
-      LogAbsolute("TestGlobalOutput") << "global globalEndLuminosityBlock";
+      LogAbsolute("TestOneOutput") << "one globalEndLuminosityBlock";
     }
   }
 
-  void TestGlobalOutput::endJob() {
+  void TestOneOutput::endJob() {
     if (expectedWriteProcessBlockTransitions_ >= 0) {
       if (expectedWriteProcessBlockTransitions_ != countWriteProcessBlockTransitions_) {
-        throw cms::Exception("TestFailure") << "TestGlobalOutput::writeProcessBlock unexpected number of writeProcessBlock transitions";
+        throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected number of writeProcessBlock transitions";
       }
     }
   }
 
-  void TestGlobalOutput::fillDescriptions(ConfigurationDescriptions& descriptions) {
+  void TestOneOutput::fillDescriptions(ConfigurationDescriptions& descriptions) {
     ParameterSetDescription desc;
     OutputModule::fillDescription(desc);
     desc.addUntracked<bool>("verbose", true);
@@ -143,5 +143,5 @@ namespace edm {
   }
 }  // namespace edm
 
-using edm::TestGlobalOutput;
-DEFINE_FWK_MODULE(TestGlobalOutput);
+using edm::TestOneOutput;
+DEFINE_FWK_MODULE(TestOneOutput);

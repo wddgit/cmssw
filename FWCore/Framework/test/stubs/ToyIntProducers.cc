@@ -761,6 +761,27 @@ namespace edmtest {
 
   //--------------------------------------------------------------------
   //
+  // Produces an TransientIntProduct in ProcessBlock at endProcessBlock
+  //
+  class TransientIntProducerEndProcessBlock : public edm::global::EDProducer<edm::EndProcessBlockProducer> {
+  public:
+    explicit TransientIntProducerEndProcessBlock(edm::ParameterSet const& p)
+        : token_{produces<TransientIntProduct, edm::Transition::EndProcessBlock>()},
+          value_(p.getParameter<int>("ivalue")) {}
+    void produce(edm::StreamID, edm::Event&, edm::EventSetup const&) const override {}
+    void endProcessBlockProduce(edm::ProcessBlock&) override;
+
+  private:
+    edm::EDPutTokenT<TransientIntProduct> token_;
+    int value_;
+  };
+
+  void TransientIntProducerEndProcessBlock::endProcessBlockProduce(edm::ProcessBlock& processBlock) {
+    processBlock.emplace(token_, value_);
+  }
+
+  //--------------------------------------------------------------------
+  //
   // Produces an IntProduct instance, the module must get run, otherwise an exception is thrown
   class MustRunIntProducer : public edm::global::EDProducer<> {
   public:
@@ -822,6 +843,7 @@ using edmtest::IntLegacyProducer;
 using edmtest::IntProducer;
 using edmtest::IntProducerBeginProcessBlock;
 using edmtest::IntProducerEndProcessBlock;
+using edmtest::TransientIntProducerEndProcessBlock;
 using edmtest::IntProducerFromTransient;
 using edmtest::ManyIntProducer;
 using edmtest::ManyIntWhenRegisteredProducer;
@@ -848,4 +870,5 @@ DEFINE_FWK_MODULE(ManyIntWhenRegisteredProducer);
 DEFINE_FWK_MODULE(NonEventIntProducer);
 DEFINE_FWK_MODULE(IntProducerBeginProcessBlock);
 DEFINE_FWK_MODULE(IntProducerEndProcessBlock);
+DEFINE_FWK_MODULE(TransientIntProducerEndProcessBlock);
 DEFINE_FWK_MODULE(edmtest::MustRunIntProducer);

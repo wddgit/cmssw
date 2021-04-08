@@ -46,6 +46,9 @@ pushd ${LOCAL_TMP_DIR}
   echo "testProcessBlockFailMerge"
   cmsRun -p ${LOCAL_TEST_DIR}/testProcessBlockFailMerge_cfg.py > /dev/null 2>&1 && die "cmsRun testProcessBlockFailMerge_cfg.py" $?
 
+  echo "testProcessBlockTEST"
+  cmsRun -p ${LOCAL_TEST_DIR}/testProcessBlockTEST_cfg.py || die "cmsRun testProcessBlockTEST_cfg.py" $?
+
   echo "testProcessBlockRead"
   cmsRun -p ${LOCAL_TEST_DIR}/testProcessBlockRead_cfg.py &> testProcessBlockRead.log || die "cmsRun testProcessBlockRead_cfg.py" $?
   grep "InputProcessBlockIntAnalyzer::accessInputProcessBlock" testProcessBlockRead.log || die "Check that InputProcessBlockIntAnalyzer::accessInputProcessBlock was called" $?
@@ -58,7 +61,7 @@ pushd ${LOCAL_TMP_DIR}
   rm testProcessBlock2ContentsE.txt
   rm testProcessBlockMContentsM.txt
   rm testProcessBlockMContentsE.txt
-  rm testProcessBlockRead.log
+  #rm testProcessBlockRead.log
 
   rm testProcessBlock1.root
   rm testProcessBlock2.root
