@@ -57,6 +57,8 @@ process.testOneOutput = cms.OutputModule("TestOneOutput",
     )
 )
 
+process.eventIntProducer = cms.EDProducer("IntProducer", ivalue = cms.int32(1))
+
 process.transientIntProducerEndProcessBlock = cms.EDProducer("TransientIntProducerEndProcessBlock",
     ivalue = cms.int32(90)
 )
@@ -66,8 +68,14 @@ process.nonEventIntProducer = cms.EDProducer("NonEventIntProducer",
 )
 
 process.p = cms.Path(
+    process.eventIntProducer *
     process.transientIntProducerEndProcessBlock *
     process.nonEventIntProducer
 )
 
-process.e = cms.EndPath(process.out * process.testGlobalOutput * process.testLimitedOutput * process.testOneOutput)
+process.e = cms.EndPath(
+    process.out *
+    process.testGlobalOutput *
+    process.testLimitedOutput *
+    process.testOneOutput
+)

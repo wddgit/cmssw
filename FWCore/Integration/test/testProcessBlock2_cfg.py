@@ -29,6 +29,36 @@ process.out = cms.OutputModule("PoolOutputModule",
   )
 )
 
+process.testGlobalOutput = cms.OutputModule("TestGlobalOutput",
+    verbose = cms.untracked.bool(False),
+    expectedWriteProcessBlockTransitions = cms.untracked.int32(1),
+    outputCommands = cms.untracked.vstring(
+      'keep *',
+      'drop *_intProducerBeginProcessBlock_*_*',
+      'drop *_intProducerEndProcessBlock_*_*'
+    )
+)
+
+process.testLimitedOutput = cms.OutputModule("TestLimitedOutput",
+    verbose = cms.untracked.bool(False),
+    expectedWriteProcessBlockTransitions = cms.untracked.int32(1),
+    outputCommands = cms.untracked.vstring(
+      'keep *',
+      'drop *_intProducerBeginProcessBlock_*_*',
+      'drop *_intProducerEndProcessBlock_*_*'
+    )
+)
+
+process.testOneOutput = cms.OutputModule("TestOneOutput",
+    verbose = cms.untracked.bool(False),
+    expectedWriteProcessBlockTransitions = cms.untracked.int32(1),
+    outputCommands = cms.untracked.vstring(
+      'keep *',
+      'drop *_intProducerBeginProcessBlock_*_*',
+      'drop *_intProducerEndProcessBlock_*_*'
+    )
+)
+
 process.intProducerBeginProcessBlock = cms.EDProducer("IntProducerBeginProcessBlock", ivalue = cms.int32(1))
 
 process.intProducerEndProcessBlock = cms.EDProducer("IntProducerEndProcessBlock", ivalue = cms.int32(10))
@@ -36,4 +66,8 @@ process.intProducerEndProcessBlock = cms.EDProducer("IntProducerEndProcessBlock"
 process.p = cms.Path(process.intProducerBeginProcessBlock *
                      process.intProducerEndProcessBlock)
 
-process.e = cms.EndPath(process.out)
+process.e = cms.EndPath(process.out *
+                        process.testGlobalOutput *
+                        process.testLimitedOutput *
+                        process.testOneOutput
+)

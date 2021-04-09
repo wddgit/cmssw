@@ -69,8 +69,8 @@ namespace edm {
     LogAbsolute("TestOneOutput") << "one writeProcessBlock";
     ++countWriteProcessBlockTransitions_;
     if (!expectedProcessesWithProcessBlockProducts_.empty()) {
-      for (auto const& x : outputProcessBlockHelper().processesWithProcessBlockProducts()) {
-        LogAbsolute("TestOneOutput") << "one writeProcessBlock " << x;
+      for (auto const& process : outputProcessBlockHelper().processesWithProcessBlockProducts()) {
+        LogAbsolute("TestOneOutput") << "    " << process;
       }
       if (expectedProcessesWithProcessBlockProducts_ != outputProcessBlockHelper().processesWithProcessBlockProducts()) {
         throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected process name list";
@@ -93,13 +93,6 @@ namespace edm {
   std::shared_ptr<int> TestOneOutput::globalBeginRun(RunForOutput const&) const {
     LogAbsolute("TestOneOutput") << "one globalBeginRun";
     if (verbose_) {
-      BranchIDLists const* theBranchIDLists = branchIDLists();
-      for (auto const& branchIDList : *theBranchIDLists) {
-        LogAbsolute("TestOneOutput") << "A branchID list";
-        for (auto const& branchID : branchIDList) {
-          LogAbsolute("TestOneOutput") << "  one branchID " << branchID;
-        }
-      }
       edm::Service<edm::ConstProductRegistry> reg;
       for (auto const& it : reg->productList()) {
         LogAbsolute("TestOneOutput") << it.second;

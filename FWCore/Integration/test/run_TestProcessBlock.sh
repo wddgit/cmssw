@@ -61,12 +61,14 @@ pushd ${LOCAL_TMP_DIR}
   rm testProcessBlock2ContentsE.txt
   rm testProcessBlockMContentsM.txt
   rm testProcessBlockMContentsE.txt
-  #rm testProcessBlockRead.log
+  rm testProcessBlockRead.log
 
   rm testProcessBlock1.root
   rm testProcessBlock2.root
   rm testProcessBlock3.root
   rm testProcessBlockMerge.root
+  rm testProcessBlockFailMerge.root
+  rm testProcessBlockTest.root
   rm testProcessBlockRead.root
 
 popd

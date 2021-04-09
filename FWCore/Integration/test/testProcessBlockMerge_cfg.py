@@ -19,6 +19,24 @@ process.out = cms.OutputModule("PoolOutputModule",
     fileName = cms.untracked.string('testProcessBlockMerge.root')
 )
 
+process.testGlobalOutput = cms.OutputModule("TestGlobalOutput",
+    verbose = cms.untracked.bool(False),
+    expectedProcessesWithProcessBlockProducts = cms.untracked.vstring('PROD1', 'MERGE'),
+    expectedWriteProcessBlockTransitions = cms.untracked.int32(3)
+)
+
+process.testLimitedOutput = cms.OutputModule("TestLimitedOutput",
+    verbose = cms.untracked.bool(False),
+    expectedProcessesWithProcessBlockProducts = cms.untracked.vstring('PROD1', 'MERGE'),
+    expectedWriteProcessBlockTransitions = cms.untracked.int32(3)
+)
+
+process.testOneOutput = cms.OutputModule("TestOneOutput",
+    verbose = cms.untracked.bool(False),
+    expectedProcessesWithProcessBlockProducts = cms.untracked.vstring('PROD1', 'MERGE'),
+    expectedWriteProcessBlockTransitions = cms.untracked.int32(3)
+)
+
 process.intProducerBeginProcessBlockM = cms.EDProducer("IntProducerBeginProcessBlock", ivalue = cms.int32(4))
 
 process.intProducerEndProcessBlockM = cms.EDProducer("IntProducerEndProcessBlock", ivalue = cms.int32(40))
@@ -33,4 +51,8 @@ process.p = cms.Path(process.intProducerBeginProcessBlockM *
                      process.intProducerEndProcessBlockB
 )
 
-process.e = cms.EndPath(process.out)
+process.e = cms.EndPath(process.out *
+                        process.testGlobalOutput *
+                        process.testLimitedOutput *
+                        process.testOneOutput
+)

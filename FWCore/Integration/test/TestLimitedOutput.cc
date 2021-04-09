@@ -71,7 +71,7 @@ namespace edm {
     ++countWriteProcessBlockTransitions_;
     if (!expectedProcessesWithProcessBlockProducts_.empty()) {
       for (auto const& process : outputProcessBlockHelper().processesWithProcessBlockProducts()) {
-        LogAbsolute("TestLimitedOutput") << "limited writeProcessBlock " << process;
+        LogAbsolute("TestLimitedOutput") << "    " << process;
       }
       if (expectedProcessesWithProcessBlockProducts_ != outputProcessBlockHelper().processesWithProcessBlockProducts()) {
         throw cms::Exception("TestFailure") << "TestLimitedOutput::writeProcessBlock unexpected process name list";

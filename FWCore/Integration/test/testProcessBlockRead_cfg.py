@@ -22,23 +22,19 @@ process.out = cms.OutputModule("PoolOutputModule",
 process.testGlobalOutput = cms.OutputModule("TestGlobalOutput",
     verbose = cms.untracked.bool(False),
     expectedProcessesWithProcessBlockProducts = cms.untracked.vstring('PROD1', 'MERGE', 'READ'),
-    expectedWriteProcessBlockTransitions = cms.untracked.int32(4),
-    outputCommands = cms.untracked.vstring(
-        "keep *",
-        "drop *_*_beginProcessBlock_*",
-        "drop *_*_endProcessBlock_*"
-    )
+    expectedWriteProcessBlockTransitions = cms.untracked.int32(4)
 )
 
 process.testLimitedOutput = cms.OutputModule("TestLimitedOutput",
     verbose = cms.untracked.bool(False),
     expectedProcessesWithProcessBlockProducts = cms.untracked.vstring('PROD1', 'MERGE', 'READ'),
-    expectedWriteProcessBlockTransitions = cms.untracked.int32(4),
-    outputCommands = cms.untracked.vstring(
-        "keep *",
-        "drop *_*_beginProcessBlock_*",
-        "drop *_*_endProcessBlock_*"
-    )
+    expectedWriteProcessBlockTransitions = cms.untracked.int32(4)
+)
+
+process.testOneOutput = cms.OutputModule("TestOneOutput",
+    verbose = cms.untracked.bool(False),
+    expectedProcessesWithProcessBlockProducts = cms.untracked.vstring('PROD1', 'MERGE', 'READ'),
+    expectedWriteProcessBlockTransitions = cms.untracked.int32(4)
 )
 
 process.intProducerBeginProcessBlockR = cms.EDProducer("IntProducerBeginProcessBlock", ivalue = cms.int32(5))
@@ -271,4 +267,9 @@ process.p = cms.Path(process.intProducerBeginProcessBlockR *
                      process.readProcessBlocksReuseCache
 )
 
-process.e = cms.EndPath(process.out * process.testGlobalOutput * process.testLimitedOutput)
+process.e = cms.EndPath(
+    process.out *
+    process.testGlobalOutput *
+    process.testLimitedOutput *
+    process.testOneOutput
+)

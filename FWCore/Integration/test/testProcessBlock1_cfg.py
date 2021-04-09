@@ -19,11 +19,20 @@ process.out = cms.OutputModule("PoolOutputModule",
 
 process.testGlobalOutput = cms.OutputModule("TestGlobalOutput",
     verbose = cms.untracked.bool(False),
-    expectedProcessesWithProcessBlockProducts = cms.untracked.vstring('PROD1')
+    expectedProcessesWithProcessBlockProducts = cms.untracked.vstring('PROD1'),
+    expectedWriteProcessBlockTransitions = cms.untracked.int32(1)
 )
 
 process.testLimitedOutput = cms.OutputModule("TestLimitedOutput",
-    verbose = cms.untracked.bool(False)
+    verbose = cms.untracked.bool(False),
+    expectedProcessesWithProcessBlockProducts = cms.untracked.vstring('PROD1'),
+    expectedWriteProcessBlockTransitions = cms.untracked.int32(1)
+)
+
+process.testOneOutput = cms.OutputModule("TestOneOutput",
+    verbose = cms.untracked.bool(False),
+    expectedProcessesWithProcessBlockProducts = cms.untracked.vstring('PROD1'),
+    expectedWriteProcessBlockTransitions = cms.untracked.int32(1)
 )
 
 process.intProducerBeginProcessBlock = cms.EDProducer("IntProducerBeginProcessBlock", ivalue = cms.int32(1))
@@ -42,5 +51,6 @@ process.p = cms.Path(process.intProducerBeginProcessBlock *
 
 process.e = cms.EndPath(process.out *
                         process.testGlobalOutput *
-                        process.testLimitedOutput
+                        process.testLimitedOutput *
+                        process.testOneOutput
 )

@@ -69,8 +69,8 @@ namespace edm {
     LogAbsolute("TestGlobalOutput") << "global writeProcessBlock";
     ++countWriteProcessBlockTransitions_;
     if (!expectedProcessesWithProcessBlockProducts_.empty()) {
-      for (auto const& x : outputProcessBlockHelper().processesWithProcessBlockProducts()) {
-        LogAbsolute("TestGlobalOutput") << "global writeProcessBlock " << x;
+      for (auto const& process : outputProcessBlockHelper().processesWithProcessBlockProducts()) {
+        LogAbsolute("TestGlobalOutput") << "    " << process;
       }
       if (expectedProcessesWithProcessBlockProducts_ != outputProcessBlockHelper().processesWithProcessBlockProducts()) {
         throw cms::Exception("TestFailure") << "TestGlobalOutput::writeProcessBlock unexpected process name list";
