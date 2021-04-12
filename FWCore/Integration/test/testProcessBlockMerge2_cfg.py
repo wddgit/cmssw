@@ -6,17 +6,18 @@ process.options = cms.untracked.PSet(
     numberOfStreams = cms.untracked.uint32(1),
     numberOfConcurrentRuns = cms.untracked.uint32(1),
     numberOfConcurrentLuminosityBlocks = cms.untracked.uint32(1)
+    #fileMode = cms.untracked.string('NOMERGE')
 )
 
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-        'file:testProcessBlock1.root',
-        'file:testProcessBlock2.root'
+        'file:testProcessBlock3.root',
+        'file:testProcessBlock4.root'
     )
 )
 
 process.out = cms.OutputModule("PoolOutputModule",
-    fileName = cms.untracked.string('testProcessBlockMerge.root')
+    fileName = cms.untracked.string('testProcessBlockMerge2.root')
 )
 
 process.testGlobalOutput = cms.OutputModule("TestGlobalOutput",
@@ -37,13 +38,13 @@ process.testOneOutput = cms.OutputModule("TestOneOutput",
     expectedWriteProcessBlockTransitions = cms.untracked.int32(3)
 )
 
-process.intProducerBeginProcessBlockM = cms.EDProducer("IntProducerBeginProcessBlock", ivalue = cms.int32(4))
+process.intProducerBeginProcessBlockM = cms.EDProducer("IntProducerBeginProcessBlock", ivalue = cms.int32(204))
 
-process.intProducerEndProcessBlockM = cms.EDProducer("IntProducerEndProcessBlock", ivalue = cms.int32(40))
+process.intProducerEndProcessBlockM = cms.EDProducer("IntProducerEndProcessBlock", ivalue = cms.int32(240))
 
-process.intProducerBeginProcessBlockB = cms.EDProducer("IntProducerBeginProcessBlock", ivalue = cms.int32(8))
+process.intProducerBeginProcessBlockB = cms.EDProducer("IntProducerBeginProcessBlock", ivalue = cms.int32(208))
 
-process.intProducerEndProcessBlockB = cms.EDProducer("IntProducerEndProcessBlock", ivalue = cms.int32(80))
+process.intProducerEndProcessBlockB = cms.EDProducer("IntProducerEndProcessBlock", ivalue = cms.int32(280))
 
 process.p = cms.Path(process.intProducerBeginProcessBlockM *
                      process.intProducerEndProcessBlockM *

@@ -1,4 +1,5 @@
 
+#include "FWCore/Framework/interface/FileBlock.h"
 #include "FWCore/Framework/interface/one/OutputModule.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ParameterSet/interface/ConfigurationDescriptions.h"
@@ -7,6 +8,9 @@
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "FWCore/Framework/interface/ConstProductRegistry.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
+#include "FWCore/Utilities/interface/Exception.h"
+
+#include "TTree.h"
 
 #include <memory>
 #include <string>
@@ -28,6 +32,7 @@ namespace edm {
 
     void respondToOpenInputFile(FileBlock const&) override;
     void respondToCloseInputFile(FileBlock const&) override;
+    void testFileBlock(FileBlock const&);
 
     std::shared_ptr<int> globalBeginRun(RunForOutput const&) const override;
     void globalEndRun(RunForOutput const&) override;
@@ -40,6 +45,8 @@ namespace edm {
     std::vector<std::string> expectedProcessesWithProcessBlockProducts_;
     int expectedWriteProcessBlockTransitions_;
     int countWriteProcessBlockTransitions_ = 0;
+    bool requireNullTTreesInFileBlock_;
+    bool testTTreesInFileBlock_;
   };
 
   TestOneOutput::TestOneOutput(ParameterSet const& pset)
@@ -47,7 +54,9 @@ namespace edm {
         one::OutputModule<WatchInputFiles, RunCache<int>, LuminosityBlockCache<int>>(pset),
         verbose_(pset.getUntrackedParameter<bool>("verbose")),
         expectedProcessesWithProcessBlockProducts_(pset.getUntrackedParameter<std::vector<std::string>>("expectedProcessesWithProcessBlockProducts")),
-        expectedWriteProcessBlockTransitions_(pset.getUntrackedParameter<int>("expectedWriteProcessBlockTransitions")) {}
+        expectedWriteProcessBlockTransitions_(pset.getUntrackedParameter<int>("expectedWriteProcessBlockTransitions")),
+        requireNullTTreesInFileBlock_(pset.getUntrackedParameter<bool>("requireNullTTreesInFileBlock")),
+        testTTreesInFileBlock_(pset.getUntrackedParameter<bool>("testTTreesInFileBlock")) {}
 
   TestOneOutput::~TestOneOutput() {}
 
@@ -78,15 +87,45 @@ namespace edm {
     }
   }
 
-  void TestOneOutput::respondToOpenInputFile(FileBlock const&) {
+  void TestOneOutput::respondToOpenInputFile(FileBlock const& fb) {
     if (verbose_) {
       LogAbsolute("TestOneOutput") << "one respondToOpenInputFile";
     }
+    testFileBlock(fb);
   }
 
-  void TestOneOutput::respondToCloseInputFile(FileBlock const&) {
+  void TestOneOutput::respondToCloseInputFile(FileBlock const& fb) {
     if (verbose_) {
       LogAbsolute("TestOneOutput") << "one respondToCloseInputFile";
+    }
+    testFileBlock(fb);
+  }
+
+  void TestOneOutput::testFileBlock(FileBlock const& fb) {
+    if (requireNullTTreesInFileBlock_) {
+      if (fb.tree() != nullptr ||
+          fb.lumiTree() != nullptr ||
+          fb.runTree() != nullptr ||
+          !fb.processBlockTrees().empty() ||
+          !fb.processesWithProcessBlockTrees().empty() ||
+          fb.processBlockTree(std::string("DoesNotExist")) != nullptr) {
+        throw cms::Exception("TestFailure") << "TestOneOutput::respondToOpenInputFile expected null TTree pointers in FileBlock";
+      }
+    } else if (testTTreesInFileBlock_) {
+      if (std::string("Events") != fb.tree()->GetName() ||
+          std::string("LuminosityBlocks") != fb.lumiTree()->GetName() ||
+          std::string("Runs") != fb.runTree()->GetName() ||
+          fb.processesWithProcessBlockTrees().size() != 2 ||
+          fb.processesWithProcessBlockTrees()[0] != "PROD1" ||
+          fb.processesWithProcessBlockTrees()[1] != "MERGE" ||
+          fb.processBlockTrees().size() != 2 ||
+          std::string("ProcessBlocksPROD1") != fb.processBlockTrees()[0]->GetName() ||
+          std::string("ProcessBlocksMERGE") != fb.processBlockTrees()[1]->GetName() ||
+          std::string("ProcessBlocksPROD1") != fb.processBlockTree("PROD1")->GetName() ||
+          std::string("ProcessBlocksMERGE") != fb.processBlockTree("MERGE")->GetName() ||
+          fb.processBlockTree("DOESNOTEXIST") != nullptr) {
+        throw cms::Exception("TestFailure") << "TestOneOutput::testFileBlock failed. Testing tree pointers";
+      }
     }
   }
 
@@ -132,6 +171,8 @@ namespace edm {
     desc.addUntracked<bool>("verbose", true);
     desc.addUntracked<std::vector<std::string>>("expectedProcessesWithProcessBlockProducts", std::vector<std::string>());
     desc.addUntracked<int>("expectedWriteProcessBlockTransitions", -1);
+    desc.addUntracked<bool>("requireNullTTreesInFileBlock", false);
+    desc.addUntracked<bool>("testTTreesInFileBlock", false);
     descriptions.addDefault(desc);
   }
 }  // namespace edm

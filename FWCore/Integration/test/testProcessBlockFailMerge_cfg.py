@@ -14,7 +14,7 @@ process.options = cms.untracked.PSet(
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
         'file:testProcessBlock1.root',
-        'file:testProcessBlock2.root'
+        'file:testProcessBlock2Dropped.root'
     )
 )
 

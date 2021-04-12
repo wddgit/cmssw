@@ -37,9 +37,9 @@ process.testOneOutput = cms.OutputModule("TestOneOutput",
     expectedWriteProcessBlockTransitions = cms.untracked.int32(4)
 )
 
-process.intProducerBeginProcessBlockR = cms.EDProducer("IntProducerBeginProcessBlock", ivalue = cms.int32(5))
+process.intProducerBeginProcessBlockR = cms.EDProducer("IntProducerBeginProcessBlock", ivalue = cms.int32(100))
 
-process.intProducerEndProcessBlockR = cms.EDProducer("IntProducerEndProcessBlock", ivalue = cms.int32(50))
+process.intProducerEndProcessBlockR = cms.EDProducer("IntProducerEndProcessBlock", ivalue = cms.int32(1000))
 
 process.readProcessBlocks = cms.EDAnalyzer("edmtest::stream::InputProcessBlockIntAnalyzer",
                                             consumesBeginProcessBlock = cms.InputTag("intProducerBeginProcessBlock", ""),

@@ -112,6 +112,9 @@ namespace edm {
     TTree* runMetaTree() const { return runMetaTree_; }
     TTree* processBlockTree(std::string const& processName) const;
 
+    std::vector<TTree*> const& processBlockTrees() const { return processBlockTrees_; }
+    std::vector<std::string> const& processesWithProcessBlockTrees() const { return processesWithProcessBlockTrees_; }
+
     int whyNotFastClonable() const { return whyNotFastClonable_; }
     std::array<bool, NumBranchTypes> const& hasNewlyDroppedBranch() const { return hasNewlyDroppedBranch_; }
     std::string const& fileName() const { return fileName_; }
