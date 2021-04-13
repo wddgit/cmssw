@@ -70,6 +70,9 @@ pushd ${LOCAL_TMP_DIR}
   echo "testProcessBlockNOMergeOfMergedFiles"
   cmsRun -p ${LOCAL_TEST_DIR}/testProcessBlockNOMergeOfMergedFiles_cfg.py > /dev/null 2>&1 || die "cmsRun testProcessBlockNOMergeOfMergedFiles_cfg.py" $?
 
+  echo "testProcessBlockRead2"
+  cmsRun -p ${LOCAL_TEST_DIR}/testProcessBlockRead2_cfg.py > /dev/null 2>&1 || die "cmsRun testProcessBlockRead2_cfg.py" $?
+
   rm testProcessBlock1ContentsM.txt
   rm testProcessBlock1ContentsE.txt
   rm testProcessBlock2DroppedContentsM.txt
@@ -90,6 +93,7 @@ pushd ${LOCAL_TMP_DIR}
   rm testProcessBlockMerge2.root
   rm testProcessBlockMergeOfMergedFiles.root
   rm testProcessBlockNOMergeOfMergedFiles.root
+  rm testProcessBlockRead2.root
 popd
 
 exit 0
