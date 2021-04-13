@@ -16,6 +16,16 @@ process.source = cms.Source("PoolSource",
     )
 )
 
+process.readProcessBlocksOneAnalyzer = cms.EDAnalyzer("edmtest::one::InputProcessBlockIntAnalyzer",
+                                            transitions = cms.int32(30),
+                                            consumesBeginProcessBlock = cms.InputTag("intProducerBeginProcessBlock", ""),
+                                            consumesEndProcessBlock = cms.InputTag("intProducerEndProcessBlock", ""),
+                                            consumesBeginProcessBlockM = cms.InputTag("intProducerBeginProcessBlockM", ""),
+                                            consumesEndProcessBlockM = cms.InputTag("intProducerEndProcessBlockM", ""),
+                                            expectedByRun = cms.vint32(0, 11, 22, 3300, 4400),
+                                            expectedSum = cms.int32(8221)
+)
+
 process.out = cms.OutputModule("PoolOutputModule",
     fileName = cms.untracked.string('testProcessBlockNOMergeOfMergedFiles.root')
 )
@@ -51,7 +61,8 @@ process.intProducerEndProcessBlockB = cms.EDProducer("IntProducerEndProcessBlock
 process.p = cms.Path(process.intProducerBeginProcessBlockM *
                      process.intProducerEndProcessBlockM *
                      process.intProducerBeginProcessBlockB *
-                     process.intProducerEndProcessBlockB
+                     process.intProducerEndProcessBlockB *
+                     process.readProcessBlocksOneAnalyzer
 )
 
 process.e = cms.EndPath(process.out *
