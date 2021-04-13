@@ -2,6 +2,7 @@
 #include "FWCore/Framework/interface/FileBlock.h"
 #include "FWCore/Framework/interface/one/OutputModule.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
+#include "FWCore/Framework/interface/ProcessBlockForOutput.h"
 #include "FWCore/ParameterSet/interface/ConfigurationDescriptions.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
@@ -43,10 +44,12 @@ namespace edm {
 
     bool verbose_;
     std::vector<std::string> expectedProcessesWithProcessBlockProducts_;
+    std::vector<std::string> expectedProcessNamesAtWrite_;
     int expectedWriteProcessBlockTransitions_;
-    int countWriteProcessBlockTransitions_ = 0;
+    unsigned int countWriteProcessBlockTransitions_ = 0;
     bool requireNullTTreesInFileBlock_;
     bool testTTreesInFileBlock_;
+    std::vector<unsigned int> expectedCacheIndexSize_;
   };
 
   TestOneOutput::TestOneOutput(ParameterSet const& pset)
@@ -54,9 +57,11 @@ namespace edm {
         one::OutputModule<WatchInputFiles, RunCache<int>, LuminosityBlockCache<int>>(pset),
         verbose_(pset.getUntrackedParameter<bool>("verbose")),
         expectedProcessesWithProcessBlockProducts_(pset.getUntrackedParameter<std::vector<std::string>>("expectedProcessesWithProcessBlockProducts")),
+        expectedProcessNamesAtWrite_(pset.getUntrackedParameter<std::vector<std::string>>("expectedProcessNamesAtWrite")),
         expectedWriteProcessBlockTransitions_(pset.getUntrackedParameter<int>("expectedWriteProcessBlockTransitions")),
         requireNullTTreesInFileBlock_(pset.getUntrackedParameter<bool>("requireNullTTreesInFileBlock")),
-        testTTreesInFileBlock_(pset.getUntrackedParameter<bool>("testTTreesInFileBlock")) {}
+        testTTreesInFileBlock_(pset.getUntrackedParameter<bool>("testTTreesInFileBlock")),
+        expectedCacheIndexSize_(pset.getUntrackedParameter<std::vector<unsigned int>>("expectedCacheIndexSize")) {}
 
   TestOneOutput::~TestOneOutput() {}
 
@@ -74,9 +79,13 @@ namespace edm {
 
   void TestOneOutput::writeRun(RunForOutput const&) { LogAbsolute("TestOneOutput") << "one writeRun"; }
 
-  void TestOneOutput::writeProcessBlock(ProcessBlockForOutput const&) {
+  void TestOneOutput::writeProcessBlock(ProcessBlockForOutput const& pb) {
     LogAbsolute("TestOneOutput") << "one writeProcessBlock";
-    ++countWriteProcessBlockTransitions_;
+    if (countWriteProcessBlockTransitions_ < expectedProcessNamesAtWrite_.size()) {
+      if (expectedProcessNamesAtWrite_[countWriteProcessBlockTransitions_] != pb.processName()) {
+        throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected process name";
+      }
+    }
     if (!expectedProcessesWithProcessBlockProducts_.empty()) {
       for (auto const& process : outputProcessBlockHelper().processesWithProcessBlockProducts()) {
         LogAbsolute("TestOneOutput") << "    " << process;
@@ -85,6 +94,13 @@ namespace edm {
         throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected process name list";
       }
     }
+    if (countWriteProcessBlockTransitions_ < expectedCacheIndexSize_.size()) {
+      if (expectedCacheIndexSize_[countWriteProcessBlockTransitions_] !=
+          outputProcessBlockHelper().processBlockHelper()->processBlockCacheIndices().size()) {
+        throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected cache index size";
+      }
+    }
+    ++countWriteProcessBlockTransitions_;
   }
 
   void TestOneOutput::respondToOpenInputFile(FileBlock const& fb) {
@@ -159,7 +175,7 @@ namespace edm {
 
   void TestOneOutput::endJob() {
     if (expectedWriteProcessBlockTransitions_ >= 0) {
-      if (expectedWriteProcessBlockTransitions_ != countWriteProcessBlockTransitions_) {
+      if (static_cast<unsigned int>(expectedWriteProcessBlockTransitions_) != countWriteProcessBlockTransitions_) {
         throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected number of writeProcessBlock transitions";
       }
     }
@@ -170,9 +186,11 @@ namespace edm {
     OutputModule::fillDescription(desc);
     desc.addUntracked<bool>("verbose", true);
     desc.addUntracked<std::vector<std::string>>("expectedProcessesWithProcessBlockProducts", std::vector<std::string>());
+    desc.addUntracked<std::vector<std::string>>("expectedProcessNamesAtWrite", std::vector<std::string>());
     desc.addUntracked<int>("expectedWriteProcessBlockTransitions", -1);
     desc.addUntracked<bool>("requireNullTTreesInFileBlock", false);
     desc.addUntracked<bool>("testTTreesInFileBlock", false);
+    desc.addUntracked<std::vector<unsigned int>>("expectedCacheIndexSize", std::vector<unsigned int>());
     descriptions.addDefault(desc);
   }
 }  // namespace edm

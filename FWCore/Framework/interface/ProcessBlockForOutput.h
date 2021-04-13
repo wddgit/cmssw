@@ -19,6 +19,8 @@ writing ProcessBlock products
 #include "FWCore/Framework/interface/OccurrenceForOutput.h"
 #include "FWCore/ServiceRegistry/interface/ServiceRegistryfwd.h"
 
+#include <string>
+
 namespace edm {
   class ProcessBlockPrincipal;
 

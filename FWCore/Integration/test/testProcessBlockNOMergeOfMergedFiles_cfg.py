@@ -5,7 +5,8 @@ process = cms.Process("MERGEOFMERGED")
 process.options = cms.untracked.PSet(
     numberOfStreams = cms.untracked.uint32(1),
     numberOfConcurrentRuns = cms.untracked.uint32(1),
-    numberOfConcurrentLuminosityBlocks = cms.untracked.uint32(1)
+    numberOfConcurrentLuminosityBlocks = cms.untracked.uint32(1),
+    fileMode = cms.untracked.string('NOMERGE')
 )
 
 process.source = cms.Source("PoolSource",
@@ -16,28 +17,27 @@ process.source = cms.Source("PoolSource",
 )
 
 process.out = cms.OutputModule("PoolOutputModule",
-    fileName = cms.untracked.string('testProcessBlockMergeOfMergedFiles.root')
+    fileName = cms.untracked.string('testProcessBlockNOMergeOfMergedFiles.root')
 )
 
 process.testGlobalOutput = cms.OutputModule("TestGlobalOutput",
     verbose = cms.untracked.bool(False),
     expectedProcessesWithProcessBlockProducts = cms.untracked.vstring('PROD1', 'MERGE', 'MERGEOFMERGED'),
-    expectedWriteProcessBlockTransitions = cms.untracked.int32(7)
+    expectedWriteProcessBlockTransitions = cms.untracked.int32(8)
 )
 
 process.testLimitedOutput = cms.OutputModule("TestLimitedOutput",
     verbose = cms.untracked.bool(False),
     expectedProcessesWithProcessBlockProducts = cms.untracked.vstring('PROD1', 'MERGE', 'MERGEOFMERGED'),
-    expectedWriteProcessBlockTransitions = cms.untracked.int32(7)
+    expectedWriteProcessBlockTransitions = cms.untracked.int32(8)
 )
 
 process.testOneOutput = cms.OutputModule("TestOneOutput",
     verbose = cms.untracked.bool(False),
     expectedProcessesWithProcessBlockProducts = cms.untracked.vstring('PROD1', 'MERGE', 'MERGEOFMERGED'),
-    expectedProcessNamesAtWrite = cms.untracked.vstring('PROD1', 'PROD1', 'MERGE', 'PROD1', 'PROD1', 'MERGE', 'MERGEOFMERGED'),
-    expectedWriteProcessBlockTransitions = cms.untracked.int32(7),
+    expectedWriteProcessBlockTransitions = cms.untracked.int32(8),
     testTTreesInFileBlock = cms.untracked.bool(True),
-    expectedCacheIndexSize = cms.untracked.vuint32(2, 2, 2, 4, 4, 4, 4)
+    expectedCacheIndexSize = cms.untracked.vuint32(2, 2, 2, 2, 2, 2, 2, 2)
 )
 
 process.intProducerBeginProcessBlockM = cms.EDProducer("IntProducerBeginProcessBlock", ivalue = cms.int32(304))

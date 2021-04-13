@@ -32,6 +32,8 @@ namespace edm {
 
     static constexpr unsigned int invalidCacheIndex() { return 0xffffffff; }
 
+    ProcessBlockHelperBase const* processBlockHelper() const { return processBlockHelper_; }
+
   private:
     void setStoredProcessOffset(unsigned int nInputProcesses,
                                 std::vector<std::vector<unsigned int>> const& nEntries,
