@@ -43,7 +43,6 @@ namespace edmtest {
                                                       edm::one::WatchLuminosityBlocks,
                                                       edm::WatchProcessBlock,
                                                       edm::InputProcessBlockCache<int, long long int>> {
-    //edm::InputProcessBlockCache<int>> {
   public:
     explicit TestFindProduct(edm::ParameterSet const& pset);
     virtual ~TestFindProduct();
