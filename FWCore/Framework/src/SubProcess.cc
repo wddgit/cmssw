@@ -523,9 +523,19 @@ namespace edm {
           });
       WaitingTaskHolder holder(*iHolder.group(), runEndProcessBlock);
 
+      ProcessBlockPrincipal& inputProcessBlockPrincipal = principalCache_.inputProcessBlockPrincipal();
+      inputProcessBlockPrincipal.fillProcessBlockPrincipal(parentPrincipal.processName(), parentPrincipal.reader());
+      propagateProducts(InProcess, parentPrincipal, inputProcessBlockPrincipal);
+      ProcessBlockTransitionInfo inputTransitionInfo(inputProcessBlockPrincipal);
+
       using TraitsInput = OccurrenceTraits<ProcessBlockPrincipal, BranchActionProcessBlockInput>;
       beginGlobalTransitionAsync<TraitsInput>(
-          std::move(holder), *schedule_, transitionInfo, serviceToken_, subProcesses_, cleaningUpAfterException);
+          std::move(holder), *schedule_, inputTransitionInfo, serviceToken_, subProcesses_, cleaningUpAfterException);
+      
+      inputProcessBlockPrincipal.clearPrincipal();
+      for (auto& s : subProcesses_) {
+        s.clearProcessBlockPrincipal(ProcessBlockType::Input);
+      }
     } else {
       using Traits = OccurrenceTraits<ProcessBlockPrincipal, BranchActionGlobalEnd>;
       endGlobalTransitionAsync<Traits>(
