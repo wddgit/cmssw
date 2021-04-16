@@ -50,16 +50,16 @@ process.testOneOutput = cms.OutputModule("TestOneOutput",
     expectedCacheIndexSize = cms.untracked.vuint32(2, 2, 2, 4, 4, 4, 4)
 )
 
-process.intProducerBeginProcessBlockM = cms.EDProducer("IntProducerBeginProcessBlock", ivalue = cms.int32(304))
+process.intProducerBeginProcessBlockMM = cms.EDProducer("IntProducerBeginProcessBlock", ivalue = cms.int32(304))
 
-process.intProducerEndProcessBlockM = cms.EDProducer("IntProducerEndProcessBlock", ivalue = cms.int32(340))
+process.intProducerEndProcessBlockMM = cms.EDProducer("IntProducerEndProcessBlock", ivalue = cms.int32(340))
 
 process.intProducerBeginProcessBlockB = cms.EDProducer("IntProducerBeginProcessBlock", ivalue = cms.int32(308))
 
 process.intProducerEndProcessBlockB = cms.EDProducer("IntProducerEndProcessBlock", ivalue = cms.int32(380))
 
-process.p = cms.Path(process.intProducerBeginProcessBlockM *
-                     process.intProducerEndProcessBlockM *
+process.p = cms.Path(process.intProducerBeginProcessBlockMM *
+                     process.intProducerEndProcessBlockMM *
                      process.intProducerBeginProcessBlockB *
                      process.intProducerEndProcessBlockB *
                      process.readProcessBlocksOneAnalyzer

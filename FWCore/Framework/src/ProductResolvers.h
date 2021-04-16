@@ -29,7 +29,7 @@ a set of related EDProducts. This is the storage unit of such information.
 #include <atomic>
 
 #include <string>
-
+#include <iostream>
 namespace edm {
   class MergeableRunProductMetadata;
   class ProductProvenanceRetriever;
@@ -427,6 +427,7 @@ namespace edm {
           mcc->parent().globalContext()->transition() != GlobalContext::Transition::kAccessInputProcessBlock) {
         // This is a SubProcess beginProcessBlock or endProcessBlock transition
         // We cannot access products from parent processes in those transitions
+        std::cout << "WDD HIT INTERESTING POINT IN ParentProcessProductResolver::resolveProduct_" << std::endl;
         return Resolution(nullptr);
       }
 
@@ -443,6 +444,7 @@ namespace edm {
           mcc->parent().globalContext()->transition() != GlobalContext::Transition::kAccessInputProcessBlock) {
         // This is a SubProcess beginProcessBlock or endProcessBlock transition
         // We cannot access products from parent processes in those transitions
+        std::cout << "WDD HIT INTERESTING POINT IN ParentProcessProductResolver::prefetchAsync_" << std::endl;
         return;
       }
 

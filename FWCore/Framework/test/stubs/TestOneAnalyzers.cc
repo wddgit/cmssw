@@ -22,7 +22,9 @@ for testing purposes only.
 #include "FWCore/Framework/interface/one/EDAnalyzer.h"
 #include "FWCore/Framework/interface/ProcessBlock.h"
 #include "FWCore/Framework/interface/Run.h"
+#include "FWCore/ParameterSet/interface/ConfigurationDescriptions.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
 #include "FWCore/Utilities/interface/BranchType.h"
 #include "FWCore/Utilities/interface/EDMException.h"
 #include "FWCore/Utilities/interface/EDGetToken.h"
@@ -326,12 +328,14 @@ namespace edmtest {
 
     class InputProcessBlockIntAnalyzer
         : public edm::one::EDAnalyzer<
+              edm::WatchProcessBlock,
               edm::InputProcessBlockCache<int, TestInputProcessBlockCache, TestInputProcessBlockCache1>> {
     public:
       explicit InputProcessBlockIntAnalyzer(edm::ParameterSet const& pset) {
         expectedTransitions_ = pset.getParameter<int>("transitions");
         expectedByRun_ = pset.getParameter<std::vector<int>>("expectedByRun");
         expectedSum_ = pset.getParameter<int>("expectedSum");
+        expectedFillerSum_ = pset.getUntrackedParameter<int>("expectedFillerSum", 0);
         {
           auto tag = pset.getParameter<edm::InputTag>("consumesBeginProcessBlock");
           if (not tag.label().empty()) {
@@ -356,11 +360,26 @@ namespace edmtest {
             getTokenEndM_ = consumes<IntProduct, edm::InProcess>(tag);
           }
         }
+        {
+          auto tag = pset.getParameter<edm::InputTag>("consumesBeginProcessBlockNotFound");
+          if (not tag.label().empty()) {
+            getTokenBeginNotFound_ = consumes<IntProduct, edm::InProcess>(tag);
+          }
+        }
+        {
+          auto tag = pset.getParameter<edm::InputTag>("consumesEndProcessBlockNotFound");
+          if (not tag.label().empty()) {
+            getTokenEndNotFound_ = consumes<IntProduct, edm::InProcess>(tag);
+          }
+        }
+
         registerProcessBlockCacheFiller<int>(
             getTokenBegin_, [this](edm::ProcessBlock const& processBlock, std::shared_ptr<int> const& previousCache) {
               auto returnValue = std::make_shared<int>(0);
               *returnValue += processBlock.get(getTokenBegin_).value;
               *returnValue += processBlock.get(getTokenEnd_).value;
+              fillerSum_ += processBlock.get(getTokenBegin_).value;
+              fillerSum_ += processBlock.get(getTokenEnd_).value;
               ++transitions_;
               return returnValue;
             });
@@ -370,6 +389,8 @@ namespace edmtest {
                                              auto returnValue = std::make_shared<TestInputProcessBlockCache>();
                                              returnValue->value_ += processBlock.get(getTokenBegin_).value;
                                              returnValue->value_ += processBlock.get(getTokenEnd_).value;
+                                             fillerSum_ += processBlock.get(getTokenBegin_).value;
+                                             fillerSum_ += processBlock.get(getTokenEnd_).value;
                                              ++transitions_;
                                              return returnValue;
                                            });
@@ -380,19 +401,37 @@ namespace edmtest {
               auto returnValue = std::make_shared<TestInputProcessBlockCache1>();
               returnValue->value_ += processBlock.get(getTokenBegin_).value;
               returnValue->value_ += processBlock.get(getTokenEnd_).value;
+              fillerSum_ += processBlock.get(getTokenBegin_).value;
+              fillerSum_ += processBlock.get(getTokenEnd_).value;
               ++transitions_;
               return returnValue;
             });
       }
 
+      void beginProcessBlock(edm::ProcessBlock const& processBlock) override {
+        if (!getTokenBeginNotFound_.isUninitialized() && processBlock.getHandle(getTokenBeginNotFound_).isValid()) {
+          throw cms::Exception("TestFailure") << "Expected handle to be invalid but it is valid (begin)";
+        }
+      }
+
+      void endProcessBlock(edm::ProcessBlock const& processBlock) override {
+        if (!getTokenEndNotFound_.isUninitialized() && processBlock.getHandle(getTokenEndNotFound_).isValid()) {
+          throw cms::Exception("TestFailure") << "Expected handle to be invalid but it is valid (end)";
+        }
+      }
+
       void accessInputProcessBlock(edm::ProcessBlock const& processBlock) override {
         if (processBlock.processName() == "PROD1") {
-          sum_ += processBlock.get(getTokenBegin_).value;
-          sum_ += processBlock.get(getTokenEnd_).value;
+          if (processBlock.getHandle(getTokenBegin_).isValid()) {
+            sum_ += processBlock.get(getTokenBegin_).value;
+            sum_ += processBlock.get(getTokenEnd_).value;
+          }
         }
         if (processBlock.processName() == "MERGE") {
-          sum_ += processBlock.get(getTokenBeginM_).value;
-          sum_ += processBlock.get(getTokenEndM_).value;
+          if (processBlock.getHandle(getTokenBeginM_).isValid()) {
+            sum_ += processBlock.get(getTokenBeginM_).value;
+            sum_ += processBlock.get(getTokenEndM_).value;
+          }
         }
         ++transitions_;
       }
@@ -428,10 +467,30 @@ namespace edmtest {
           throw cms::Exception("UnexpectedValue")
               << "InputProcessBlockIntAnalyzer sum " << sum_ << " but it was supposed to be " << expectedSum_;
         }
+        if (expectedFillerSum_ != 0 && fillerSum_ != expectedFillerSum_) {
+          throw cms::Exception("UnexpectedValue")
+              << "InputProcessBlockIntAnalyzer fillerSum " << fillerSum_ << " but it was supposed to be " << expectedFillerSum_;
+        }
         if (cacheSize() > 0u) {
           throw cms::Exception("UnexpectedValue")
               << "InputProcessBlockIntAnalyzer cache size not zero at endJob " << cacheSize();
         }
+      }
+
+      static void fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+        edm::ParameterSetDescription desc;
+        desc.add<int>("transitions");
+        desc.add<std::vector<int>>("expectedByRun");
+        desc.add<int>("expectedSum");
+        edm::InputTag defaultInputTag;
+        desc.addUntracked<int>("expectedFillerSum", 0);
+        desc.add<edm::InputTag>("consumesBeginProcessBlock");
+        desc.add<edm::InputTag>("consumesEndProcessBlock");
+        desc.add<edm::InputTag>("consumesBeginProcessBlockM");
+        desc.add<edm::InputTag>("consumesEndProcessBlockM");
+        desc.add<edm::InputTag>("consumesBeginProcessBlockNotFound", defaultInputTag);
+        desc.add<edm::InputTag>("consumesEndProcessBlockNotFound", defaultInputTag);
+        descriptions.addDefault(desc);
       }
 
     private:
@@ -439,11 +498,15 @@ namespace edmtest {
       edm::EDGetTokenT<IntProduct> getTokenEnd_;
       edm::EDGetTokenT<IntProduct> getTokenBeginM_;
       edm::EDGetTokenT<IntProduct> getTokenEndM_;
+      edm::EDGetTokenT<IntProduct> getTokenBeginNotFound_;
+      edm::EDGetTokenT<IntProduct> getTokenEndNotFound_;
       CMS_THREAD_SAFE mutable std::atomic<unsigned int> transitions_{0};
       int sum_{0};
       unsigned int expectedTransitions_{0};
       std::vector<int> expectedByRun_;
       int expectedSum_{0};
+      int fillerSum_{0};
+      int expectedFillerSum_{0};
     };
 
   }  // namespace one
