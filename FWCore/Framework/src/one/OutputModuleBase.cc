@@ -12,7 +12,7 @@
 
 // system include files
 #include <cassert>
-
+#include <iostream>
 // user include files
 #include "FWCore/Framework/interface/one/OutputModuleBase.h"
 
@@ -86,6 +86,7 @@ namespace edm {
     void OutputModuleBase::selectProducts(ProductRegistry const& preg,
                                           ThinnedAssociationsHelper const& thinnedAssociationsHelper,
                                           ProcessBlockHelperBase const& processBlockHelper) {
+      std::cout << "OutputModuleBase::selectProducts" << std::endl;
       if (productSelector_.initialized())
         return;
       productSelector_.initialize(productSelectorRules_, preg.allBranchDescriptions());
@@ -102,6 +103,7 @@ namespace edm {
 
       for (auto const& it : preg.productList()) {
         BranchDescription const& desc = it.second;
+        std::cout << "    " << desc.moduleLabel() << " " << desc.processName() << std::endl;
         if (desc.transient()) {
           // if the class of the branch is marked transient, output nothing
         } else if (!desc.present() && !desc.produced()) {
@@ -110,6 +112,7 @@ namespace edm {
         } else if (desc.unwrappedType() == typeid(ThinnedAssociation)) {
           associationDescriptions.push_back(&desc);
         } else if (selected(desc)) {
+          std::cout << "    selected " << desc.moduleLabel() << " " << desc.processName() << std::endl;
           keepThisBranch(desc, trueBranchIDToKeptBranchDesc, keptProductsInEvent);
           insertSelectedProcesses(
               desc, processesWithSelectedMergeableRunProducts, processesWithKeptProcessBlockProducts);

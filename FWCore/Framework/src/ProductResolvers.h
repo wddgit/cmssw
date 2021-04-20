@@ -424,11 +424,12 @@ namespace edm {
                                bool skipCurrentProcess,
                                SharedResourcesAcquirer* sra,
                                ModuleCallingContext const* mcc) const override {
+      std::cout << "ENTRING WDD HIT INTERESTING POINT IN ParentProcessProductResolver::resolveProduct_" << std::endl;
       if (principal.branchType() == InProcess &&
           mcc->parent().globalContext()->transition() != GlobalContext::Transition::kAccessInputProcessBlock) {
         // This is a SubProcess beginProcessBlock or endProcessBlock transition
         // We cannot access products from parent processes in those transitions
-        std::cout << "WDD HIT INTERESTING POINT IN ParentProcessProductResolver::resolveProduct_" << std::endl;
+        std::cout << "    WDD HIT INTERESTING POINT IN ParentProcessProductResolver::resolveProduct_" << std::endl;
         return Resolution(nullptr);
       }
 
@@ -441,6 +442,7 @@ namespace edm {
                         ServiceToken const& token,
                         SharedResourcesAcquirer* sra,
                         ModuleCallingContext const* mcc) const override {
+      std::cout << "ENTRING WDD HIT INTERESTING POINT IN ParentProcessProductResolver::prefetchAsync_" << std::endl;
       if (principal.branchType() == InProcess &&
           mcc->parent().globalContext()->transition() != GlobalContext::Transition::kAccessInputProcessBlock) {
         // This is a SubProcess beginProcessBlock or endProcessBlock transition

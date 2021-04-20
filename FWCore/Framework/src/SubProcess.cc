@@ -513,6 +513,12 @@ namespace edm {
       auto runEndProcessBlock =
           make_waiting_task([this, iWait = std::move(iHolder), info = transitionInfo, cleaningUpAfterException](
                                 std::exception_ptr const* iPtr) mutable {
+
+            ProcessBlockPrincipal& inputProcessBlockPrincipal = principalCache_.inputProcessBlockPrincipal();
+            inputProcessBlockPrincipal.clearPrincipal();
+            for (auto& s : subProcesses_) {
+              s.clearProcessBlockPrincipal(ProcessBlockType::Input);
+            }
             if (iPtr) {
               iWait.doneWaiting(*iPtr);
             } else {
@@ -523,6 +529,18 @@ namespace edm {
           });
       WaitingTaskHolder holder(*iHolder.group(), runEndProcessBlock);
 
+      auto runWriteProcessBlock =
+          make_waiting_task([this, iWait = std::move(holder)](
+                                std::exception_ptr const* iPtr) mutable {
+
+            if (iPtr) {
+              iWait.doneWaiting(*iPtr);
+            } else {
+              writeProcessBlockAsync(iWait, ProcessBlockType::Input);
+            }
+          });
+      WaitingTaskHolder writeHolder(*iHolder.group(), runWriteProcessBlock);
+
       ProcessBlockPrincipal& inputProcessBlockPrincipal = principalCache_.inputProcessBlockPrincipal();
       inputProcessBlockPrincipal.fillProcessBlockPrincipal(parentPrincipal.processName(), parentPrincipal.reader());
       propagateProducts(InProcess, parentPrincipal, inputProcessBlockPrincipal);
@@ -530,12 +548,8 @@ namespace edm {
 
       using TraitsInput = OccurrenceTraits<ProcessBlockPrincipal, BranchActionProcessBlockInput>;
       beginGlobalTransitionAsync<TraitsInput>(
-          std::move(holder), *schedule_, inputTransitionInfo, serviceToken_, subProcesses_, cleaningUpAfterException);
+          std::move(writeHolder), *schedule_, inputTransitionInfo, serviceToken_, subProcesses_, cleaningUpAfterException);
       
-      inputProcessBlockPrincipal.clearPrincipal();
-      for (auto& s : subProcesses_) {
-        s.clearProcessBlockPrincipal(ProcessBlockType::Input);
-      }
     } else {
       using Traits = OccurrenceTraits<ProcessBlockPrincipal, BranchActionGlobalEnd>;
       endGlobalTransitionAsync<Traits>(
