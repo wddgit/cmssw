@@ -426,9 +426,8 @@ namespace edm {
                                ModuleCallingContext const* mcc) const override {
       std::cout << "ENTRING WDD HIT INTERESTING POINT IN ParentProcessProductResolver::resolveProduct_" << std::endl;
       if (principal.branchType() == InProcess &&
-          mcc->parent().globalContext()->transition() != GlobalContext::Transition::kAccessInputProcessBlock) {
-        // This is a SubProcess beginProcessBlock or endProcessBlock transition
-        // We cannot access products from parent processes in those transitions
+          (mcc->parent().globalContext()->transition() == GlobalContext::Transition::kBeginProcessBlock ||
+           mcc->parent().globalContext()->transition() == GlobalContext::Transition::kEndProcessBlock)) {
         std::cout << "    WDD HIT INTERESTING POINT IN ParentProcessProductResolver::resolveProduct_" << std::endl;
         return Resolution(nullptr);
       }
@@ -444,9 +443,8 @@ namespace edm {
                         ModuleCallingContext const* mcc) const override {
       std::cout << "ENTRING WDD HIT INTERESTING POINT IN ParentProcessProductResolver::prefetchAsync_" << std::endl;
       if (principal.branchType() == InProcess &&
-          mcc->parent().globalContext()->transition() != GlobalContext::Transition::kAccessInputProcessBlock) {
-        // This is a SubProcess beginProcessBlock or endProcessBlock transition
-        // We cannot access products from parent processes in those transitions
+          (mcc->parent().globalContext()->transition() == GlobalContext::Transition::kBeginProcessBlock ||
+           mcc->parent().globalContext()->transition() == GlobalContext::Transition::kEndProcessBlock)) {
         std::cout << "WDD HIT INTERESTING POINT IN ParentProcessProductResolver::prefetchAsync_" << std::endl;
         return;
       }
