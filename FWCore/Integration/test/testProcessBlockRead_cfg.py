@@ -105,7 +105,9 @@ process.readProcessBlocksOneAnalyzer = cms.EDAnalyzer("edmtest::one::InputProces
                                             consumesBeginProcessBlockM = cms.InputTag("intProducerBeginProcessBlockM", ""),
                                             consumesEndProcessBlockM = cms.InputTag("intProducerEndProcessBlockM", ""),
                                             expectedByRun = cms.vint32(0, 11, 22),
-                                            expectedSum = cms.int32(77)
+                                            expectedSum = cms.int32(77),
+                                            consumesBeginProcessBlockNotFound = cms.InputTag("intProducerBeginProcessBlock"),
+                                            consumesEndProcessBlockNotFound = cms.InputTag("intProducerEndProcessBlock")
 )
 
 process.readProcessBlocksOneFilter = cms.EDFilter("edmtest::one::InputProcessBlockIntFilter",

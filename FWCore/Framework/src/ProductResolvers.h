@@ -25,11 +25,10 @@ a set of related EDProducts. This is the storage unit of such information.
 #include "FWCore/Concurrency/interface/WaitingTaskList.h"
 #include "FWCore/Concurrency/interface/WaitingTaskHolder.h"
 
-#include <memory>
 #include <atomic>
-
+#include <memory>
 #include <string>
-#include <iostream>
+
 namespace edm {
   class MergeableRunProductMetadata;
   class ProductProvenanceRetriever;
@@ -424,11 +423,9 @@ namespace edm {
                                bool skipCurrentProcess,
                                SharedResourcesAcquirer* sra,
                                ModuleCallingContext const* mcc) const override {
-      std::cout << "ENTRING WDD HIT INTERESTING POINT IN ParentProcessProductResolver::resolveProduct_" << std::endl;
       if (principal.branchType() == InProcess &&
           (mcc->parent().globalContext()->transition() == GlobalContext::Transition::kBeginProcessBlock ||
            mcc->parent().globalContext()->transition() == GlobalContext::Transition::kEndProcessBlock)) {
-        std::cout << "    WDD HIT INTERESTING POINT IN ParentProcessProductResolver::resolveProduct_" << std::endl;
         return Resolution(nullptr);
       }
 
@@ -441,11 +438,9 @@ namespace edm {
                         ServiceToken const& token,
                         SharedResourcesAcquirer* sra,
                         ModuleCallingContext const* mcc) const override {
-      std::cout << "ENTRING WDD HIT INTERESTING POINT IN ParentProcessProductResolver::prefetchAsync_" << std::endl;
       if (principal.branchType() == InProcess &&
           (mcc->parent().globalContext()->transition() == GlobalContext::Transition::kBeginProcessBlock ||
            mcc->parent().globalContext()->transition() == GlobalContext::Transition::kEndProcessBlock)) {
-        std::cout << "WDD HIT INTERESTING POINT IN ParentProcessProductResolver::prefetchAsync_" << std::endl;
         return;
       }
 
