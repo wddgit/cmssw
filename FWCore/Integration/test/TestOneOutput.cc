@@ -77,18 +77,26 @@ namespace edm {
     }
   }
 
-  void TestOneOutput::writeRun(RunForOutput const&) { LogAbsolute("TestOneOutput") << "one writeRun"; }
+  void TestOneOutput::writeRun(RunForOutput const&) {
+    if (verbose_) {
+      LogAbsolute("TestOneOutput") << "one writeRun";
+    }
+  }
 
   void TestOneOutput::writeProcessBlock(ProcessBlockForOutput const& pb) {
-    LogAbsolute("TestOneOutput") << "one writeProcessBlock";
+    if (verbose_) {
+      LogAbsolute("TestOneOutput") << "one writeProcessBlock";
+    }
     if (countWriteProcessBlockTransitions_ < expectedProcessNamesAtWrite_.size()) {
       if (expectedProcessNamesAtWrite_[countWriteProcessBlockTransitions_] != pb.processName()) {
         throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected process name";
       }
     }
     if (!expectedProcessesWithProcessBlockProducts_.empty()) {
-      for (auto const& process : outputProcessBlockHelper().processesWithProcessBlockProducts()) {
-        LogAbsolute("TestOneOutput") << "    " << process;
+      if (verbose_) {
+        for (auto const& process : outputProcessBlockHelper().processesWithProcessBlockProducts()) {
+          LogAbsolute("TestOneOutput") << "    " << process;
+        }
       }
       if (expectedProcessesWithProcessBlockProducts_ != outputProcessBlockHelper().processesWithProcessBlockProducts()) {
         throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected process name list";
@@ -146,8 +154,8 @@ namespace edm {
   }
 
   std::shared_ptr<int> TestOneOutput::globalBeginRun(RunForOutput const&) const {
-    LogAbsolute("TestOneOutput") << "one globalBeginRun";
     if (verbose_) {
+      LogAbsolute("TestOneOutput") << "one globalBeginRun";
       edm::Service<edm::ConstProductRegistry> reg;
       for (auto const& it : reg->productList()) {
         LogAbsolute("TestOneOutput") << it.second;
@@ -157,7 +165,9 @@ namespace edm {
   }
 
   void TestOneOutput::globalEndRun(RunForOutput const&) {
-    LogAbsolute("TestOneOutput") << "one globalEndRun";
+    if (verbose_) {
+      LogAbsolute("TestOneOutput") << "one globalEndRun";
+    }
   }
 
   std::shared_ptr<int> TestOneOutput::globalBeginLuminosityBlock(LuminosityBlockForOutput const&) const {

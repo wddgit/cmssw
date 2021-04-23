@@ -2,8 +2,6 @@ import FWCore.ParameterSet.Config as cms
 
 process = cms.Process("TEST")
 
-process.Tracer = cms.Service("Tracer")
-
 process.options = cms.untracked.PSet(
     numberOfStreams = cms.untracked.uint32(1),
     numberOfThreads = cms.untracked.uint32(1),

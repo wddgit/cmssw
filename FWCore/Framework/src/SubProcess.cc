@@ -549,7 +549,7 @@ namespace edm {
       using TraitsInput = OccurrenceTraits<ProcessBlockPrincipal, BranchActionProcessBlockInput>;
       beginGlobalTransitionAsync<TraitsInput>(
           std::move(writeHolder), *schedule_, inputTransitionInfo, serviceToken_, subProcesses_, cleaningUpAfterException);
-      
+
     } else {
       using Traits = OccurrenceTraits<ProcessBlockPrincipal, BranchActionGlobalEnd>;
       endGlobalTransitionAsync<Traits>(

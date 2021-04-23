@@ -23,7 +23,7 @@
 
 #include <cassert>
 #include <utility>
-#include <iostream>
+
 static constexpr unsigned int kUnsetOffset = 0;
 static constexpr unsigned int kAmbiguousOffset = 1;
 static constexpr unsigned int kMissingOffset = 2;
@@ -49,7 +49,7 @@ namespace edm {
       throwProductDeletedException();
     }
     auto presentStatus = status();
-    std::cout << "ProductResolverBase::Resolution DataManagingProductResolver::resolveProductImpl "  << branchDescription().moduleLabel() << std::endl; 
+
     if (callResolver && presentStatus == ProductStatus::ResolveNotRun) {
       //if resolver fails because of exception or not setting product
       // make sure the status goes to failed
@@ -63,7 +63,6 @@ namespace edm {
                                                                                      failedStatusSetter);
 
       //If successful, this will call setProduct
-      std::cout << "    Calling RESOLVE" << std::endl;
       resolver();
     }
 
@@ -273,15 +272,12 @@ namespace edm {
             if (principal.branchType() != InEvent && principal.branchType() != InProcess) {
               return;
             }
-            std::cout << "preftchAsync_ looking for reader" << std::endl;
             if (auto reader = principal.reader()) {
-              std::cout << "Found reader" << std::endl;
               std::unique_lock<std::recursive_mutex> guard;
               if (auto sr = reader->sharedResources().second) {
                 guard = std::unique_lock<std::recursive_mutex>(*sr);
               }
               if (not productResolved()) {
-                std::cout << "WDD in DelayedReaderInputProductResolver::prefetchAsync_ " << branchDescription().moduleLabel() << std::endl;
                 //another thread could have finished this while we were waiting
                 setProduct(reader->getProduct(branchDescription().branchID(), &principal, mcc));
               }
@@ -373,14 +369,12 @@ namespace edm {
                                                ServiceToken const& token,
                                                SharedResourcesAcquirer* sra,
                                                ModuleCallingContext const* mcc) const {
-    std::cout << "ENTERING prefetchAsync_" << std::endl;
     if (not skipCurrentProcess) {
       if (branchDescription().branchType() == InProcess &&
           mcc->parent().globalContext()->transition() == GlobalContext::Transition::kAccessInputProcessBlock) {
         // This is an accessInputProcessBlock transition
         // We cannot access produced products in those transitions
         // except for in SubProcesses where they should have already run.
-        std::cout << "WDDX put prefetchAsync_ " << branchDescription().moduleLabel() << " " << branchDescription().processName() << std::endl;
         return;
       }
       if (branchDescription().availableOnlyAtEndTransition() and mcc) {
@@ -1056,7 +1050,6 @@ namespace edm {
         //Make sure the Services are available on this thread
         ServiceRegistry::Operate guard(token);
 
-        std::cout << "tryPrefetchResolverAsync calling prefetchAsync " << skipCurrentProcess << std::endl;
         productResolver->prefetchAsync(hTask, principal, skipCurrentProcess, token, sra, mcc);
         return;
       }

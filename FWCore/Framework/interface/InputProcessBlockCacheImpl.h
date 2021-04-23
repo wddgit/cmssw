@@ -26,7 +26,7 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
-#include <iostream>
+
 namespace edm {
 
   class Event;
@@ -90,7 +90,6 @@ namespace edm {
           I<sizeof...(CacheTypes), void>::type fillTuple(std::tuple<CacheHandle<CacheTypes>...>& cacheHandles,
                                                          Event const& event) const {
         unsigned int index = eventProcessBlockIndex(event, processNames_[I]);
-        std::cout << "    index = " << index << " I = " << I << " " << processNames_[I] << std::endl;
 
         // If the branch associated with the token was passed to registerProcessBlockCacheFiller
         // was not in the input file, then the index will be invalid. Note the branch (including
@@ -104,7 +103,6 @@ namespace edm {
       }
 
       std::tuple<CacheHandle<CacheTypes>...> processBlockCaches(Event const& event) const {
-        std::cout << "ENTERING processBlockCaches" << std::endl;
         std::tuple<CacheHandle<CacheTypes>...> cacheHandles;
         // processNames will be empty if and only if registerProcessBlockCacheFiller
         // was never called by the module constructor
@@ -178,9 +176,7 @@ namespace edm {
           typename std::enable_if < I<sizeof...(CacheTypes), void>::type fillCache(ProcessBlock const& pb,
                                                                                    CacheTuple const& previousCacheTuple,
                                                                                    CacheTuple& cacheTuple) {
-        std::cout << "  Before comparison " << pb.processName() << " " << processNames_[I] << std::endl;
         if (pb.processName() == processNames_[I]) {
-          std::cout << "  About to call functor " << pb.processName() << " " << processNames_[I] << std::endl;
           auto const& previousSharedPtr = std::get<I>(previousCacheTuple.cacheTuple_);
           std::get<I>(cacheTuple.cacheTuple_) = std::get<I>(functors_).func_(pb, previousSharedPtr);
         }
@@ -188,9 +184,7 @@ namespace edm {
       }
 
       void accessInputProcessBlock(ProcessBlock const& pb) {
-        std::cout << "InputProcessBlockCacheImpl::accessInputProcessBlock" << std::endl;
         if (sizeof...(CacheTypes) > 0 && !processNames_.empty()) {
-          std::cout << "InputProcessBlockCacheImpl::accessInputProcessBlock INSIDE, fillCache will get called" << std::endl;
           CacheTuple cacheTuple;
           if (caches_.empty()) {
             CacheTuple firstCacheTuple;

@@ -81,7 +81,7 @@ pushd ${LOCAL_TMP_DIR}
 
   echo "testProcessBlockSubProcessRead2"
   cmsRun -p ${LOCAL_TEST_DIR}/testProcessBlockSubProcessRead2_cfg.py > /dev/null 2>&1 || die "cmsRun testProcessBlockSubProcessRead2_cfg.py" $?
-  
+
   rm testProcessBlock1ContentsM.txt
   rm testProcessBlock1ContentsE.txt
   rm testProcessBlock2DroppedContentsM.txt
