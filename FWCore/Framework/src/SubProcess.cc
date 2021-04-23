@@ -513,7 +513,6 @@ namespace edm {
       auto runEndProcessBlock =
           make_waiting_task([this, iWait = std::move(iHolder), info = transitionInfo, cleaningUpAfterException](
                                 std::exception_ptr const* iPtr) mutable {
-
             ProcessBlockPrincipal& inputProcessBlockPrincipal = principalCache_.inputProcessBlockPrincipal();
             inputProcessBlockPrincipal.clearPrincipal();
             for (auto& s : subProcesses_) {
@@ -530,9 +529,7 @@ namespace edm {
       WaitingTaskHolder holder(*iHolder.group(), runEndProcessBlock);
 
       auto runWriteProcessBlock =
-          make_waiting_task([this, iWait = std::move(holder)](
-                                std::exception_ptr const* iPtr) mutable {
-
+          make_waiting_task([this, iWait = std::move(holder)](std::exception_ptr const* iPtr) mutable {
             if (iPtr) {
               iWait.doneWaiting(*iPtr);
             } else {
@@ -547,8 +544,12 @@ namespace edm {
       ProcessBlockTransitionInfo inputTransitionInfo(inputProcessBlockPrincipal);
 
       using TraitsInput = OccurrenceTraits<ProcessBlockPrincipal, BranchActionProcessBlockInput>;
-      beginGlobalTransitionAsync<TraitsInput>(
-          std::move(writeHolder), *schedule_, inputTransitionInfo, serviceToken_, subProcesses_, cleaningUpAfterException);
+      beginGlobalTransitionAsync<TraitsInput>(std::move(writeHolder),
+                                              *schedule_,
+                                              inputTransitionInfo,
+                                              serviceToken_,
+                                              subProcesses_,
+                                              cleaningUpAfterException);
 
     } else {
       using Traits = OccurrenceTraits<ProcessBlockPrincipal, BranchActionGlobalEnd>;

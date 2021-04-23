@@ -47,8 +47,10 @@ namespace edm {
       : limited::OutputModuleBase(pset),
         limited::OutputModule<WatchInputFiles, RunCache<int>, LuminosityBlockCache<int>>(pset),
         verbose_(pset.getUntrackedParameter<bool>("verbose")),
-        expectedProcessesWithProcessBlockProducts_(pset.getUntrackedParameter<std::vector<std::string>>("expectedProcessesWithProcessBlockProducts")),
-        expectedWriteProcessBlockTransitions_(pset.getUntrackedParameter<int>("expectedWriteProcessBlockTransitions")) {}
+        expectedProcessesWithProcessBlockProducts_(
+            pset.getUntrackedParameter<std::vector<std::string>>("expectedProcessesWithProcessBlockProducts")),
+        expectedWriteProcessBlockTransitions_(pset.getUntrackedParameter<int>("expectedWriteProcessBlockTransitions")) {
+  }
 
   TestLimitedOutput::~TestLimitedOutput() {}
 
@@ -73,7 +75,8 @@ namespace edm {
       for (auto const& process : outputProcessBlockHelper().processesWithProcessBlockProducts()) {
         LogAbsolute("TestLimitedOutput") << "    " << process;
       }
-      if (expectedProcessesWithProcessBlockProducts_ != outputProcessBlockHelper().processesWithProcessBlockProducts()) {
+      if (expectedProcessesWithProcessBlockProducts_ !=
+          outputProcessBlockHelper().processesWithProcessBlockProducts()) {
         throw cms::Exception("TestFailure") << "TestLimitedOutput::writeProcessBlock unexpected process name list";
       }
     }
@@ -129,7 +132,8 @@ namespace edm {
   void TestLimitedOutput::endJob() {
     if (expectedWriteProcessBlockTransitions_ >= 0) {
       if (expectedWriteProcessBlockTransitions_ != countWriteProcessBlockTransitions_) {
-        throw cms::Exception("TestFailure") << "TestLimitedOutput::writeProcessBlock unexpected number of writeProcessBlock transitions";
+        throw cms::Exception("TestFailure")
+            << "TestLimitedOutput::writeProcessBlock unexpected number of writeProcessBlock transitions";
       }
     }
   }
@@ -138,7 +142,8 @@ namespace edm {
     ParameterSetDescription desc;
     OutputModule::fillDescription(desc);
     desc.addUntracked<bool>("verbose", true);
-    desc.addUntracked<std::vector<std::string>>("expectedProcessesWithProcessBlockProducts", std::vector<std::string>());
+    desc.addUntracked<std::vector<std::string>>("expectedProcessesWithProcessBlockProducts",
+                                                std::vector<std::string>());
     desc.addUntracked<int>("expectedWriteProcessBlockTransitions", -1);
     descriptions.addDefault(desc);
   }

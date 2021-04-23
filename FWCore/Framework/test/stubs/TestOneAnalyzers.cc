@@ -440,19 +440,21 @@ namespace edmtest {
         auto cacheTuple = processBlockCaches(event);
         if (!expectedByRun_.empty()) {
           if (expectedByRun_[event.run()] != *std::get<edm::CacheHandle<int>>(cacheTuple)) {
-            throw cms::Exception("UnexpectedValue")
-                << "InputProcessBlockIntAnalyzer::analyze cached value was " << *std::get<edm::CacheHandle<int>>(cacheTuple)
-                << " but it was supposed to be " << expectedByRun_[event.run()];
+            throw cms::Exception("UnexpectedValue") << "InputProcessBlockIntAnalyzer::analyze cached value was "
+                                                    << *std::get<edm::CacheHandle<int>>(cacheTuple)
+                                                    << " but it was supposed to be " << expectedByRun_[event.run()];
           }
           if (expectedByRun_[event.run()] != std::get<1>(cacheTuple)->value_) {
             throw cms::Exception("UnexpectedValue")
                 << "InputProcessBlockIntAnalyzer::analyze second cached value was " << std::get<1>(cacheTuple)->value_
                 << " but it was supposed to be " << expectedByRun_[event.run()];
           }
-          if (expectedByRun_[event.run()] != std::get<edm::CacheHandle<TestInputProcessBlockCache1>>(cacheTuple)->value_) {
-            throw cms::Exception("UnexpectedValue") << "InputProcessBlockIntAnalyzer::analyze third cached value was "
-                                                    << std::get<edm::CacheHandle<TestInputProcessBlockCache1>>(cacheTuple)->value_
-                                                    << " but it was supposed to be " << expectedByRun_[event.run()];
+          if (expectedByRun_[event.run()] !=
+              std::get<edm::CacheHandle<TestInputProcessBlockCache1>>(cacheTuple)->value_) {
+            throw cms::Exception("UnexpectedValue")
+                << "InputProcessBlockIntAnalyzer::analyze third cached value was "
+                << std::get<edm::CacheHandle<TestInputProcessBlockCache1>>(cacheTuple)->value_
+                << " but it was supposed to be " << expectedByRun_[event.run()];
           }
         }
         ++transitions_;
@@ -468,8 +470,8 @@ namespace edmtest {
               << "InputProcessBlockIntAnalyzer sum " << sum_ << " but it was supposed to be " << expectedSum_;
         }
         if (expectedFillerSum_ != 0 && fillerSum_ != expectedFillerSum_) {
-          throw cms::Exception("UnexpectedValue")
-              << "InputProcessBlockIntAnalyzer fillerSum " << fillerSum_ << " but it was supposed to be " << expectedFillerSum_;
+          throw cms::Exception("UnexpectedValue") << "InputProcessBlockIntAnalyzer fillerSum " << fillerSum_
+                                                  << " but it was supposed to be " << expectedFillerSum_;
         }
         if (cacheSize() > 0u) {
           throw cms::Exception("UnexpectedValue")

@@ -388,7 +388,7 @@ namespace edm {
     InputSource::ProcessingMode processingMode_;
     edm::propagate_const<RunHelperBase*> runHelper_;
     std::map<std::string, std::string> newBranchToOldBranch_;
-    edm::propagate_const<TTree*> eventHistoryTree_;           // backward compatibility
+    edm::propagate_const<TTree*> eventHistoryTree_;  // backward compatibility
     EventToProcessBlockIndexes eventToProcessBlockIndexes_;
     TBranch* eventToProcessBlockIndexesBranch_;
     edm::propagate_const<std::unique_ptr<History>> history_;  // backward compatibility

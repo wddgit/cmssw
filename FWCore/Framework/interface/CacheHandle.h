@@ -31,5 +31,5 @@ namespace edm {
   private:
     T const* data_;
   };
-}
+}  // namespace edm
 #endif

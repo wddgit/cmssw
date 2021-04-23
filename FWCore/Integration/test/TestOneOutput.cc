@@ -56,8 +56,10 @@ namespace edm {
       : one::OutputModuleBase(pset),
         one::OutputModule<WatchInputFiles, RunCache<int>, LuminosityBlockCache<int>>(pset),
         verbose_(pset.getUntrackedParameter<bool>("verbose")),
-        expectedProcessesWithProcessBlockProducts_(pset.getUntrackedParameter<std::vector<std::string>>("expectedProcessesWithProcessBlockProducts")),
-        expectedProcessNamesAtWrite_(pset.getUntrackedParameter<std::vector<std::string>>("expectedProcessNamesAtWrite")),
+        expectedProcessesWithProcessBlockProducts_(
+            pset.getUntrackedParameter<std::vector<std::string>>("expectedProcessesWithProcessBlockProducts")),
+        expectedProcessNamesAtWrite_(
+            pset.getUntrackedParameter<std::vector<std::string>>("expectedProcessNamesAtWrite")),
         expectedWriteProcessBlockTransitions_(pset.getUntrackedParameter<int>("expectedWriteProcessBlockTransitions")),
         requireNullTTreesInFileBlock_(pset.getUntrackedParameter<bool>("requireNullTTreesInFileBlock")),
         testTTreesInFileBlock_(pset.getUntrackedParameter<bool>("testTTreesInFileBlock")),
@@ -98,7 +100,8 @@ namespace edm {
           LogAbsolute("TestOneOutput") << "    " << process;
         }
       }
-      if (expectedProcessesWithProcessBlockProducts_ != outputProcessBlockHelper().processesWithProcessBlockProducts()) {
+      if (expectedProcessesWithProcessBlockProducts_ !=
+          outputProcessBlockHelper().processesWithProcessBlockProducts()) {
         throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected process name list";
       }
     }
@@ -127,21 +130,17 @@ namespace edm {
 
   void TestOneOutput::testFileBlock(FileBlock const& fb) {
     if (requireNullTTreesInFileBlock_) {
-      if (fb.tree() != nullptr ||
-          fb.lumiTree() != nullptr ||
-          fb.runTree() != nullptr ||
-          !fb.processBlockTrees().empty() ||
-          !fb.processesWithProcessBlockTrees().empty() ||
+      if (fb.tree() != nullptr || fb.lumiTree() != nullptr || fb.runTree() != nullptr ||
+          !fb.processBlockTrees().empty() || !fb.processesWithProcessBlockTrees().empty() ||
           fb.processBlockTree(std::string("DoesNotExist")) != nullptr) {
-        throw cms::Exception("TestFailure") << "TestOneOutput::respondToOpenInputFile expected null TTree pointers in FileBlock";
+        throw cms::Exception("TestFailure")
+            << "TestOneOutput::respondToOpenInputFile expected null TTree pointers in FileBlock";
       }
     } else if (testTTreesInFileBlock_) {
       if (std::string("Events") != fb.tree()->GetName() ||
           std::string("LuminosityBlocks") != fb.lumiTree()->GetName() ||
-          std::string("Runs") != fb.runTree()->GetName() ||
-          fb.processesWithProcessBlockTrees().size() != 2 ||
-          fb.processesWithProcessBlockTrees()[0] != "PROD1" ||
-          fb.processesWithProcessBlockTrees()[1] != "MERGE" ||
+          std::string("Runs") != fb.runTree()->GetName() || fb.processesWithProcessBlockTrees().size() != 2 ||
+          fb.processesWithProcessBlockTrees()[0] != "PROD1" || fb.processesWithProcessBlockTrees()[1] != "MERGE" ||
           fb.processBlockTrees().size() != 2 ||
           std::string("ProcessBlocksPROD1") != fb.processBlockTrees()[0]->GetName() ||
           std::string("ProcessBlocksMERGE") != fb.processBlockTrees()[1]->GetName() ||
@@ -186,7 +185,8 @@ namespace edm {
   void TestOneOutput::endJob() {
     if (expectedWriteProcessBlockTransitions_ >= 0) {
       if (static_cast<unsigned int>(expectedWriteProcessBlockTransitions_) != countWriteProcessBlockTransitions_) {
-        throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected number of writeProcessBlock transitions";
+        throw cms::Exception("TestFailure")
+            << "TestOneOutput::writeProcessBlock unexpected number of writeProcessBlock transitions";
       }
     }
   }
@@ -195,7 +195,8 @@ namespace edm {
     ParameterSetDescription desc;
     OutputModule::fillDescription(desc);
     desc.addUntracked<bool>("verbose", true);
-    desc.addUntracked<std::vector<std::string>>("expectedProcessesWithProcessBlockProducts", std::vector<std::string>());
+    desc.addUntracked<std::vector<std::string>>("expectedProcessesWithProcessBlockProducts",
+                                                std::vector<std::string>());
     desc.addUntracked<std::vector<std::string>>("expectedProcessNamesAtWrite", std::vector<std::string>());
     desc.addUntracked<int>("expectedWriteProcessBlockTransitions", -1);
     desc.addUntracked<bool>("requireNullTTreesInFileBlock", false);
