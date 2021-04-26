@@ -336,6 +336,7 @@ namespace edmtest {
         expectedByRun_ = pset.getParameter<std::vector<int>>("expectedByRun");
         expectedSum_ = pset.getParameter<int>("expectedSum");
         expectedFillerSum_ = pset.getUntrackedParameter<int>("expectedFillerSum", 0);
+        expectedCacheSize_ = pset.getUntrackedParameter<unsigned int>("expectedCacheSize", 0);
         {
           auto tag = pset.getParameter<edm::InputTag>("consumesBeginProcessBlock");
           if (not tag.label().empty()) {
@@ -457,6 +458,11 @@ namespace edmtest {
                 << " but it was supposed to be " << expectedByRun_[event.run()];
           }
         }
+
+        if (expectedCacheSize_ != 0u && expectedCacheSize_ != cacheSize()) {
+          throw cms::Exception("UnexpectedValue") << "InputProcessBlockIntAnalyzer::analyze, unexpected cacheSize " << cacheSize()
+                                                  << " but it was supposed to be " << expectedCacheSize_;
+        }
         ++transitions_;
       }
 
@@ -486,6 +492,7 @@ namespace edmtest {
         desc.add<int>("expectedSum");
         edm::InputTag defaultInputTag;
         desc.addUntracked<int>("expectedFillerSum", 0);
+        desc.addUntracked<unsigned int>("expectedCacheSize", 0);
         desc.add<edm::InputTag>("consumesBeginProcessBlock");
         desc.add<edm::InputTag>("consumesEndProcessBlock");
         desc.add<edm::InputTag>("consumesBeginProcessBlockM");
@@ -509,6 +516,7 @@ namespace edmtest {
       int expectedSum_{0};
       int fillerSum_{0};
       int expectedFillerSum_{0};
+      unsigned int expectedCacheSize_{0};
     };
 
   }  // namespace one

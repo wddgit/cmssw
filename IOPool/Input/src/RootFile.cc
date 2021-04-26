@@ -1283,7 +1283,8 @@ namespace edm {
   }
 
   void RootFile::fillEventToProcessBlockIndexes() {
-    if (eventToProcessBlockIndexesBranch_ == nullptr) {
+    TBranch* eventToProcessBlockIndexesBranch = get_underlying_safe(eventToProcessBlockIndexesBranch_);
+    if (eventToProcessBlockIndexesBranch == nullptr) {
       if (processBlockHelper_.get() == nullptr) {
         eventToProcessBlockIndexes_.setIndex(0);
       } else {
@@ -1291,7 +1292,7 @@ namespace edm {
       }
     } else {
       EventToProcessBlockIndexes* pEventToProcessBlockIndexes = &eventToProcessBlockIndexes_;
-      eventTree_.fillBranchEntry(eventToProcessBlockIndexesBranch_, pEventToProcessBlockIndexes);
+      eventTree_.fillBranchEntry(eventToProcessBlockIndexesBranch, pEventToProcessBlockIndexes);
       unsigned int updatedIndex = eventToProcessBlockIndexes_.index() + processBlockHelper_->outerOffset();
       eventToProcessBlockIndexes_.setIndex(updatedIndex);
     }

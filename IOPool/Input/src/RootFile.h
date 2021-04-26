@@ -29,11 +29,13 @@ RootFile.h // used by ROOT input sources
 #include "FWCore/Utilities/interface/get_underlying_safe.h"
 #include "FWCore/Utilities/interface/propagate_const.h"
 
+#include "TBranch.h"
+
 #include <array>
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
-#include <utility>
 #include <vector>
 
 namespace edm {
@@ -390,7 +392,7 @@ namespace edm {
     std::map<std::string, std::string> newBranchToOldBranch_;
     edm::propagate_const<TTree*> eventHistoryTree_;  // backward compatibility
     EventToProcessBlockIndexes eventToProcessBlockIndexes_;
-    TBranch* eventToProcessBlockIndexesBranch_;
+    edm::propagate_const<TBranch*> eventToProcessBlockIndexesBranch_;
     edm::propagate_const<std::unique_ptr<History>> history_;  // backward compatibility
     edm::propagate_const<std::shared_ptr<BranchChildren>> branchChildren_;
     edm::propagate_const<std::shared_ptr<DuplicateChecker>> duplicateChecker_;

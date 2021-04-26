@@ -82,6 +82,9 @@ pushd ${LOCAL_TMP_DIR}
   echo "testProcessBlockSubProcessRead2"
   cmsRun -p ${LOCAL_TEST_DIR}/testProcessBlockSubProcessRead2_cfg.py > /dev/null 2>&1 || die "cmsRun testProcessBlockSubProcessRead2_cfg.py" $?
 
+  echo "testProcessBlockSubProcessLooper"
+  cmsRun -p ${LOCAL_TEST_DIR}/testProcessBlockSubProcessLooper_cfg.py > /dev/null 2>&1 || die "cmsRun testProcessBlockSubProcessLooper_cfg.py" $?
+
   rm testProcessBlock1ContentsM.txt
   rm testProcessBlock1ContentsE.txt
   rm testProcessBlock2DroppedContentsM.txt
@@ -108,6 +111,10 @@ pushd ${LOCAL_TMP_DIR}
   rm testProcessBlockSubProcessReadAgain.root
   rm testProcessBlockSubProcessRead1.root
   rm testProcessBlockSubProcessRead2.root
+  rm testProcessBlockSubProcessLooperTest.root
+  rm testProcessBlockSubProcessLooperRead.root
+  rm testProcessBlockSubProcessLooperReadAgain.root
+
 popd
 
 exit 0
