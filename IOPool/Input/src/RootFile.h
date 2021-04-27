@@ -321,6 +321,16 @@ namespace edm {
     void dropProcessesAndReorder(StoredProcessBlockHelper&,
                                  std::set<std::string> const& processesWithKeptProcessBlockProducts,
                                  ProcessBlockHelper*);
+
+    bool dropProcessesAndReorderStored(std::vector<std::string>& processesWithProcessBlockProducts,
+                                       std::vector<unsigned int>& processBlockCacheIndices,
+                                       std::set<std::string> const& processesToKeep,
+                                       std::vector<std::string> const& firstFileOrder,
+                                       unsigned int nProcessesInFirstFile,
+                                       std::vector<unsigned int> const& nEntries,
+                                       std::vector<unsigned int>& firstFileToStored,
+                                       bool firstInputFile);
+
     void initializeProcessBlockHelper(ProcessBlockHelper*, StoredProcessBlockHelper&);
 
     void readParentageTree(InputType inputType);

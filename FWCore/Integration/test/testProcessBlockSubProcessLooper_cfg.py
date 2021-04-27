@@ -176,7 +176,7 @@ readAgainProcess.readProcessBlocksOneAnalyzer5 = cms.EDAnalyzer("edmtest::one::I
                                             expectedSum = cms.int32(1464),
                                             consumesBeginProcessBlockNotFound = cms.InputTag("intProducerBeginProcessBlockT"),
                                             consumesEndProcessBlockNotFound = cms.InputTag("intProducerEndProcessBlockT"),
-                                            expectedCacheSize = cms.untracked.uint32(6)
+                                            expectedCacheSize = cms.untracked.uint32(7)
 )
 
 readAgainProcess.intProducerBeginProcessBlockRA = cms.EDProducer("IntProducerBeginProcessBlock", ivalue = cms.int32(100000))

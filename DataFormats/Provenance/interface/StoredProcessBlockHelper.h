@@ -16,7 +16,6 @@ interact with the ProcessBlockHelper.
 
 */
 
-#include <set>
 #include <string>
 #include <vector>
 
@@ -41,13 +40,6 @@ namespace edm {
 
     static constexpr unsigned int invalidCacheIndex() { return 0xffffffff; }
     static constexpr unsigned int invalidProcessIndex() { return 0xffffffff; }
-
-    bool dropProcessesAndReorder(std::set<std::string> const& processesToKeep,
-                                 std::vector<std::string> const& firstFileOrder,
-                                 unsigned int nProcessesInFirstFile,
-                                 std::vector<unsigned int> const& nEntries,
-                                 std::vector<unsigned int>& firstFileToStored,
-                                 bool firstInputFile);
 
   private:
     std::vector<std::string> processesWithProcessBlockProducts_;

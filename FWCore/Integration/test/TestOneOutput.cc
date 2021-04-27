@@ -44,6 +44,8 @@ namespace edm {
 
     bool verbose_;
     std::vector<std::string> expectedProcessesWithProcessBlockProducts_;
+    std::vector<std::string> expectedTopProcessesWithProcessBlockProducts_;
+    std::vector<unsigned int> expectedTopCacheIndices_;
     std::vector<std::string> expectedProcessNamesAtWrite_;
     int expectedWriteProcessBlockTransitions_;
     unsigned int countWriteProcessBlockTransitions_ = 0;
@@ -58,6 +60,9 @@ namespace edm {
         verbose_(pset.getUntrackedParameter<bool>("verbose")),
         expectedProcessesWithProcessBlockProducts_(
             pset.getUntrackedParameter<std::vector<std::string>>("expectedProcessesWithProcessBlockProducts")),
+        expectedTopProcessesWithProcessBlockProducts_(
+            pset.getUntrackedParameter<std::vector<std::string>>("expectedTopProcessesWithProcessBlockProducts")),
+        expectedTopCacheIndices_(pset.getUntrackedParameter<std::vector<unsigned int>>("expectedTopCacheIndices")),
         expectedProcessNamesAtWrite_(
             pset.getUntrackedParameter<std::vector<std::string>>("expectedProcessNamesAtWrite")),
         expectedWriteProcessBlockTransitions_(pset.getUntrackedParameter<int>("expectedWriteProcessBlockTransitions")),
@@ -103,6 +108,32 @@ namespace edm {
       if (expectedProcessesWithProcessBlockProducts_ !=
           outputProcessBlockHelper().processesWithProcessBlockProducts()) {
         throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected process name list";
+      }
+    }
+    if (!expectedTopProcessesWithProcessBlockProducts_.empty()) {
+      // Same test as the previous except check the list of names in
+      // the top level process name list from the EventProcessor
+      if (expectedTopProcessesWithProcessBlockProducts_ !=
+          outputProcessBlockHelper().processBlockHelper()->processesWithProcessBlockProducts()) {
+        throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected top process name list";
+      }
+      if (!expectedTopCacheIndices_.empty()) {
+        std::vector<std::vector<unsigned int>> const& topProcessBlockCacheIndices = outputProcessBlockHelper().processBlockHelper()->processBlockCacheIndices();
+        if (expectedTopCacheIndices_.size() != expectedTopProcessesWithProcessBlockProducts_.size() * topProcessBlockCacheIndices.size()) {
+          throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected sizes related to top cache indices";
+        }
+        unsigned int iStored = 0;
+        for (unsigned int i = 0; i < topProcessBlockCacheIndices.size(); ++i) {
+          if (topProcessBlockCacheIndices[i].size() != expectedTopProcessesWithProcessBlockProducts_.size()) {
+            throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected size of outer cache indices vector";
+          }
+          for (unsigned int j = 0; j < topProcessBlockCacheIndices[i].size(); ++j) {
+            if (topProcessBlockCacheIndices[i][j] != expectedTopCacheIndices_[iStored]) {
+              throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected cache index value";
+            }
+            ++iStored;
+          }
+        }
       }
     }
     if (countWriteProcessBlockTransitions_ < expectedCacheIndexSize_.size()) {
@@ -197,6 +228,9 @@ namespace edm {
     desc.addUntracked<bool>("verbose", true);
     desc.addUntracked<std::vector<std::string>>("expectedProcessesWithProcessBlockProducts",
                                                 std::vector<std::string>());
+    desc.addUntracked<std::vector<std::string>>("expectedTopProcessesWithProcessBlockProducts",
+                                                std::vector<std::string>());
+    desc.addUntracked<std::vector<unsigned int>>("expectedTopCacheIndices", std::vector<unsigned int>());
     desc.addUntracked<std::vector<std::string>>("expectedProcessNamesAtWrite", std::vector<std::string>());
     desc.addUntracked<int>("expectedWriteProcessBlockTransitions", -1);
     desc.addUntracked<bool>("requireNullTTreesInFileBlock", false);
