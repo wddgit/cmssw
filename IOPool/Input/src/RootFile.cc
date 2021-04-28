@@ -541,7 +541,7 @@ namespace edm {
         }
       }
 
-      dropOnInput(
+      dropOnInputAndReorder(
           *newReg, productSelectorRules, dropDescendants, inputType, storedProcessBlockHelper, processBlockHelper);
 
       if (inputType == InputType::SecondaryFile) {
@@ -1844,12 +1844,12 @@ namespace edm {
     }
   }
 
-  void RootFile::dropOnInput(ProductRegistry& reg,
-                             ProductSelectorRules const& rules,
-                             bool dropDescendants,
-                             InputType inputType,
-                             StoredProcessBlockHelper& storedProcessBlockHelper,
-                             ProcessBlockHelper* processBlockHelper) {
+  void RootFile::dropOnInputAndReorder(ProductRegistry& reg,
+                                       ProductSelectorRules const& rules,
+                                       bool dropDescendants,
+                                       InputType inputType,
+                                       StoredProcessBlockHelper& storedProcessBlockHelper,
+                                       ProcessBlockHelper const* processBlockHelper) {
     ProductRegistry::ProductList& prodList = reg.productListUpdator();
 
     // First fill in a map we will need to navigate to descendants
@@ -1991,7 +1991,7 @@ namespace edm {
 
   void RootFile::dropProcessesAndReorder(StoredProcessBlockHelper& storedProcessBlockHelper,
                                          std::set<std::string> const& processesWithKeptProcessBlockProducts,
-                                         ProcessBlockHelper* processBlockHelper) {
+                                         ProcessBlockHelper const* processBlockHelper) {
     // Modify storedProcessBlockHelper and processBlockTrees_
     // This should account for dropOnInput and also make the
     // order of process blocks in input files after the first

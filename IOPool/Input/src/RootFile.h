@@ -312,15 +312,15 @@ namespace edm {
                                BranchDescription const& branch,
                                std::set<BranchID>& branchesToDrop,
                                std::map<BranchID, BranchID> const& droppedToKeptAlias) const;
-    void dropOnInput(ProductRegistry&,
-                     ProductSelectorRules const&,
-                     bool dropDescendants,
-                     InputType,
-                     StoredProcessBlockHelper&,
-                     ProcessBlockHelper*);
+    void dropOnInputAndReorder(ProductRegistry&,
+                               ProductSelectorRules const&,
+                               bool dropDescendants,
+                               InputType,
+                               StoredProcessBlockHelper&,
+                               ProcessBlockHelper const*);
     void dropProcessesAndReorder(StoredProcessBlockHelper&,
                                  std::set<std::string> const& processesWithKeptProcessBlockProducts,
-                                 ProcessBlockHelper*);
+                                 ProcessBlockHelper const*);
 
     bool dropProcessesAndReorderStored(std::vector<std::string>& processesWithProcessBlockProducts,
                                        std::vector<unsigned int>& processBlockCacheIndices,

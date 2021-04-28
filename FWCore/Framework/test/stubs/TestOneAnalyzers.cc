@@ -373,40 +373,70 @@ namespace edmtest {
             getTokenEndNotFound_ = consumes<IntProduct, edm::InProcess>(tag);
           }
         }
+        {
+          auto tag = pset.getParameter<edm::InputTag>("consumesProcessBlockNotFound1");
+          if (not tag.label().empty()) {
+            getTokenNotFound1_ = consumes<IntProduct, edm::InProcess>(tag);
+          }
+        }
+        {
+          auto tag = pset.getParameter<edm::InputTag>("consumesProcessBlockNotFound2");
+          if (not tag.label().empty()) {
+            getTokenNotFound2_ = consumes<IntProduct, edm::InProcess>(tag);
+          }
+        }
+        {
+          auto tag = pset.getParameter<edm::InputTag>("consumesProcessBlockNotFound3");
+          if (not tag.label().empty()) {
+            getTokenNotFound3_ = consumes<IntProduct, edm::InProcess>(tag);
+          }
+        }
+        {
+          auto tag = pset.getParameter<edm::InputTag>("consumesProcessBlockNotFound4");
+          if (not tag.label().empty()) {
+            getTokenNotFound4_ = consumes<IntProduct, edm::InProcess>(tag);
+          }
+        }
 
-        registerProcessBlockCacheFiller<int>(
-            getTokenBegin_, [this](edm::ProcessBlock const& processBlock, std::shared_ptr<int> const& previousCache) {
-              auto returnValue = std::make_shared<int>(0);
-              *returnValue += processBlock.get(getTokenBegin_).value;
-              *returnValue += processBlock.get(getTokenEnd_).value;
-              fillerSum_ += processBlock.get(getTokenBegin_).value;
-              fillerSum_ += processBlock.get(getTokenEnd_).value;
-              ++transitions_;
-              return returnValue;
-            });
-        registerProcessBlockCacheFiller<1>(getTokenBegin_,
-                                           [this](edm::ProcessBlock const& processBlock,
-                                                  std::shared_ptr<TestInputProcessBlockCache> const& previousCache) {
-                                             auto returnValue = std::make_shared<TestInputProcessBlockCache>();
-                                             returnValue->value_ += processBlock.get(getTokenBegin_).value;
-                                             returnValue->value_ += processBlock.get(getTokenEnd_).value;
-                                             fillerSum_ += processBlock.get(getTokenBegin_).value;
-                                             fillerSum_ += processBlock.get(getTokenEnd_).value;
-                                             ++transitions_;
-                                             return returnValue;
-                                           });
-        registerProcessBlockCacheFiller<TestInputProcessBlockCache1>(
-            getTokenBegin_,
-            [this](edm::ProcessBlock const& processBlock,
-                   std::shared_ptr<TestInputProcessBlockCache1> const& previousCache) {
-              auto returnValue = std::make_shared<TestInputProcessBlockCache1>();
-              returnValue->value_ += processBlock.get(getTokenBegin_).value;
-              returnValue->value_ += processBlock.get(getTokenEnd_).value;
-              fillerSum_ += processBlock.get(getTokenBegin_).value;
-              fillerSum_ += processBlock.get(getTokenEnd_).value;
-              ++transitions_;
-              return returnValue;
-            });
+        if (!getTokenBegin_.isUninitialized()) {
+          registerProcessBlockCacheFiller<int>(
+              getTokenBegin_, [this](edm::ProcessBlock const& processBlock, std::shared_ptr<int> const& previousCache) {
+                auto returnValue = std::make_shared<int>(0);
+                *returnValue += processBlock.get(getTokenBegin_).value;
+                *returnValue += processBlock.get(getTokenEnd_).value;
+                fillerSum_ += processBlock.get(getTokenBegin_).value;
+                fillerSum_ += processBlock.get(getTokenEnd_).value;
+                ++transitions_;
+                return returnValue;
+              });
+        }
+        if (!getTokenBegin_.isUninitialized()) {
+          registerProcessBlockCacheFiller<1>(getTokenBegin_,
+                                             [this](edm::ProcessBlock const& processBlock,
+                                                    std::shared_ptr<TestInputProcessBlockCache> const& previousCache) {
+                                               auto returnValue = std::make_shared<TestInputProcessBlockCache>();
+                                               returnValue->value_ += processBlock.get(getTokenBegin_).value;
+                                               returnValue->value_ += processBlock.get(getTokenEnd_).value;
+                                               fillerSum_ += processBlock.get(getTokenBegin_).value;
+                                               fillerSum_ += processBlock.get(getTokenEnd_).value;
+                                               ++transitions_;
+                                               return returnValue;
+                                             });
+        }
+        if (!getTokenBegin_.isUninitialized()) {
+          registerProcessBlockCacheFiller<TestInputProcessBlockCache1>(
+              getTokenBegin_,
+              [this](edm::ProcessBlock const& processBlock,
+                     std::shared_ptr<TestInputProcessBlockCache1> const& previousCache) {
+                auto returnValue = std::make_shared<TestInputProcessBlockCache1>();
+                returnValue->value_ += processBlock.get(getTokenBegin_).value;
+                returnValue->value_ += processBlock.get(getTokenEnd_).value;
+                fillerSum_ += processBlock.get(getTokenBegin_).value;
+                fillerSum_ += processBlock.get(getTokenEnd_).value;
+                ++transitions_;
+                return returnValue;
+              });
+        }
       }
 
       void beginProcessBlock(edm::ProcessBlock const& processBlock) override {
@@ -423,17 +453,31 @@ namespace edmtest {
 
       void accessInputProcessBlock(edm::ProcessBlock const& processBlock) override {
         if (processBlock.processName() == "PROD1") {
-          if (processBlock.getHandle(getTokenBegin_).isValid()) {
+          if (!getTokenBegin_.isUninitialized() && processBlock.getHandle(getTokenBegin_).isValid()) {
             sum_ += processBlock.get(getTokenBegin_).value;
             sum_ += processBlock.get(getTokenEnd_).value;
           }
         }
         if (processBlock.processName() == "MERGE") {
-          if (processBlock.getHandle(getTokenBeginM_).isValid()) {
+          if (!getTokenBeginM_.isUninitialized() && processBlock.getHandle(getTokenBeginM_).isValid()) {
             sum_ += processBlock.get(getTokenBeginM_).value;
             sum_ += processBlock.get(getTokenEndM_).value;
           }
         }
+
+        if (!getTokenNotFound1_.isUninitialized() && processBlock.getHandle(getTokenNotFound1_).isValid()) {
+          throw cms::Exception("TestFailure") << "Expected handle to be invalid but it is valid (end token 1)";
+        }
+        if (!getTokenNotFound2_.isUninitialized() && processBlock.getHandle(getTokenNotFound2_).isValid()) {
+          throw cms::Exception("TestFailure") << "Expected handle to be invalid but it is valid (end token 2)";
+        }
+        if (!getTokenNotFound3_.isUninitialized() && processBlock.getHandle(getTokenNotFound3_).isValid()) {
+          throw cms::Exception("TestFailure") << "Expected handle to be invalid but it is valid (end token 3)";
+        }
+        if (!getTokenNotFound4_.isUninitialized() && processBlock.getHandle(getTokenNotFound4_).isValid()) {
+          throw cms::Exception("TestFailure") << "Expected handle to be invalid but it is valid (end token 4)";
+        }
+
         ++transitions_;
       }
 
@@ -493,12 +537,16 @@ namespace edmtest {
         edm::InputTag defaultInputTag;
         desc.addUntracked<int>("expectedFillerSum", 0);
         desc.addUntracked<unsigned int>("expectedCacheSize", 0);
-        desc.add<edm::InputTag>("consumesBeginProcessBlock");
-        desc.add<edm::InputTag>("consumesEndProcessBlock");
-        desc.add<edm::InputTag>("consumesBeginProcessBlockM");
-        desc.add<edm::InputTag>("consumesEndProcessBlockM");
+        desc.add<edm::InputTag>("consumesBeginProcessBlock", defaultInputTag);
+        desc.add<edm::InputTag>("consumesEndProcessBlock", defaultInputTag);
+        desc.add<edm::InputTag>("consumesBeginProcessBlockM", defaultInputTag);
+        desc.add<edm::InputTag>("consumesEndProcessBlockM", defaultInputTag);
         desc.add<edm::InputTag>("consumesBeginProcessBlockNotFound", defaultInputTag);
         desc.add<edm::InputTag>("consumesEndProcessBlockNotFound", defaultInputTag);
+        desc.add<edm::InputTag>("consumesProcessBlockNotFound1", defaultInputTag);
+        desc.add<edm::InputTag>("consumesProcessBlockNotFound2", defaultInputTag);
+        desc.add<edm::InputTag>("consumesProcessBlockNotFound3", defaultInputTag);
+        desc.add<edm::InputTag>("consumesProcessBlockNotFound4", defaultInputTag);
         descriptions.addDefault(desc);
       }
 
@@ -509,6 +557,10 @@ namespace edmtest {
       edm::EDGetTokenT<IntProduct> getTokenEndM_;
       edm::EDGetTokenT<IntProduct> getTokenBeginNotFound_;
       edm::EDGetTokenT<IntProduct> getTokenEndNotFound_;
+      edm::EDGetTokenT<IntProduct> getTokenNotFound1_;
+      edm::EDGetTokenT<IntProduct> getTokenNotFound2_;
+      edm::EDGetTokenT<IntProduct> getTokenNotFound3_;
+      edm::EDGetTokenT<IntProduct> getTokenNotFound4_;
       CMS_THREAD_SAFE mutable std::atomic<unsigned int> transitions_{0};
       int sum_{0};
       unsigned int expectedTransitions_{0};
