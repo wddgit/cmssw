@@ -466,16 +466,16 @@ namespace edmtest {
         }
 
         if (!getTokenNotFound1_.isUninitialized() && processBlock.getHandle(getTokenNotFound1_).isValid()) {
-          throw cms::Exception("TestFailure") << "Expected handle to be invalid but it is valid (end token 1)";
+          throw cms::Exception("TestFailure") << "Expected handle to be invalid but it is valid (token 1)";
         }
         if (!getTokenNotFound2_.isUninitialized() && processBlock.getHandle(getTokenNotFound2_).isValid()) {
-          throw cms::Exception("TestFailure") << "Expected handle to be invalid but it is valid (end token 2)";
+          throw cms::Exception("TestFailure") << "Expected handle to be invalid but it is valid (token 2)";
         }
         if (!getTokenNotFound3_.isUninitialized() && processBlock.getHandle(getTokenNotFound3_).isValid()) {
-          throw cms::Exception("TestFailure") << "Expected handle to be invalid but it is valid (end token 3)";
+          throw cms::Exception("TestFailure") << "Expected handle to be invalid but it is valid (token 3)";
         }
         if (!getTokenNotFound4_.isUninitialized() && processBlock.getHandle(getTokenNotFound4_).isValid()) {
-          throw cms::Exception("TestFailure") << "Expected handle to be invalid but it is valid (end token 4)";
+          throw cms::Exception("TestFailure") << "Expected handle to be invalid but it is valid (token 4)";
         }
 
         ++transitions_;

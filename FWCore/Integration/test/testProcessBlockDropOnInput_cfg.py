@@ -23,13 +23,13 @@ process.source = cms.Source("PoolSource",
 )
 
 process.readProcessBlocksOneAnalyzer = cms.EDAnalyzer("edmtest::one::InputProcessBlockIntAnalyzer",
-                                            transitions = cms.int32(31),
+                                            transitions = cms.int32(29),
                                             consumesBeginProcessBlock = cms.InputTag("intProducerBeginProcessBlock", ""),
                                             consumesEndProcessBlock = cms.InputTag("intProducerEndProcessBlock", ""),
                                             consumesBeginProcessBlockM = cms.InputTag("intProducerBeginProcessBlockM", ""),
                                             consumesEndProcessBlockM = cms.InputTag("intProducerEndProcessBlockM", ""),
                                             expectedByRun = cms.vint32(0, 11, 22, 3300, 4400),
-                                            expectedSum = cms.int32(8221),
+                                            expectedSum = cms.int32(7733),
                                             consumesProcessBlockNotFound1 = cms.InputTag("intProducerBeginProcessBlockB"),
                                             consumesProcessBlockNotFound2 = cms.InputTag("intProducerEndProcessBlockB"),
                                             consumesProcessBlockNotFound3 = cms.InputTag("intProducerBeginProcessBlockM"),
@@ -37,15 +37,15 @@ process.readProcessBlocksOneAnalyzer = cms.EDAnalyzer("edmtest::one::InputProces
 )
 
 process.out = cms.OutputModule("PoolOutputModule",
-    fileName = cms.untracked.string('testProcessBlockRead2.root')
+    fileName = cms.untracked.string('testProcessBlockDropOnInput.root')
 )
 
 process.testOneOutput = cms.OutputModule("TestOneOutput",
     verbose = cms.untracked.bool(False),
-    expectedProcessesWithProcessBlockProducts = cms.untracked.vstring('PROD1', 'MERGE', 'MERGEOFMERGED'),
-    expectedTopProcessesWithProcessBlockProducts = cms.untracked.vstring('PROD1', 'MERGE', 'MERGEOFMERGED'),
-    expectedTopCacheIndices = cms.untracked.vuint32(0, 4, 6, 1, 4, 6, 2, 5, 6, 3, 5, 6),
-    expectedWriteProcessBlockTransitions = cms.untracked.int32(8)
+    expectedProcessesWithProcessBlockProducts = cms.untracked.vstring('PROD1', 'MERGEOFMERGED'),
+    expectedTopProcessesWithProcessBlockProducts = cms.untracked.vstring('PROD1', 'MERGEOFMERGED'),
+    expectedTopCacheIndices = cms.untracked.vuint32(0, 4, 1, 4, 2, 4, 3, 4),
+    expectedWriteProcessBlockTransitions = cms.untracked.int32(6)
 )
 
 

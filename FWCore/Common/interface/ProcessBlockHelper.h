@@ -10,6 +10,8 @@
 #include "DataFormats/Provenance/interface/ProvenanceFwd.h"
 #include "FWCore/Common/interface/ProcessBlockHelperBase.h"
 
+#include <set>
+#include <string>
 #include <vector>
 
 namespace edm {
@@ -29,6 +31,28 @@ namespace edm {
     unsigned int outerOffset() const { return outerOffset_; }
 
     bool initializedFromInput() const { return initializedFromInput_; }
+
+    bool firstFileDropProcessesAndReorderStored(
+      std::vector<std::string>& storedProcesses,
+      std::vector<unsigned int>& storedCacheIndices,
+      std::set<std::string> const& processesToKeep,
+      std::vector<unsigned int> const& nEntries,
+      std::vector<unsigned int>& finalIndexToStoredIndex) const;
+
+    bool dropProcessesAndReorderStored(
+      std::vector<std::string>& storedProcesses,
+      std::vector<unsigned int>& storedCacheIndices,
+      std::set<std::string> const& processesToKeep,
+      std::vector<unsigned int> const& nEntries,
+      std::vector<unsigned int>& finalIndexToStoredIndex,
+      std::vector<std::string> const& firstFileFinalProcesses) const;
+
+    void dropProcessesAndReorderStoredImpl(
+      std::vector<std::string>& storedProcesses,
+      std::vector<unsigned int>& storedCacheIndices,
+      std::vector<std::string>& finalProcesses,
+      std::vector<unsigned int> const& nEntries,
+      std::vector<unsigned int> const& finalIndexToStoredIndex) const;
 
     void initializeFromPrimaryInput(StoredProcessBlockHelper const& storedProcessBlockHelper,
                                     std::vector<unsigned int>&& nEntries);

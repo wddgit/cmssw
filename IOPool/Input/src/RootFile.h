@@ -322,14 +322,6 @@ namespace edm {
                                  std::set<std::string> const& processesWithKeptProcessBlockProducts,
                                  ProcessBlockHelper const*);
 
-    bool dropProcessesAndReorderStored(std::vector<std::string>& processesWithProcessBlockProducts,
-                                       std::vector<unsigned int>& processBlockCacheIndices,
-                                       std::set<std::string> const& processesToKeep,
-                                       std::vector<std::string> const& firstFileOrder,
-                                       unsigned int nProcessesInFirstFile,
-                                       std::vector<unsigned int> const& nEntries,
-                                       std::vector<unsigned int>& firstFileToStored,
-                                       bool firstInputFile);
 
     void initializeProcessBlockHelper(ProcessBlockHelper*, StoredProcessBlockHelper&);
 

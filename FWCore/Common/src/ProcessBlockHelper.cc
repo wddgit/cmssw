@@ -3,8 +3,8 @@
 #include "DataFormats/Provenance/interface/EventToProcessBlockIndexes.h"
 #include "DataFormats/Provenance/interface/StoredProcessBlockHelper.h"
 
+#include <algorithm>
 #include <cassert>
-#include <string>
 #include <utility>
 
 namespace edm {
@@ -42,6 +42,148 @@ namespace edm {
   std::vector<unsigned int> const& ProcessBlockHelper::processBlockIndexes(
       EventToProcessBlockIndexes const& eventToProcessBlockIndexes) const {
     return processBlockCacheIndices_[eventToProcessBlockIndexes.index()];
+  }
+
+  // Modifies the process names and cache indices in the StoredProcessBlockHelper.
+  // Part of the dropOnInput. Also part of reordering that forces ProcessBlocks
+  // to be read in the same order for all input files.
+  bool ProcessBlockHelper::firstFileDropProcessesAndReorderStored(
+      std::vector<std::string>& storedProcesses,
+      std::vector<unsigned int>& storedCacheIndices,
+      std::set<std::string> const& processesToKeep,
+      std::vector<unsigned int> const& nEntries,
+      std::vector<unsigned int>& finalIndexToStoredIndex)  const {
+    bool isModified = false;
+    unsigned int finalSize = 0;
+    for (auto const& process : storedProcesses) {
+      if (processesToKeep.find(process) == processesToKeep.end()) {
+        isModified = true;
+      } else {
+        ++finalSize;
+      }
+    }
+    if (!isModified) {
+      return isModified;
+    }
+
+    std::vector<std::string> finalProcesses;
+    finalProcesses.reserve(finalSize);
+    finalIndexToStoredIndex.reserve(finalSize);
+    for (unsigned int iStored = 0; iStored < storedProcesses.size(); ++iStored) {
+      if (processesToKeep.find(storedProcesses[iStored]) != processesToKeep.end()) {
+        finalProcesses.emplace_back(storedProcesses[iStored]);
+        finalIndexToStoredIndex.emplace_back(iStored);
+      }
+    }
+    dropProcessesAndReorderStoredImpl(storedProcesses,
+                                      storedCacheIndices,
+                                      finalProcesses,
+                                      nEntries,
+                                      finalIndexToStoredIndex);
+    return isModified;
+  }
+
+  // Modifies the process names and cache indices in the StoredProcessBlockHelper.
+  // Part of the dropOnInput. Also part of reordering that forces ProcessBlocks
+  // to be read in the same order for all input files.
+  bool ProcessBlockHelper::dropProcessesAndReorderStored(
+      std::vector<std::string>& storedProcesses,
+      std::vector<unsigned int>& storedCacheIndices,
+      std::set<std::string> const& processesToKeep,
+      std::vector<unsigned int> const& nEntries,
+      std::vector<unsigned int>& finalIndexToStoredIndex,
+      std::vector<std::string> const& firstFileFinalProcesses) const {
+
+    std::vector<std::string> finalProcesses;
+    // Always will allocate enough space (sometimes too much)
+    finalProcesses.reserve(storedProcesses.size());
+    finalIndexToStoredIndex.reserve(storedProcesses.size());
+
+    // The outer loop here establishes the order
+    // Only allows processes that got into finalProcesses for the first file
+     for (unsigned int iFirst = 0; iFirst < firstFileFinalProcesses.size(); ++iFirst) {
+      // Only includes processes also in storedProcesses
+      for (unsigned int iStored = 0; iStored < storedProcesses.size(); ++iStored) {
+        std::string const& storedProcess = storedProcesses[iStored];
+        if (firstFileFinalProcesses[iFirst] == storedProcess) {
+          // Also requires processes have kept ProcessBlock products
+          if (processesToKeep.find(storedProcess) != processesToKeep.end()) {
+            finalProcesses.emplace_back(storedProcess);
+            finalIndexToStoredIndex.emplace_back(iStored);
+            break;
+          }
+        }
+      }
+    }
+
+    bool isModified = true;
+    if (storedProcesses == finalProcesses) {
+      isModified = false;
+      return isModified;
+    }
+
+    dropProcessesAndReorderStoredImpl(storedProcesses,
+                                      storedCacheIndices,
+                                      finalProcesses,
+                                      nEntries,
+                                      finalIndexToStoredIndex);
+    return isModified;
+  }
+
+  // Modifies the process names and cache indices in the StoredProcessBlockHelper.
+  // Part of the dropOnInput. Also part of reordering that forces ProcessBlocks
+  // to be read in the same order for all input files.
+  void ProcessBlockHelper::dropProcessesAndReorderStoredImpl(
+      std::vector<std::string>& storedProcesses,
+      std::vector<unsigned int>& storedCacheIndices,
+      std::vector<std::string>& finalProcesses,
+      std::vector<unsigned int> const& nEntries,
+      std::vector<unsigned int> const& finalIndexToStoredIndex) const {
+    assert(!storedProcesses.empty());
+    std::vector<unsigned int> newCacheIndices;
+    if (!finalProcesses.empty()) {
+
+      // ProcessBlocks are read in the order of storedProcesses and within
+      // each process in entry order in the TTree.  This establishes the cache
+      // order that the values in storedCacheIndices refer to. The "offset" refers
+      // to cache index value of the first ProcessBlock in a TTree.
+      std::vector<unsigned int> oldOffsets;
+      oldOffsets.reserve(storedProcesses.size());
+      unsigned int offset = 0;
+      for (auto const& entries : nEntries) {
+        oldOffsets.emplace_back(offset);
+        offset += entries;
+      }
+
+      unsigned int nFinalProcesses = finalProcesses.size();
+      std::vector<unsigned int> newOffsets;
+      newOffsets.reserve(nFinalProcesses);
+      offset = 0;
+      for (unsigned int iNew = 0; iNew < nFinalProcesses; ++iNew) {
+        newOffsets.emplace_back(offset);
+        offset += nEntries[finalIndexToStoredIndex[iNew]];
+      }
+
+      unsigned int nOuterLoop = storedCacheIndices.size() / storedProcesses.size();
+      assert(nOuterLoop * storedProcesses.size() == storedCacheIndices.size());
+      newCacheIndices.reserve(nOuterLoop * nFinalProcesses);
+      unsigned int storedOuterOffset = 0;
+
+      for (unsigned int k = 0; k < nOuterLoop; ++k) {
+        for (unsigned int j = 0; j < nFinalProcesses; ++j) {
+          unsigned int storedIndex = finalIndexToStoredIndex[j];
+          unsigned int oldCacheIndex = storedCacheIndices[storedOuterOffset + storedIndex];
+          unsigned int newCacheIndex = StoredProcessBlockHelper::invalidCacheIndex();
+          if (oldCacheIndex != StoredProcessBlockHelper::invalidCacheIndex()) {
+            newCacheIndex = oldCacheIndex - oldOffsets[storedIndex] + newOffsets[j];
+          }
+          newCacheIndices.emplace_back(newCacheIndex);
+        }
+        storedOuterOffset += storedProcesses.size();
+      }
+    }
+    storedCacheIndices.swap(newCacheIndices);
+    storedProcesses.swap(finalProcesses);
   }
 
   void ProcessBlockHelper::initializeFromPrimaryInput(StoredProcessBlockHelper const& storedProcessBlockHelper,
