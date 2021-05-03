@@ -46,6 +46,7 @@ namespace edm {
     std::vector<std::string> expectedProcessesWithProcessBlockProducts_;
     std::vector<std::string> expectedTopProcessesWithProcessBlockProducts_;
     std::vector<unsigned int> expectedTopCacheIndices_;
+    std::vector<unsigned int> expectedTopCacheIndices1_;
     std::vector<std::string> expectedProcessNamesAtWrite_;
     int expectedWriteProcessBlockTransitions_;
     unsigned int countWriteProcessBlockTransitions_ = 0;
@@ -63,6 +64,7 @@ namespace edm {
         expectedTopProcessesWithProcessBlockProducts_(
             pset.getUntrackedParameter<std::vector<std::string>>("expectedTopProcessesWithProcessBlockProducts")),
         expectedTopCacheIndices_(pset.getUntrackedParameter<std::vector<unsigned int>>("expectedTopCacheIndices")),
+        expectedTopCacheIndices1_(pset.getUntrackedParameter<std::vector<unsigned int>>("expectedTopCacheIndices1")),
         expectedProcessNamesAtWrite_(
             pset.getUntrackedParameter<std::vector<std::string>>("expectedProcessNamesAtWrite")),
         expectedWriteProcessBlockTransitions_(pset.getUntrackedParameter<int>("expectedWriteProcessBlockTransitions")),
@@ -117,9 +119,17 @@ namespace edm {
           outputProcessBlockHelper().processBlockHelper()->processesWithProcessBlockProducts()) {
         throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected top process name list";
       }
-      if (!expectedTopCacheIndices_.empty()) {
+      
+      std::vector<unsigned int> const* expectedTopCacheIndices = nullptr;
+      if (countWriteProcessBlockTransitions_ == 0 && !expectedTopCacheIndices_.empty()) {
+        expectedTopCacheIndices = &expectedTopCacheIndices_;
+      } else if (countWriteProcessBlockTransitions_ == 0 && !expectedTopCacheIndices_.empty())
+      if (countWriteProcessBlockTransitions_ == 1 && !expectedTopCacheIndices1_.empty()) {
+        expectedTopCacheIndices = &expectedTopCacheIndices1_;
+      }
+      if (expectedTopCacheIndices != nullptr) {
         std::vector<std::vector<unsigned int>> const& topProcessBlockCacheIndices = outputProcessBlockHelper().processBlockHelper()->processBlockCacheIndices();
-        if (expectedTopCacheIndices_.size() != expectedTopProcessesWithProcessBlockProducts_.size() * topProcessBlockCacheIndices.size()) {
+        if (expectedTopCacheIndices->size() != expectedTopProcessesWithProcessBlockProducts_.size() * topProcessBlockCacheIndices.size()) {
           throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected sizes related to top cache indices";
         }
         unsigned int iStored = 0;
@@ -128,8 +138,8 @@ namespace edm {
             throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected size of outer cache indices vector";
           }
           for (unsigned int j = 0; j < topProcessBlockCacheIndices[i].size(); ++j) {
-            if (topProcessBlockCacheIndices[i][j] != expectedTopCacheIndices_[iStored]) {
-              throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected cache index value";
+            if (topProcessBlockCacheIndices[i][j] != (*expectedTopCacheIndices)[iStored]) {
+              throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected cache index value on write transition " << countWriteProcessBlockTransitions_;
             }
             ++iStored;
           }
@@ -231,6 +241,7 @@ namespace edm {
     desc.addUntracked<std::vector<std::string>>("expectedTopProcessesWithProcessBlockProducts",
                                                 std::vector<std::string>());
     desc.addUntracked<std::vector<unsigned int>>("expectedTopCacheIndices", std::vector<unsigned int>());
+    desc.addUntracked<std::vector<unsigned int>>("expectedTopCacheIndices1", std::vector<unsigned int>());
     desc.addUntracked<std::vector<std::string>>("expectedProcessNamesAtWrite", std::vector<std::string>());
     desc.addUntracked<int>("expectedWriteProcessBlockTransitions", -1);
     desc.addUntracked<bool>("requireNullTTreesInFileBlock", false);

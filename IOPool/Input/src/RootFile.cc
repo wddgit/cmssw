@@ -69,7 +69,7 @@
 #include <algorithm>
 #include <cassert>
 #include <list>
-
+#include <iostream>
 namespace edm {
 
   // Algorithm classes for making ProvenanceReader:

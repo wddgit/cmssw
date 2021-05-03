@@ -11,7 +11,8 @@ process.options = cms.untracked.PSet(
 
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-        'file:testProcessBlockMergeOfMergedFiles.root'
+        'file:testProcessBlockMergeOfMergedFiles.root',
+        'file:testProcessBlockMergeOfMergedFiles2.root'
     ),
     inputCommands=cms.untracked.vstring(
         'keep *',
@@ -22,14 +23,28 @@ process.source = cms.Source("PoolSource",
     )
 )
 
-process.readProcessBlocksOneAnalyzer = cms.EDAnalyzer("edmtest::one::InputProcessBlockIntAnalyzer",
-                                            transitions = cms.int32(29),
+process.readProcessBlocksOneAnalyzer1 = cms.EDAnalyzer("edmtest::one::InputProcessBlockIntAnalyzer",
+                                            transitions = cms.int32(37),
                                             consumesBeginProcessBlock = cms.InputTag("intProducerBeginProcessBlock", ""),
                                             consumesEndProcessBlock = cms.InputTag("intProducerEndProcessBlock", ""),
                                             consumesBeginProcessBlockM = cms.InputTag("intProducerBeginProcessBlockM", ""),
                                             consumesEndProcessBlockM = cms.InputTag("intProducerEndProcessBlockM", ""),
-                                            expectedByRun = cms.vint32(0, 11, 22, 3300, 4400),
-                                            expectedSum = cms.int32(7733),
+                                            expectedByRun = cms.vint32(0, 11, 22, 3300, 4400, 7700),
+                                            expectedSum = cms.int32(15433),
+                                            consumesProcessBlockNotFound1 = cms.InputTag("intProducerBeginProcessBlockB"),
+                                            consumesProcessBlockNotFound2 = cms.InputTag("intProducerEndProcessBlockB"),
+                                            consumesProcessBlockNotFound3 = cms.InputTag("intProducerBeginProcessBlockM"),
+                                            consumesProcessBlockNotFound4 = cms.InputTag("intProducerEndProcessBlockM")
+)
+
+process.readProcessBlocksOneAnalyzer2 = cms.EDAnalyzer("edmtest::one::InputProcessBlockIntAnalyzer",
+                                            transitions = cms.int32(28),
+                                            consumesBeginProcessBlock = cms.InputTag("intProducerBeginProcessBlockMM", ""),
+                                            consumesEndProcessBlock = cms.InputTag("intProducerEndProcessBlockMM", ""),
+                                            consumesBeginProcessBlockM = cms.InputTag("intProducerBeginProcessBlockM", ""),
+                                            consumesEndProcessBlockM = cms.InputTag("intProducerEndProcessBlockM", ""),
+                                            expectedByRun = cms.vint32(0, 644, 644, 644, 644, 844),
+                                            expectedSum = cms.int32(0),
                                             consumesProcessBlockNotFound1 = cms.InputTag("intProducerBeginProcessBlockB"),
                                             consumesProcessBlockNotFound2 = cms.InputTag("intProducerEndProcessBlockB"),
                                             consumesProcessBlockNotFound3 = cms.InputTag("intProducerBeginProcessBlockM"),
@@ -45,11 +60,11 @@ process.testOneOutput = cms.OutputModule("TestOneOutput",
     expectedProcessesWithProcessBlockProducts = cms.untracked.vstring('PROD1', 'MERGEOFMERGED'),
     expectedTopProcessesWithProcessBlockProducts = cms.untracked.vstring('PROD1', 'MERGEOFMERGED'),
     expectedTopCacheIndices = cms.untracked.vuint32(0, 4, 1, 4, 2, 4, 3, 4),
-    expectedWriteProcessBlockTransitions = cms.untracked.int32(6)
+    expectedWriteProcessBlockTransitions = cms.untracked.int32(8)
 )
 
 
-process.p = cms.Path(process.readProcessBlocksOneAnalyzer)
+process.p = cms.Path(process.readProcessBlocksOneAnalyzer1 * process.readProcessBlocksOneAnalyzer2)
 
 process.e = cms.EndPath(
     process.out *
