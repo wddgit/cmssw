@@ -54,6 +54,10 @@ namespace edm {
     bool requireNullTTreesInFileBlock_;
     bool testTTreesInFileBlock_;
     std::vector<unsigned int> expectedCacheIndexSize_;
+    unsigned int expectedProcessesInFirstFile_;
+    std::vector<unsigned int> expectedCacheIndexVectorsPerFile_;
+    std::vector<unsigned int> expectedNEntries0_;
+    std::vector<unsigned int> expectedCacheEntriesPerFile_;
   };
 
   TestOneOutput::TestOneOutput(ParameterSet const& pset)
@@ -71,7 +75,11 @@ namespace edm {
         expectedWriteProcessBlockTransitions_(pset.getUntrackedParameter<int>("expectedWriteProcessBlockTransitions")),
         requireNullTTreesInFileBlock_(pset.getUntrackedParameter<bool>("requireNullTTreesInFileBlock")),
         testTTreesInFileBlock_(pset.getUntrackedParameter<bool>("testTTreesInFileBlock")),
-        expectedCacheIndexSize_(pset.getUntrackedParameter<std::vector<unsigned int>>("expectedCacheIndexSize")) {}
+        expectedCacheIndexSize_(pset.getUntrackedParameter<std::vector<unsigned int>>("expectedCacheIndexSize")),
+        expectedProcessesInFirstFile_(pset.getUntrackedParameter<unsigned int>("expectedProcessesInFirstFile")),
+        expectedCacheIndexVectorsPerFile_(pset.getUntrackedParameter<std::vector<unsigned int>>("expectedCacheIndexVectorsPerFile")),
+        expectedNEntries0_(pset.getUntrackedParameter<std::vector<unsigned int>>("expectedNEntries0")),
+        expectedCacheEntriesPerFile_(pset.getUntrackedParameter<std::vector<unsigned int>>("expectedCacheEntriesPerFile0")) {}
 
   TestOneOutput::~TestOneOutput() {}
 
@@ -146,6 +154,27 @@ namespace edm {
         }
       }
     }
+    if (expectedProcessesInFirstFile_ != 0) {
+      if (expectedProcessesInFirstFile_ != outputProcessBlockHelper().processBlockHelper()->nProcessesInFirstFile()) {
+        throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected value for nProcessesInFirstFile";
+      }
+    }
+    if (countInputFiles_ == 1 && !expectedCacheIndexVectorsPerFile_.empty()) {
+      if (expectedCacheIndexVectorsPerFile_ != outputProcessBlockHelper().processBlockHelper()->cacheIndexVectorsPerFile()) {
+        throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected value for cacheIndexVectorsPerFile";
+      }
+    }
+    if (countInputFiles_ == 1 && !expectedNEntries0_.empty()) {
+      if (expectedNEntries0_ != outputProcessBlockHelper().processBlockHelper()->nEntries()[0]) {
+        throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected value for nEntries 0";
+      }
+    }
+    if (countInputFiles_ == 1 && !expectedCacheEntriesPerFile_.empty()) {
+      if (expectedCacheEntriesPerFile_ != outputProcessBlockHelper().processBlockHelper()->cacheEntriesPerFile()) {
+        throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected value for cacheEntriesPerFile 0";
+      }
+    }
+
     if (countWriteProcessBlockTransitions_ < expectedCacheIndexSize_.size()) {
       if (expectedCacheIndexSize_[countWriteProcessBlockTransitions_] !=
           outputProcessBlockHelper().processBlockHelper()->processBlockCacheIndices().size()) {
@@ -248,6 +277,10 @@ namespace edm {
     desc.addUntracked<bool>("requireNullTTreesInFileBlock", false);
     desc.addUntracked<bool>("testTTreesInFileBlock", false);
     desc.addUntracked<std::vector<unsigned int>>("expectedCacheIndexSize", std::vector<unsigned int>());
+    desc.addUntracked<unsigned int>("expectedProcessesInFirstFile", 0);
+    desc.addUntracked<std::vector<unsigned int>>("expectedCacheIndexVectorsPerFile", std::vector<unsigned int>());
+    desc.addUntracked<std::vector<unsigned int>>("expectedNEntries0", std::vector<unsigned int>());
+    desc.addUntracked<std::vector<unsigned int>>("expectedCacheEntriesPerFile0", std::vector<unsigned int>());
     descriptions.addDefault(desc);
   }
 }  // namespace edm

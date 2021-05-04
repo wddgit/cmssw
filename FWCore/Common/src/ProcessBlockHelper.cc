@@ -196,6 +196,10 @@ namespace edm {
     // the input files. We don't need to worry about drop on input in
     // this function.
 
+    // I've written this so it will continue to work even if we relax the
+    // strict merging requirement in the ProductRegistry (at the moment this is
+    // being written we always enforce the strict merging requirement).
+
     std::vector<std::string> const& storedProcesses = storedProcessBlockHelper.processesWithProcessBlockProducts();
     std::vector<unsigned int> const& storedCacheIndices = storedProcessBlockHelper.processBlockCacheIndices();
 
@@ -272,7 +276,7 @@ namespace edm {
           processBlockCacheIndices_[outerOffset_ + k].reserve(nProcessesInFirstFile_);
           for (unsigned int j = 0; j < nProcessesInFirstFile_; ++j) {
             unsigned int iStored = firstFileToStored[j];
-            if (iStored == storedProcessBlockHelper.invalidProcessIndex()) {
+            if (iStored == invalidProcessIndex()) {
               processBlockCacheIndices_[outerOffset_ + k].push_back(invalidCacheIndex());
             } else {
               unsigned int oldCacheIndex = storedCacheIndices[storedIndex];
