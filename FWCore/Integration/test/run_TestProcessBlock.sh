@@ -85,6 +85,15 @@ pushd ${LOCAL_TMP_DIR}
   echo "testProcessBlockSubProcessLooper"
   cmsRun -p ${LOCAL_TEST_DIR}/testProcessBlockSubProcessLooper_cfg.py > /dev/null 2>&1 || die "cmsRun testProcessBlockSubProcessLooper_cfg.py" $?
 
+  echo "testProcessBlock5"
+  cmsRun -p ${LOCAL_TEST_DIR}/testProcessBlock5_cfg.py > /dev/null 2>&1 || die "cmsRun testProcessBlock5_cfg.py" $?
+
+  echo "testProcessBlockMerge3"
+  cmsRun -p ${LOCAL_TEST_DIR}/testProcessBlockMerge3_cfg.py > /dev/null 2>&1 || die "cmsRun testProcessBlockMerge3_cfg.py" $?
+
+  echo "testProcessBlockMergeOfMergedFiles2"
+  cmsRun -p ${LOCAL_TEST_DIR}/testProcessBlockMergeOfMergedFiles2_cfg.py > /dev/null 2>&1 || die "cmsRun testProcessBlockMergeOfMergedFiles2_cfg.py" $?
+
   echo "testProcessBlockDropOnInput"
   cmsRun -p ${LOCAL_TEST_DIR}/testProcessBlockDropOnInput_cfg.py > /dev/null 2>&1 || die "cmsRun testProcessBlockDropOnInput_cfg.py" $?
 
@@ -117,6 +126,9 @@ pushd ${LOCAL_TMP_DIR}
   rm testProcessBlockSubProcessLooperTest.root
   rm testProcessBlockSubProcessLooperRead.root
   rm testProcessBlockSubProcessLooperReadAgain.root
+  rm testProcessBlock5.root
+  rm testProcessBlockMerge3.root
+  rm testProcessBlockMergeOfMergedFiles2.root
   rm testProcessBlockDropOnInput.root
 
 popd

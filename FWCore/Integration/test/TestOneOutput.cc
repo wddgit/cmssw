@@ -50,6 +50,7 @@ namespace edm {
     std::vector<std::string> expectedProcessNamesAtWrite_;
     int expectedWriteProcessBlockTransitions_;
     unsigned int countWriteProcessBlockTransitions_ = 0;
+    unsigned int countInputFiles_ = 0;
     bool requireNullTTreesInFileBlock_;
     bool testTTreesInFileBlock_;
     std::vector<unsigned int> expectedCacheIndexSize_;
@@ -119,27 +120,26 @@ namespace edm {
           outputProcessBlockHelper().processBlockHelper()->processesWithProcessBlockProducts()) {
         throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected top process name list";
       }
-      
+
       std::vector<unsigned int> const* expectedTopCacheIndices = nullptr;
-      if (countWriteProcessBlockTransitions_ == 0 && !expectedTopCacheIndices_.empty()) {
+      if (countInputFiles_ == 1 && !expectedTopCacheIndices_.empty()) {
         expectedTopCacheIndices = &expectedTopCacheIndices_;
-      } else if (countWriteProcessBlockTransitions_ == 0 && !expectedTopCacheIndices_.empty())
-      if (countWriteProcessBlockTransitions_ == 1 && !expectedTopCacheIndices1_.empty()) {
+      } else if (countInputFiles_ == 2 && !expectedTopCacheIndices1_.empty()) {
         expectedTopCacheIndices = &expectedTopCacheIndices1_;
       }
       if (expectedTopCacheIndices != nullptr) {
         std::vector<std::vector<unsigned int>> const& topProcessBlockCacheIndices = outputProcessBlockHelper().processBlockHelper()->processBlockCacheIndices();
         if (expectedTopCacheIndices->size() != expectedTopProcessesWithProcessBlockProducts_.size() * topProcessBlockCacheIndices.size()) {
-          throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected sizes related to top cache indices";
+          throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected sizes related to top cache indices on input file " << (countInputFiles_ - 1);
         }
         unsigned int iStored = 0;
         for (unsigned int i = 0; i < topProcessBlockCacheIndices.size(); ++i) {
           if (topProcessBlockCacheIndices[i].size() != expectedTopProcessesWithProcessBlockProducts_.size()) {
-            throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected size of outer cache indices vector";
+            throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected size of outer cache indices vector on input file " << (countInputFiles_ - 1);
           }
           for (unsigned int j = 0; j < topProcessBlockCacheIndices[i].size(); ++j) {
             if (topProcessBlockCacheIndices[i][j] != (*expectedTopCacheIndices)[iStored]) {
-              throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected cache index value on write transition " << countWriteProcessBlockTransitions_;
+              throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected cache index value on input file " << (countInputFiles_ - 1);
             }
             ++iStored;
           }
@@ -160,6 +160,7 @@ namespace edm {
       LogAbsolute("TestOneOutput") << "one respondToOpenInputFile";
     }
     testFileBlock(fb);
+    ++countInputFiles_;
   }
 
   void TestOneOutput::respondToCloseInputFile(FileBlock const& fb) {

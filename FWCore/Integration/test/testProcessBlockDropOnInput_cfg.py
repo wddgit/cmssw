@@ -60,6 +60,7 @@ process.testOneOutput = cms.OutputModule("TestOneOutput",
     expectedProcessesWithProcessBlockProducts = cms.untracked.vstring('PROD1', 'MERGEOFMERGED'),
     expectedTopProcessesWithProcessBlockProducts = cms.untracked.vstring('PROD1', 'MERGEOFMERGED'),
     expectedTopCacheIndices = cms.untracked.vuint32(0, 4, 1, 4, 2, 4, 3, 4),
+    expectedTopCacheIndices1 = cms.untracked.vuint32(0, 4, 1, 4, 2, 4, 3, 4, 5, 6),
     expectedWriteProcessBlockTransitions = cms.untracked.int32(8)
 )
 
