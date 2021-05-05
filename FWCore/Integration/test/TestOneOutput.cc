@@ -58,6 +58,7 @@ namespace edm {
     std::vector<unsigned int> expectedCacheIndexVectorsPerFile_;
     std::vector<unsigned int> expectedNEntries0_;
     std::vector<unsigned int> expectedCacheEntriesPerFile_;
+    std::vector<unsigned int> expectedOuterOffset_;
   };
 
   TestOneOutput::TestOneOutput(ParameterSet const& pset)
@@ -79,7 +80,8 @@ namespace edm {
         expectedProcessesInFirstFile_(pset.getUntrackedParameter<unsigned int>("expectedProcessesInFirstFile")),
         expectedCacheIndexVectorsPerFile_(pset.getUntrackedParameter<std::vector<unsigned int>>("expectedCacheIndexVectorsPerFile")),
         expectedNEntries0_(pset.getUntrackedParameter<std::vector<unsigned int>>("expectedNEntries0")),
-        expectedCacheEntriesPerFile_(pset.getUntrackedParameter<std::vector<unsigned int>>("expectedCacheEntriesPerFile0")) {}
+        expectedCacheEntriesPerFile_(pset.getUntrackedParameter<std::vector<unsigned int>>("expectedCacheEntriesPerFile0")),
+        expectedOuterOffset_(pset.getUntrackedParameter<std::vector<unsigned int>>("expectedOuterOffset")) {}
 
   TestOneOutput::~TestOneOutput() {}
 
@@ -159,9 +161,11 @@ namespace edm {
         throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected value for nProcessesInFirstFile";
       }
     }
-    if (countInputFiles_ == 1 && !expectedCacheIndexVectorsPerFile_.empty()) {
-      if (expectedCacheIndexVectorsPerFile_ != outputProcessBlockHelper().processBlockHelper()->cacheIndexVectorsPerFile()) {
-        throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected value for cacheIndexVectorsPerFile";
+    for (unsigned int i = 0; i < expectedCacheIndexVectorsPerFile_.size(); ++i) {
+      if (i < countInputFiles_) {
+        if (expectedCacheIndexVectorsPerFile_[i] != outputProcessBlockHelper().processBlockHelper()->cacheIndexVectorsPerFile()[i]) {
+          throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected value for cacheIndexVectorsPerFile, element " << i;
+        }
       }
     }
     if (countInputFiles_ == 1 && !expectedNEntries0_.empty()) {
@@ -172,6 +176,12 @@ namespace edm {
     if (countInputFiles_ == 1 && !expectedCacheEntriesPerFile_.empty()) {
       if (expectedCacheEntriesPerFile_ != outputProcessBlockHelper().processBlockHelper()->cacheEntriesPerFile()) {
         throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected value for cacheEntriesPerFile 0";
+      }
+    }
+
+    if (!expectedOuterOffset_.empty() && (countInputFiles_ - 1) < expectedOuterOffset_.size()) {
+      if (expectedOuterOffset_[countInputFiles_ - 1] != outputProcessBlockHelper().processBlockHelper()->outerOffset()) {
+        throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected value for outerOffset, file " << (countInputFiles_ - 1);
       }
     }
 
@@ -281,6 +291,7 @@ namespace edm {
     desc.addUntracked<std::vector<unsigned int>>("expectedCacheIndexVectorsPerFile", std::vector<unsigned int>());
     desc.addUntracked<std::vector<unsigned int>>("expectedNEntries0", std::vector<unsigned int>());
     desc.addUntracked<std::vector<unsigned int>>("expectedCacheEntriesPerFile0", std::vector<unsigned int>());
+    desc.addUntracked<std::vector<unsigned int>>("expectedOuterOffset", std::vector<unsigned int>());
     descriptions.addDefault(desc);
   }
 }  // namespace edm

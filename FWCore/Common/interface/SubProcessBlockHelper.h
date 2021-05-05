@@ -25,6 +25,7 @@ namespace edm {
     std::vector<unsigned int> const& cacheEntriesPerFile() const override;
     unsigned int processBlockIndex(std::string const& processName, EventToProcessBlockIndexes const&) const override;
     std::vector<unsigned int> const& processBlockIndexes(EventToProcessBlockIndexes const&) const override;
+    unsigned int outerOffset() const override;
 
     void updateFromParentProcess(ProcessBlockHelperBase const& parentProcessBlockHelper, ProductRegistry const&);
 

@@ -27,8 +27,7 @@ namespace edm {
     std::vector<unsigned int> const& cacheEntriesPerFile() const override;
     unsigned int processBlockIndex(std::string const& processName, EventToProcessBlockIndexes const&) const override;
     std::vector<unsigned int> const& processBlockIndexes(EventToProcessBlockIndexes const&) const override;
-
-    unsigned int outerOffset() const { return outerOffset_; }
+    unsigned int outerOffset() const override;
 
     bool initializedFromInput() const { return initializedFromInput_; }
 
@@ -47,6 +46,12 @@ namespace edm {
       std::vector<unsigned int>& finalIndexToStoredIndex,
       std::vector<std::string> const& firstFileFinalProcesses) const;
 
+    void initializeFromPrimaryInput(StoredProcessBlockHelper const& storedProcessBlockHelper,
+                                    std::vector<unsigned int>&& nEntries);
+
+    void clearAfterOutputFilesClose();
+
+  private:
     void dropProcessesAndReorderStoredImpl(
       std::vector<std::string>& storedProcesses,
       std::vector<unsigned int>& storedCacheIndices,
@@ -54,12 +59,16 @@ namespace edm {
       std::vector<unsigned int> const& nEntries,
       std::vector<unsigned int> const& finalIndexToStoredIndex) const;
 
-    void initializeFromPrimaryInput(StoredProcessBlockHelper const& storedProcessBlockHelper,
-                                    std::vector<unsigned int>&& nEntries);
+    void initializeFromPrimaryInputFirstFile(std::vector<std::string> const& storedProcesses,
+                                             std::vector<unsigned int> const& storedCacheIndices,
+                                             std::vector<unsigned int>&& nEntries);
 
-    void clearAfterOutputFilesClose();
+    void initializeFromPrimaryInputAfterFirstFile(std::vector<std::string> const& storedProcesses,
+                                                  std::vector<unsigned int> const& storedCacheIndices,
+                                                  std::vector<unsigned int>&& nEntries);
 
-  private:
+    void initializeEntriesFromPrimaryInput(std::vector<unsigned int>&& nEntries);
+
     // A general comment about this class and its data members.
     // It was initially written to handle cases where all ProcessBlock
     // products from some process were dropped in a file after

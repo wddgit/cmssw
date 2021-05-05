@@ -50,9 +50,10 @@ process.testOneOutput = cms.OutputModule("TestOneOutput",
     expectedTopCacheIndices1 = cms.untracked.vuint32(0, 4, 6, 1, 4, 6, 2, 5, 6, 3, 5, 6, 7, 8, 9),
     expectedWriteProcessBlockTransitions = cms.untracked.int32(18),
     expectedProcessesInFirstFile = cms.untracked.uint32(3),
-    expectedCacheIndexVectorsPerFile = cms.untracked.vuint32(4),
+    expectedCacheIndexVectorsPerFile = cms.untracked.vuint32(4, 1, 4),
     expectedNEntries0 = cms.untracked.vuint32(4, 2, 1),
-    expectedCacheEntriesPerFile0 =  cms.untracked.vuint32(7)
+    expectedCacheEntriesPerFile0 =  cms.untracked.vuint32(7),
+    expectedOuterOffset = cms.untracked.vuint32(0, 4, 5)
 )
 
 process.p = cms.Path(process.readProcessBlocksOneAnalyzer1 * process.readProcessBlocksOneAnalyzer2)

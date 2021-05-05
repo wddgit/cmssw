@@ -45,6 +45,10 @@ namespace edm {
     return topProcessBlockHelper_->processBlockIndexes(eventToProcessBlockIndexes);
   }
 
+  unsigned int SubProcessBlockHelper::outerOffset() const {
+    return topProcessBlockHelper_->outerOffset();
+  }
+
   void SubProcessBlockHelper::updateFromParentProcess(ProcessBlockHelperBase const& parentProcessBlockHelper,
                                                       ProductRegistry const& productRegistry) {
     topProcessBlockHelper_ = parentProcessBlockHelper.topProcessBlockHelper();

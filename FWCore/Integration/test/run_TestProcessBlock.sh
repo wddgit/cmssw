@@ -97,6 +97,9 @@ pushd ${LOCAL_TMP_DIR}
   echo "testProcessBlockDropOnInput"
   cmsRun -p ${LOCAL_TEST_DIR}/testProcessBlockDropOnInput_cfg.py > /dev/null 2>&1 || die "cmsRun testProcessBlockDropOnInput_cfg.py" $?
 
+  echo "testProcessBlockThreeFileInput"
+  cmsRun -p ${LOCAL_TEST_DIR}/testProcessBlockThreeFileInput_cfg.py > /dev/null 2>&1 || die "cmsRun testProcessBlockThreeFileInput_cfg.py" $?
+
   rm testProcessBlock1ContentsM.txt
   rm testProcessBlock1ContentsE.txt
   rm testProcessBlock2DroppedContentsM.txt
