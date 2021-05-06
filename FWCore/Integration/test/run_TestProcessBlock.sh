@@ -133,6 +133,7 @@ pushd ${LOCAL_TMP_DIR}
   rm testProcessBlockMerge3.root
   rm testProcessBlockMergeOfMergedFiles2.root
   rm testProcessBlockDropOnInput.root
+  rm testProcessBlockThreeFileInput.root
 
 popd
 

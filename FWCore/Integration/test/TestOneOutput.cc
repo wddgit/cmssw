@@ -45,8 +45,9 @@ namespace edm {
     bool verbose_;
     std::vector<std::string> expectedProcessesWithProcessBlockProducts_;
     std::vector<std::string> expectedTopProcessesWithProcessBlockProducts_;
-    std::vector<unsigned int> expectedTopCacheIndices_;
+    std::vector<unsigned int> expectedTopCacheIndices0_;
     std::vector<unsigned int> expectedTopCacheIndices1_;
+    std::vector<unsigned int> expectedTopCacheIndices2_;
     std::vector<std::string> expectedProcessNamesAtWrite_;
     int expectedWriteProcessBlockTransitions_;
     unsigned int countWriteProcessBlockTransitions_ = 0;
@@ -69,8 +70,9 @@ namespace edm {
             pset.getUntrackedParameter<std::vector<std::string>>("expectedProcessesWithProcessBlockProducts")),
         expectedTopProcessesWithProcessBlockProducts_(
             pset.getUntrackedParameter<std::vector<std::string>>("expectedTopProcessesWithProcessBlockProducts")),
-        expectedTopCacheIndices_(pset.getUntrackedParameter<std::vector<unsigned int>>("expectedTopCacheIndices")),
+        expectedTopCacheIndices0_(pset.getUntrackedParameter<std::vector<unsigned int>>("expectedTopCacheIndices0")),
         expectedTopCacheIndices1_(pset.getUntrackedParameter<std::vector<unsigned int>>("expectedTopCacheIndices1")),
+        expectedTopCacheIndices2_(pset.getUntrackedParameter<std::vector<unsigned int>>("expectedTopCacheIndices2")),
         expectedProcessNamesAtWrite_(
             pset.getUntrackedParameter<std::vector<std::string>>("expectedProcessNamesAtWrite")),
         expectedWriteProcessBlockTransitions_(pset.getUntrackedParameter<int>("expectedWriteProcessBlockTransitions")),
@@ -132,10 +134,12 @@ namespace edm {
       }
 
       std::vector<unsigned int> const* expectedTopCacheIndices = nullptr;
-      if (countInputFiles_ == 1 && !expectedTopCacheIndices_.empty()) {
-        expectedTopCacheIndices = &expectedTopCacheIndices_;
+      if (countInputFiles_ == 1 && !expectedTopCacheIndices0_.empty()) {
+        expectedTopCacheIndices = &expectedTopCacheIndices0_;
       } else if (countInputFiles_ == 2 && !expectedTopCacheIndices1_.empty()) {
         expectedTopCacheIndices = &expectedTopCacheIndices1_;
+      } else if (countInputFiles_ == 3 && !expectedTopCacheIndices2_.empty()) {
+        expectedTopCacheIndices = &expectedTopCacheIndices2_;
       }
       if (expectedTopCacheIndices != nullptr) {
         std::vector<std::vector<unsigned int>> const& topProcessBlockCacheIndices = outputProcessBlockHelper().processBlockHelper()->processBlockCacheIndices();
@@ -145,7 +149,7 @@ namespace edm {
         unsigned int iStored = 0;
         for (unsigned int i = 0; i < topProcessBlockCacheIndices.size(); ++i) {
           if (topProcessBlockCacheIndices[i].size() != expectedTopProcessesWithProcessBlockProducts_.size()) {
-            throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected size of outer cache indices vector on input file " << (countInputFiles_ - 1);
+            throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected size of inner cache indices vector on input file " << (countInputFiles_ - 1);
           }
           for (unsigned int j = 0; j < topProcessBlockCacheIndices[i].size(); ++j) {
             if (topProcessBlockCacheIndices[i][j] != (*expectedTopCacheIndices)[iStored]) {
@@ -280,8 +284,9 @@ namespace edm {
                                                 std::vector<std::string>());
     desc.addUntracked<std::vector<std::string>>("expectedTopProcessesWithProcessBlockProducts",
                                                 std::vector<std::string>());
-    desc.addUntracked<std::vector<unsigned int>>("expectedTopCacheIndices", std::vector<unsigned int>());
+    desc.addUntracked<std::vector<unsigned int>>("expectedTopCacheIndices0", std::vector<unsigned int>());
     desc.addUntracked<std::vector<unsigned int>>("expectedTopCacheIndices1", std::vector<unsigned int>());
+    desc.addUntracked<std::vector<unsigned int>>("expectedTopCacheIndices2", std::vector<unsigned int>());
     desc.addUntracked<std::vector<std::string>>("expectedProcessNamesAtWrite", std::vector<std::string>());
     desc.addUntracked<int>("expectedWriteProcessBlockTransitions", -1);
     desc.addUntracked<bool>("requireNullTTreesInFileBlock", false);

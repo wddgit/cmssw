@@ -39,15 +39,16 @@ process.readProcessBlocksOneAnalyzer2 = cms.EDAnalyzer("edmtest::one::InputProce
 )
 
 process.out = cms.OutputModule("PoolOutputModule",
-    fileName = cms.untracked.string('testProcessBlockDropOnInput.root')
+    fileName = cms.untracked.string('testProcessBlockThreeFileInput.root')
 )
 
 process.testOneOutput = cms.OutputModule("TestOneOutput",
     verbose = cms.untracked.bool(False),
     expectedProcessesWithProcessBlockProducts = cms.untracked.vstring('PROD1', 'MERGE', 'MERGEOFMERGED'),
     expectedTopProcessesWithProcessBlockProducts = cms.untracked.vstring('PROD1', 'MERGE', 'MERGEOFMERGED'),
-    expectedTopCacheIndices = cms.untracked.vuint32(0, 4, 6, 1, 4, 6, 2, 5, 6, 3, 5, 6),
+    expectedTopCacheIndices0 = cms.untracked.vuint32(0, 4, 6, 1, 4, 6, 2, 5, 6, 3, 5, 6),
     expectedTopCacheIndices1 = cms.untracked.vuint32(0, 4, 6, 1, 4, 6, 2, 5, 6, 3, 5, 6, 7, 8, 9),
+    expectedTopCacheIndices2 = cms.untracked.vuint32(0, 4, 6, 1, 4, 6, 2, 5, 6, 3, 5, 6, 7, 8, 9, 10, 14, 16, 11, 14, 16, 12, 15, 16, 13, 15, 16),
     expectedWriteProcessBlockTransitions = cms.untracked.int32(18),
     expectedProcessesInFirstFile = cms.untracked.uint32(3),
     expectedCacheIndexVectorsPerFile = cms.untracked.vuint32(4, 1, 4),
