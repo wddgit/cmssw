@@ -532,7 +532,7 @@ namespace edmtest {
       static void fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
         edm::ParameterSetDescription desc;
         desc.add<int>("transitions");
-        desc.add<std::vector<int>>("expectedByRun");
+        desc.add<std::vector<int>>("expectedByRun", std::vector<int>());
         desc.add<int>("expectedSum");
         edm::InputTag defaultInputTag;
         desc.addUntracked<int>("expectedFillerSum", 0);

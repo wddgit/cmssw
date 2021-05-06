@@ -1292,10 +1292,14 @@ namespace edm {
         eventToProcessBlockIndexes_.setIndex(processBlockHelper_->outerOffset());
       }
     } else {
-      EventToProcessBlockIndexes* pEventToProcessBlockIndexes = &eventToProcessBlockIndexes_;
-      eventTree_.fillBranchEntry(eventToProcessBlockIndexesBranch, pEventToProcessBlockIndexes);
-      unsigned int updatedIndex = eventToProcessBlockIndexes_.index() + processBlockHelper_->outerOffset();
-      eventToProcessBlockIndexes_.setIndex(updatedIndex);
+      if (processBlockHelper_->cacheIndexVectorsPerFile().back() == 1u) {
+        eventToProcessBlockIndexes_.setIndex(processBlockHelper_->outerOffset());
+      } else {
+        EventToProcessBlockIndexes* pEventToProcessBlockIndexes = &eventToProcessBlockIndexes_;
+        eventTree_.fillBranchEntry(eventToProcessBlockIndexesBranch, pEventToProcessBlockIndexes);
+        unsigned int updatedIndex = eventToProcessBlockIndexes_.index() + processBlockHelper_->outerOffset();
+        eventToProcessBlockIndexes_.setIndex(updatedIndex);
+      }
     }
   }
 

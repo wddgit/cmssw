@@ -52,7 +52,11 @@ process.readProcessBlocksOneAnalyzer2 = cms.EDAnalyzer("edmtest::one::InputProce
 )
 
 process.out = cms.OutputModule("PoolOutputModule",
-    fileName = cms.untracked.string('testProcessBlockDropOnInput.root')
+    fileName = cms.untracked.string('testProcessBlockDropOnInput.root'),
+        outputCommands = cms.untracked.vstring(
+        "keep *",
+        "drop *_*_*_READ"
+    )
 )
 
 process.testOneOutput = cms.OutputModule("TestOneOutput",

@@ -16,6 +16,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <iostream>
 
 namespace edm {
 
@@ -58,7 +59,11 @@ namespace edm {
     unsigned int expectedProcessesInFirstFile_;
     std::vector<unsigned int> expectedCacheIndexVectorsPerFile_;
     std::vector<unsigned int> expectedNEntries0_;
-    std::vector<unsigned int> expectedCacheEntriesPerFile_;
+    std::vector<unsigned int> expectedNEntries1_;
+    std::vector<unsigned int> expectedNEntries2_;
+    std::vector<unsigned int> expectedCacheEntriesPerFile0_;
+    std::vector<unsigned int> expectedCacheEntriesPerFile1_;
+    std::vector<unsigned int> expectedCacheEntriesPerFile2_;
     std::vector<unsigned int> expectedOuterOffset_;
   };
 
@@ -82,7 +87,11 @@ namespace edm {
         expectedProcessesInFirstFile_(pset.getUntrackedParameter<unsigned int>("expectedProcessesInFirstFile")),
         expectedCacheIndexVectorsPerFile_(pset.getUntrackedParameter<std::vector<unsigned int>>("expectedCacheIndexVectorsPerFile")),
         expectedNEntries0_(pset.getUntrackedParameter<std::vector<unsigned int>>("expectedNEntries0")),
-        expectedCacheEntriesPerFile_(pset.getUntrackedParameter<std::vector<unsigned int>>("expectedCacheEntriesPerFile0")),
+        expectedNEntries1_(pset.getUntrackedParameter<std::vector<unsigned int>>("expectedNEntries1")),
+        expectedNEntries2_(pset.getUntrackedParameter<std::vector<unsigned int>>("expectedNEntries2")),
+        expectedCacheEntriesPerFile0_(pset.getUntrackedParameter<std::vector<unsigned int>>("expectedCacheEntriesPerFile0")),
+        expectedCacheEntriesPerFile1_(pset.getUntrackedParameter<std::vector<unsigned int>>("expectedCacheEntriesPerFile1")),
+        expectedCacheEntriesPerFile2_(pset.getUntrackedParameter<std::vector<unsigned int>>("expectedCacheEntriesPerFile2")),
         expectedOuterOffset_(pset.getUntrackedParameter<std::vector<unsigned int>>("expectedOuterOffset")) {}
 
   TestOneOutput::~TestOneOutput() {}
@@ -152,6 +161,7 @@ namespace edm {
             throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected size of inner cache indices vector on input file " << (countInputFiles_ - 1);
           }
           for (unsigned int j = 0; j < topProcessBlockCacheIndices[i].size(); ++j) {
+            std::cout << "WDD " << topProcessBlockCacheIndices[i][j] << " " << (*expectedTopCacheIndices)[iStored] << std::endl;
             if (topProcessBlockCacheIndices[i][j] != (*expectedTopCacheIndices)[iStored]) {
               throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected cache index value on input file " << (countInputFiles_ - 1);
             }
@@ -172,14 +182,33 @@ namespace edm {
         }
       }
     }
-    if (countInputFiles_ == 1 && !expectedNEntries0_.empty()) {
+    if (countInputFiles_ >= 1 && !expectedNEntries0_.empty()) {
       if (expectedNEntries0_ != outputProcessBlockHelper().processBlockHelper()->nEntries()[0]) {
         throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected value for nEntries 0";
       }
     }
-    if (countInputFiles_ == 1 && !expectedCacheEntriesPerFile_.empty()) {
-      if (expectedCacheEntriesPerFile_ != outputProcessBlockHelper().processBlockHelper()->cacheEntriesPerFile()) {
+    if (countInputFiles_ >= 2 && !expectedNEntries1_.empty()) {
+      if (expectedNEntries1_ != outputProcessBlockHelper().processBlockHelper()->nEntries()[1]) {
+        throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected value for nEntries 1";
+      }
+    }
+    if (countInputFiles_ >= 3 && !expectedNEntries2_.empty()) {
+      if (expectedNEntries2_ != outputProcessBlockHelper().processBlockHelper()->nEntries()[2]) {
+        throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected value for nEntries 2";
+      }
+    }
+
+    if (countInputFiles_ == 1 && !expectedCacheEntriesPerFile0_.empty()) {
+      if (expectedCacheEntriesPerFile0_ != outputProcessBlockHelper().processBlockHelper()->cacheEntriesPerFile()) {
         throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected value for cacheEntriesPerFile 0";
+      }
+    } else if (countInputFiles_ == 2 && !expectedCacheEntriesPerFile1_.empty()) {
+      if (expectedCacheEntriesPerFile1_ != outputProcessBlockHelper().processBlockHelper()->cacheEntriesPerFile()) {
+        throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected value for cacheEntriesPerFile 1";
+      }
+    } else if (countInputFiles_ == 3 && !expectedCacheEntriesPerFile2_.empty()) {
+      if (expectedCacheEntriesPerFile2_ != outputProcessBlockHelper().processBlockHelper()->cacheEntriesPerFile()) {
+        throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected value for cacheEntriesPerFile 2";
       }
     }
 
@@ -295,7 +324,11 @@ namespace edm {
     desc.addUntracked<unsigned int>("expectedProcessesInFirstFile", 0);
     desc.addUntracked<std::vector<unsigned int>>("expectedCacheIndexVectorsPerFile", std::vector<unsigned int>());
     desc.addUntracked<std::vector<unsigned int>>("expectedNEntries0", std::vector<unsigned int>());
+    desc.addUntracked<std::vector<unsigned int>>("expectedNEntries1", std::vector<unsigned int>());
+    desc.addUntracked<std::vector<unsigned int>>("expectedNEntries2", std::vector<unsigned int>());
     desc.addUntracked<std::vector<unsigned int>>("expectedCacheEntriesPerFile0", std::vector<unsigned int>());
+    desc.addUntracked<std::vector<unsigned int>>("expectedCacheEntriesPerFile1", std::vector<unsigned int>());
+    desc.addUntracked<std::vector<unsigned int>>("expectedCacheEntriesPerFile2", std::vector<unsigned int>());
     desc.addUntracked<std::vector<unsigned int>>("expectedOuterOffset", std::vector<unsigned int>());
     descriptions.addDefault(desc);
   }
