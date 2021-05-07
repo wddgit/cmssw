@@ -100,6 +100,22 @@ pushd ${LOCAL_TMP_DIR}
   echo "testProcessBlockThreeFileInput"
   cmsRun -p ${LOCAL_TEST_DIR}/testProcessBlockThreeFileInput_cfg.py > /dev/null 2>&1 || die "cmsRun testProcessBlockThreeFileInput_cfg.py" $?
 
+  # The next three tests would be relevant if we disabled the strict merging requirement
+  # in ProductRegistry.cc for ProcessBlock products (a one line code change). As long
+  # as we always enforce the strict merging requirement these tests will fail, but they
+  # would be useful if we decide to allow that requirement to be disabled in the future.
+  # I ran them manually with the ProductRegistry.cc modified  to disable the requirement
+  # and in May 2021 these tests passed.
+
+  #echo "testProcessBlockNonStrict"
+  #cmsRun -p ${LOCAL_TEST_DIR}/testProcessBlockNonStrict_cfg.py > /dev/null 2>&1 || die "cmsRun testProcessBlockNonStrict_cfg.py" $?
+
+  #echo "testProcessBlockNonStrict2"
+  #cmsRun -p ${LOCAL_TEST_DIR}/testProcessBlockNonStrict2_cfg.py > /dev/null 2>&1 || die "cmsRun testProcessBlockNonStrict2_cfg.py" $?
+
+  #echo "testProcessBlockNonStrict3"
+  #cmsRun -p ${LOCAL_TEST_DIR}/testProcessBlockNonStrict3_cfg.py > /dev/null 2>&1 || die "cmsRun testProcessBlockNonStrict3_cfg.py" $?
+
   rm testProcessBlock1ContentsM.txt
   rm testProcessBlock1ContentsE.txt
   rm testProcessBlock2DroppedContentsM.txt

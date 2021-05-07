@@ -580,9 +580,10 @@ namespace edm {
         if (product.second.branchType() == InProcess) {
           std::vector<std::string> const& processes = storedProcessBlockHelper.processesWithProcessBlockProducts();
           auto it = std::find(processes.begin(), processes.end(), product.second.processName());
-          assert(it != processes.end());
-          auto index = std::distance(processes.begin(), it);
-          ++nBranches[numberOfRunLumiEventProductTrees + index];
+          if (it != processes.end()) {
+            auto index = std::distance(processes.begin(), it);
+            ++nBranches[numberOfRunLumiEventProductTrees + index];
+          }
         } else {
           ++nBranches[product.second.branchType()];
         }
@@ -599,10 +600,11 @@ namespace edm {
       if (prod.branchType() == InProcess) {
         std::vector<std::string> const& processes = storedProcessBlockHelper.processesWithProcessBlockProducts();
         auto it = std::find(processes.begin(), processes.end(), prod.processName());
-        assert(it != processes.end());
-        auto index = std::distance(processes.begin(), it);
-        treePointers_[numberOfRunLumiEventProductTrees + index]->addBranch(prod,
-                                                                           newBranchToOldBranch(prod.branchName()));
+        if (it != processes.end()) {
+          auto index = std::distance(processes.begin(), it);
+          treePointers_[numberOfRunLumiEventProductTrees + index]->addBranch(prod,
+                                                                             newBranchToOldBranch(prod.branchName()));
+        }
       } else {
         treePointers_[prod.branchType()]->addBranch(prod, newBranchToOldBranch(prod.branchName()));
       }

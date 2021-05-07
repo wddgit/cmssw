@@ -16,7 +16,6 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include <iostream>
 
 namespace edm {
 
@@ -138,7 +137,7 @@ namespace edm {
       // Same test as the previous except check the list of names in
       // the top level process name list from the EventProcessor
       if (expectedTopProcessesWithProcessBlockProducts_ !=
-          outputProcessBlockHelper().processBlockHelper()->processesWithProcessBlockProducts()) {
+          outputProcessBlockHelper().processBlockHelper()->topProcessBlockHelper()->topProcessesWithProcessBlockProducts()) {
         throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected top process name list";
       }
 
@@ -161,7 +160,6 @@ namespace edm {
             throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected size of inner cache indices vector on input file " << (countInputFiles_ - 1);
           }
           for (unsigned int j = 0; j < topProcessBlockCacheIndices[i].size(); ++j) {
-            std::cout << "WDD " << topProcessBlockCacheIndices[i][j] << " " << (*expectedTopCacheIndices)[iStored] << std::endl;
             if (topProcessBlockCacheIndices[i][j] != (*expectedTopCacheIndices)[iStored]) {
               throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected cache index value on input file " << (countInputFiles_ - 1);
             }

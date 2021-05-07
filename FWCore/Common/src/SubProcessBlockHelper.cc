@@ -40,11 +40,6 @@ namespace edm {
     return topProcessBlockHelper_->processBlockIndex(processName, eventToProcessBlockIndexes);
   }
 
-  std::vector<unsigned int> const& SubProcessBlockHelper::processBlockIndexes(
-      EventToProcessBlockIndexes const& eventToProcessBlockIndexes) const {
-    return topProcessBlockHelper_->processBlockIndexes(eventToProcessBlockIndexes);
-  }
-
   unsigned int SubProcessBlockHelper::outerOffset() const {
     return topProcessBlockHelper_->outerOffset();
   }

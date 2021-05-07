@@ -31,22 +31,22 @@ process.source = cms.Source("PoolSource",
     )
 )
 
-# 77 transitions = 30 events + 17 InputProcessBlock transitions + (3 x 10) Cache filling transitions
-# sum = (11 + 22 + 3300 + 4400 + 7700) x 2 + 44 + 444 + 44 = 31398
+# 40 transitions = 30 events + 10 InputProcessBlock transitions + (3 x 0) Cache filling transitions
+# sum = 44 + 444 + 44 = 532
 process.readProcessBlocksOneAnalyzer1 = cms.EDAnalyzer("edmtest::one::InputProcessBlockIntAnalyzer",
-                                            transitions = cms.int32(77),
+                                            transitions = cms.int32(40),
                                             consumesBeginProcessBlock = cms.InputTag("intProducerBeginProcessBlock", ""),
                                             consumesEndProcessBlock = cms.InputTag("intProducerEndProcessBlock", ""),
                                             consumesBeginProcessBlockM = cms.InputTag("intProducerBeginProcessBlockM", ""),
                                             consumesEndProcessBlockM = cms.InputTag("intProducerEndProcessBlockM", ""),
                                             #expectedByRun = cms.vint32(0, 11, 22, 3300, 4400, 7700),
-                                            expectedSum = cms.int32(31398)
+                                            expectedSum = cms.int32(532)
 )
 
-# 59 transitions = 30 events + 17 InputProcessBlock transitions + (3 x 4) Cache filling transitions
+# 40 transitions = 30 events + 10 InputProcessBlock transitions + (3 x 0) Cache filling transitions
 # sum = 44 + 444 + 44 = 532
 process.readProcessBlocksOneAnalyzer2 = cms.EDAnalyzer("edmtest::one::InputProcessBlockIntAnalyzer",
-                                            transitions = cms.int32(59),
+                                            transitions = cms.int32(40),
                                             consumesBeginProcessBlock = cms.InputTag("intProducerBeginProcessBlockMM", ""),
                                             consumesEndProcessBlock = cms.InputTag("intProducerEndProcessBlockMM", ""),
                                             consumesBeginProcessBlockM = cms.InputTag("intProducerBeginProcessBlockM", ""),
@@ -66,15 +66,15 @@ process.testOneOutput = cms.OutputModule("TestOneOutput",
     expectedTopCacheIndices0 = cms.untracked.vuint32(0, 4, 6, 1, 4, 6, 2, 5, 6, 3, 5, 6),
     expectedTopCacheIndices1 = cms.untracked.vuint32(0, 4, 6, 1, 4, 6, 2, 5, 6, 3, 5, 6, 7, 8, 9),
     expectedTopCacheIndices2 = cms.untracked.vuint32(0, 4, 6, 1, 4, 6, 2, 5, 6, 3, 5, 6, 7, 8, 9, 4294967295, 4294967295, 4294967295),
-    expectedWriteProcessBlockTransitions = cms.untracked.int32(18),
+    expectedWriteProcessBlockTransitions = cms.untracked.int32(11),
     expectedProcessesInFirstFile = cms.untracked.uint32(3),
-    expectedCacheIndexVectorsPerFile = cms.untracked.vuint32(4, 1, 5),
+    expectedCacheIndexVectorsPerFile = cms.untracked.vuint32(4, 1, 1),
     expectedNEntries0 = cms.untracked.vuint32(4, 2, 1),
     expectedNEntries1 = cms.untracked.vuint32(1, 1, 1),
-    expectedNEntries2 = cms.untracked.vuint32(5, 0, 2),
+    expectedNEntries2 = cms.untracked.vuint32(0, 0, 0),
     expectedCacheEntriesPerFile0 =  cms.untracked.vuint32(7),
     expectedCacheEntriesPerFile1 =  cms.untracked.vuint32(7, 3),
-    expectedCacheEntriesPerFile2 =  cms.untracked.vuint32(7, 3, 7),
+    expectedCacheEntriesPerFile2 =  cms.untracked.vuint32(7, 3, 0),
     expectedOuterOffset = cms.untracked.vuint32(0, 4, 5)
 )
 

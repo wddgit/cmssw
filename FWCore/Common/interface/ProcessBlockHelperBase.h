@@ -40,7 +40,6 @@ namespace edm {
     virtual std::vector<unsigned int> const& cacheIndexVectorsPerFile() const = 0;
     virtual std::vector<unsigned int> const& cacheEntriesPerFile() const = 0;
     virtual unsigned int processBlockIndex(std::string const& processName, EventToProcessBlockIndexes const&) const = 0;
-    virtual std::vector<unsigned int> const& processBlockIndexes(EventToProcessBlockIndexes const&) const = 0;
     virtual unsigned int outerOffset() const = 0;
 
     std::string selectProcess(ProductRegistry const&, ProductLabels const&, TypeID const&) const;

@@ -26,7 +26,6 @@ namespace edm {
     std::vector<unsigned int> const& cacheIndexVectorsPerFile() const override;
     std::vector<unsigned int> const& cacheEntriesPerFile() const override;
     unsigned int processBlockIndex(std::string const& processName, EventToProcessBlockIndexes const&) const override;
-    std::vector<unsigned int> const& processBlockIndexes(EventToProcessBlockIndexes const&) const override;
     unsigned int outerOffset() const override;
 
     bool initializedFromInput() const { return initializedFromInput_; }
@@ -81,7 +80,7 @@ namespace edm {
     // some indices to be invalid or other values to be zero even
     // though at the moment this should never occur.
 
-    // Events/Runs/Lumis hold an index into the outer vector
+    // Events hold an index into the outer vector
     // (an offset needs to added in the case of multiple input
     // files). The elements of the inner vector correspond to the
     // processes in processesWithProcessBlockProducts_ (exactly
@@ -99,8 +98,7 @@ namespace edm {
     // The outer vector has an element for each input file.
     // The inner vector elements correspond 1-to-1 with
     // processesWithProcessBlockProducts_ and in the same
-    // order, except only the processes from the input files.
-    // This might contain zeroes.
+    // order. This might contain zeroes.
     std::vector<std::vector<unsigned int>> nEntries_;
 
     // The index into the next two vectors is the input file index

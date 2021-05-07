@@ -15,6 +15,17 @@ process.source = cms.Source("PoolSource",
     )
 )
 
+# transitions 14 = 6 events + 2 InputProcessBlock transitions + 3 x 2 cache filling calls
+process.readProcessBlocksOneAnalyzer1 = cms.EDAnalyzer("edmtest::one::InputProcessBlockIntAnalyzer",
+                                            transitions = cms.int32(14),
+                                            consumesBeginProcessBlock = cms.InputTag("intProducerBeginProcessBlock", ""),
+                                            consumesEndProcessBlock = cms.InputTag("intProducerEndProcessBlock", ""),
+                                            consumesBeginProcessBlockM = cms.InputTag("intProducerBeginProcessBlockM", ""),
+                                            consumesEndProcessBlockM = cms.InputTag("intProducerEndProcessBlockM", ""),
+                                            expectedByRun = cms.vint32(0, 11, 22, 3300, 4400, 7700),
+                                            expectedSum = cms.int32(33)
+)
+
 process.out = cms.OutputModule("PoolOutputModule",
     fileName = cms.untracked.string('testProcessBlockMerge.root')
 )
@@ -48,7 +59,8 @@ process.intProducerEndProcessBlockB = cms.EDProducer("IntProducerEndProcessBlock
 process.p = cms.Path(process.intProducerBeginProcessBlockM *
                      process.intProducerEndProcessBlockM *
                      process.intProducerBeginProcessBlockB *
-                     process.intProducerEndProcessBlockB
+                     process.intProducerEndProcessBlockB *
+                     process.readProcessBlocksOneAnalyzer1
 )
 
 process.e = cms.EndPath(process.out *

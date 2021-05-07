@@ -39,11 +39,6 @@ namespace edm {
     return invalidCacheIndex();
   }
 
-  std::vector<unsigned int> const& ProcessBlockHelper::processBlockIndexes(
-      EventToProcessBlockIndexes const& eventToProcessBlockIndexes) const {
-    return processBlockCacheIndices_[eventToProcessBlockIndexes.index()];
-  }
-
   unsigned int ProcessBlockHelper::outerOffset() const { return outerOffset_; }
 
   // Modifies the process names and cache indices in the StoredProcessBlockHelper.
