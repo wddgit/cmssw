@@ -754,14 +754,14 @@ namespace edm {
     }
   }
 
-  std::unique_ptr<FileBlock> RootFile::createFileBlock() {
+  std::shared_ptr<FileBlock> RootFile::createFileBlock() {
     std::vector<TTree*> processBlockTrees;
     std::vector<std::string> processesWithProcessBlockTrees;
     for (auto& processBlockTree : processBlockTrees_) {
       processBlockTrees.push_back(processBlockTree->tree());
       processesWithProcessBlockTrees.push_back(processBlockTree->processName());
     }
-    return std::make_unique<FileBlock>(fileFormatVersion(),
+    return std::make_shared<FileBlock>(fileFormatVersion(),
                                        eventTree_.tree(),
                                        eventTree_.metaTree(),
                                        lumiTree_.tree(),

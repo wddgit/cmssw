@@ -103,7 +103,7 @@ namespace edm {
     void readProcessBlock(ProcessBlockPrincipal&);
 
     /// Read next file
-    std::unique_ptr<FileBlock> readFile();
+    std::shared_ptr<FileBlock> readFile();
 
     /// close current file
     void closeFile(FileBlock*, bool cleaningUpAfterException);
@@ -393,7 +393,7 @@ namespace edm {
     virtual void readLuminosityBlock_(LuminosityBlockPrincipal& lumiPrincipal);
     virtual void readEvent_(EventPrincipal& eventPrincipal) = 0;
     virtual bool readIt(EventID const& id, EventPrincipal& eventPrincipal, StreamContext& streamContext);
-    virtual std::unique_ptr<FileBlock> readFile_();
+    virtual std::shared_ptr<FileBlock> readFile_();
     virtual void closeFile_() {}
     virtual bool goToEvent_(EventID const& eventID);
     virtual void setRun(RunNumber_t r);

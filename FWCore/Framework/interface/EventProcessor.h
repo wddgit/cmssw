@@ -341,7 +341,7 @@ namespace edm {
     std::vector<SubProcess> subProcesses_;
     edm::propagate_const<std::unique_ptr<HistoryAppender>> historyAppender_;
 
-    edm::propagate_const<std::unique_ptr<FileBlock>> fb_;
+    edm::propagate_const<std::shared_ptr<FileBlock>> fb_;
     edm::propagate_const<std::shared_ptr<EDLooperBase>> looper_;
 
     //The atomic protects concurrent access of deferredExceptionPtr_

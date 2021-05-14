@@ -16,7 +16,7 @@
 #include <memory>
 #include <string>
 #include <vector>
-
+#include <iostream>
 namespace edm {
 
   class TestOneOutput : public one::OutputModule<WatchInputFiles, RunCache<int>, LuminosityBlockCache<int>> {
@@ -241,7 +241,13 @@ namespace edm {
     if (countWriteProcessBlockTransitions_ < expectedCacheIndexSize_.size()) {
       if (expectedCacheIndexSize_[countWriteProcessBlockTransitions_] !=
           outputProcessBlockHelper().processBlockHelper()->processBlockCacheIndices().size()) {
-        throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected cache index size";
+        throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected cache index size "
+                                            << outputProcessBlockHelper().processBlockHelper()->processBlockCacheIndices().size();
+      }
+    }
+    for (auto const& x : outputProcessBlockHelper().processBlockHelper()->processBlockCacheIndices()) {
+      for (auto const& y : x) {
+        std::cout << "   " << y << std::endl;
       }
     }
     ++countWriteProcessBlockTransitions_;
@@ -259,7 +265,7 @@ namespace edm {
     if (verbose_) {
       LogAbsolute("TestOneOutput") << "one respondToCloseInputFile";
     }
-    testFileBlock(fb);
+    //testFileBlock(fb);
   }
 
   void TestOneOutput::testFileBlock(FileBlock const& fb) {
@@ -271,6 +277,8 @@ namespace edm {
             << "TestOneOutput::respondToOpenInputFile expected null TTree pointers in FileBlock";
       }
     } else if (testTTreesInFileBlock_) {
+      std::cout << fb.processBlockTrees()[0] << " " << fb.processBlockTrees()[1] << " " << fb.processBlockTree("PROD1") << " " << fb.processBlockTree("MERGE") << std::endl;
+      std::cout << "size = " << fb.processBlockTrees().size() << " " << fb.tree() << " " << fb.lumiTree() << " " << fb.runTree() << std::endl;
       if (std::string("Events") != fb.tree()->GetName() ||
           std::string("LuminosityBlocks") != fb.lumiTree()->GetName() ||
           std::string("Runs") != fb.runTree()->GetName() || fb.processesWithProcessBlockTrees().size() != 2 ||

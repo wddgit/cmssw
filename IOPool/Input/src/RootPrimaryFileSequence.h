@@ -39,7 +39,7 @@ namespace edm {
     RootPrimaryFileSequence(RootPrimaryFileSequence const&) = delete;             // Disallow copying and moving
     RootPrimaryFileSequence& operator=(RootPrimaryFileSequence const&) = delete;  // Disallow copying and moving
 
-    std::unique_ptr<FileBlock> readFile_();
+    std::shared_ptr<FileBlock> readFile_();
     void closeFile_() override;
     void endJob();
     InputSource::ItemType getNextItemType(RunNumber_t& run, LuminosityBlockNumber_t& lumi, EventNumber_t& event);
@@ -70,6 +70,7 @@ namespace edm {
     std::shared_ptr<DuplicateChecker const> duplicateChecker() const { return get_underlying_safe(duplicateChecker_); }
     std::shared_ptr<DuplicateChecker>& duplicateChecker() { return get_underlying_safe(duplicateChecker_); }
 
+    edm::propagate_const<std::shared_ptr<FileBlock>> fb_;
     edm::propagate_const<std::shared_ptr<EventSkipperByID>> eventSkipperByID_;
     int initialNumberOfEventsToSkip_;
     bool noEventSort_;

@@ -71,7 +71,7 @@ namespace edm {
 
   void RootPrimaryFileSequence::endJob() { closeFile_(); }
 
-  std::unique_ptr<FileBlock> RootPrimaryFileSequence::readFile_() {
+  std::shared_ptr<FileBlock> RootPrimaryFileSequence::readFile_() {
     if (firstFile_) {
       // The first input file has already been opened.
       firstFile_ = false;
@@ -82,25 +82,27 @@ namespace edm {
       if (!nextFile()) {
         // handle case with last file bad and
         // skipBadFiles true
-        return std::unique_ptr<FileBlock>();
+        return std::make_shared<FileBlock>();
       }
     }
     if (!rootFile()) {
-      return std::make_unique<FileBlock>();
+      return std::make_shared<FileBlock>();
     }
-    return rootFile()->createFileBlock();
+    std::shared_ptr<FileBlock> fileBlock = rootFile()->createFileBlock();
+    fb_ = fileBlock;
+    return fileBlock;
   }
 
   void RootPrimaryFileSequence::closeFile_() {
     // close the currently open file, if any, and delete the RootFile object.
     if (rootFile() && !goToEventClosedFile_) {
-      goToEventClosedFile_ = false;
       auto sentry = std::make_unique<InputSource::FileCloseSentry>(input_, lfn(), usedFallback());
       rootFile()->close();
       if (duplicateChecker_)
         duplicateChecker_->inputFileClosed();
       rootFile().reset();
     }
+    goToEventClosedFile_ = false;
   }
 
   void RootPrimaryFileSequence::initFile_(bool skipBadFiles) {

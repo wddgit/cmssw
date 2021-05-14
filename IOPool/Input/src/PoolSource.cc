@@ -154,8 +154,8 @@ namespace edm {
     InputFile::reportReadBranches();
   }
 
-  std::unique_ptr<FileBlock> PoolSource::readFile_() {
-    std::unique_ptr<FileBlock> fb = primaryFileSequence_->readFile_();
+  std::shared_ptr<FileBlock> PoolSource::readFile_() {
+    std::shared_ptr<FileBlock> fb = primaryFileSequence_->readFile_();
     if (secondaryFileSequence_) {
       fb->setNotFastClonable(FileBlock::HasSecondaryFileSequence);
     }
