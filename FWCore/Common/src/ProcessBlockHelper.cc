@@ -119,12 +119,18 @@ namespace edm {
     return isModified;
   }
 
-  void ProcessBlockHelper::initializeFromPrimaryInput(StoredProcessBlockHelper const& storedProcessBlockHelper,
-                                                      std::vector<unsigned int>&& nEntries) {
-    // When this function is called drop on input has already occurred
-    // and all traces of the ProcessBlock products dropped on input
-    // have already been removed from storedProcessBlockHelper.
+  void ProcessBlockHelper::initializeFromPrimaryInput(StoredProcessBlockHelper const& storedProcessBlockHelper) {
+    if (!initializedFromInput_) {
+      initializedFromInput_ = true;
 
+      assert(processesWithProcessBlockProducts().empty());
+      processesWithProcessBlockProducts() = storedProcessBlockHelper.processesWithProcessBlockProducts();
+      nProcessesInFirstFile_ = processesWithProcessBlockProducts().size();
+    }
+  }
+
+  void ProcessBlockHelper::fillFromPrimaryInput(StoredProcessBlockHelper const& storedProcessBlockHelper,
+                                                std::vector<unsigned int>&& nEntries) {
     // I've written this so it will continue to work even if we someday relax
     // the strict merging requirement in the ProductRegistry (there
     // is a little extra complexity that may be unnecessary...).
@@ -134,22 +140,18 @@ namespace edm {
 
     outerOffset_ = processBlockCacheIndices_.size();
 
-    if (!initializedFromInput_) {
-      initializedFromInput_ = true;
-      // First input file
-      initializeFromPrimaryInputFirstFile(storedProcesses, storedCacheIndices, std::move(nEntries));
-    } else if (nProcessesInFirstFile_ == 0) {
+    if (nProcessesInFirstFile_ == 0) {
       // There were no ProcessBlock products in the first file. Nothing to do.
       return;
     } else if (!storedProcesses.empty()) {
       // Subsequent input file with ProcessBlock products
-      initializeFromPrimaryInputAfterFirstFile(storedProcesses, storedCacheIndices, std::move(nEntries));
+      fillFromPrimaryInputWhenNotEmpty(storedProcesses, storedCacheIndices, std::move(nEntries));
     } else if (storedProcesses.empty()) {
       // Subsequent input file without ProcessBlock products
       processBlockCacheIndices_.emplace_back(nProcessesInFirstFile_, invalidCacheIndex());
       cacheIndexVectorsPerFile_.push_back(1);
       std::vector<unsigned int> newNEntries(nProcessesInFirstFile_, 0);
-      initializeEntriesFromPrimaryInput(std::move(newNEntries));
+      fillEntriesFromPrimaryInput(std::move(newNEntries));
     }
   }
 
@@ -217,40 +219,9 @@ namespace edm {
     storedProcesses.swap(finalProcesses);
   }
 
-  void ProcessBlockHelper::initializeFromPrimaryInputFirstFile(std::vector<std::string> const& storedProcesses,
-                                                               std::vector<unsigned int> const& storedCacheIndices,
-                                                               std::vector<unsigned int>&& nEntries) {
-    assert(processesWithProcessBlockProducts().empty());
-    processesWithProcessBlockProducts() = storedProcesses;
-    nProcessesInFirstFile_ = processesWithProcessBlockProducts().size();
-
-    if (storedProcesses.empty()) {
-      return;
-    }
-    // Fill the cache index container from the input file.
-    // Iterate over the outer vector of the container to be filled
-    // and for each element iterate over the inner vector.
-    // Note the stored vector is flattened to optimize I/O,
-    // there is only one vector, not vectors in a vector.
-    unsigned int nOuterLoop = storedCacheIndices.size() / storedProcesses.size();
-    assert(storedProcesses.size() * nOuterLoop == storedCacheIndices.size());
-    assert(processBlockCacheIndices_.empty());
-    processBlockCacheIndices_.resize(nOuterLoop);
-    cacheIndexVectorsPerFile_.push_back(nOuterLoop);
-    unsigned int storedIndex = 0;
-    for (auto& cacheIndexVector : processBlockCacheIndices_) {
-      cacheIndexVector.resize(storedProcesses.size(), 0);
-      for (auto& cacheIndex : cacheIndexVector) {
-        cacheIndex = storedCacheIndices[storedIndex];
-        ++storedIndex;
-      }
-    }
-    initializeEntriesFromPrimaryInput(std::move(nEntries));
-  }
-
-  void ProcessBlockHelper::initializeFromPrimaryInputAfterFirstFile(std::vector<std::string> const& storedProcesses,
-                                                                    std::vector<unsigned int> const& storedCacheIndices,
-                                                                    std::vector<unsigned int>&& nEntries) {
+  void ProcessBlockHelper::fillFromPrimaryInputWhenNotEmpty(std::vector<std::string> const& storedProcesses,
+                                                            std::vector<unsigned int> const& storedCacheIndices,
+                                                            std::vector<unsigned int>&& nEntries) {
     assert(nProcessesInFirstFile_ <= processesWithProcessBlockProducts().size());
 
     // Calculate a translation from an index into the process names from the first file
@@ -292,10 +263,10 @@ namespace edm {
       }
     }
     cacheIndexVectorsPerFile_.push_back(nCacheIndexVectors);
-    initializeEntriesFromPrimaryInput(std::move(newNEntries));
+    fillEntriesFromPrimaryInput(std::move(newNEntries));
   }
 
-  void ProcessBlockHelper::initializeEntriesFromPrimaryInput(std::vector<unsigned int>&& nEntries) {
+  void ProcessBlockHelper::fillEntriesFromPrimaryInput(std::vector<unsigned int>&& nEntries) {
     unsigned int entriesThisFile = 0;
     for (auto const& entries : nEntries) {
       entriesThisFile += entries;

@@ -978,6 +978,7 @@ namespace edm {
   }
 
   void EventProcessor::inputProcessBlocks() {
+    input_->fillProcessBlockHelper();
     ProcessBlockPrincipal& processBlockPrincipal = principalCache_.inputProcessBlockPrincipal();
     while (input_->nextProcessBlock(processBlockPrincipal)) {
       readProcessBlock(processBlockPrincipal);

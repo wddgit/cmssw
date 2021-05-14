@@ -63,6 +63,11 @@ namespace edm {
     rootFile()->readRun_(runPrincipal);
   }
 
+  void RootInputFileSequence::fillProcessBlockHelper_() {
+    assert(rootFile());
+    return rootFile()->fillProcessBlockHelper_();
+  }
+
   bool RootInputFileSequence::nextProcessBlock_(ProcessBlockPrincipal& processBlockPrincipal) {
     assert(rootFile());
     return rootFile()->nextProcessBlock_(processBlockPrincipal);

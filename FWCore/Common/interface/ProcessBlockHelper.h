@@ -43,8 +43,10 @@ namespace edm {
                                        std::vector<unsigned int>& finalIndexToStoredIndex,
                                        std::vector<std::string> const& firstFileFinalProcesses) const;
 
-    void initializeFromPrimaryInput(StoredProcessBlockHelper const& storedProcessBlockHelper,
-                                    std::vector<unsigned int>&& nEntries);
+    void initializeFromPrimaryInput(StoredProcessBlockHelper const& storedProcessBlockHelper);
+
+    void fillFromPrimaryInput(StoredProcessBlockHelper const& storedProcessBlockHelper,
+                              std::vector<unsigned int>&& nEntries);
 
     void clearAfterOutputFilesClose();
 
@@ -55,15 +57,11 @@ namespace edm {
                                            std::vector<unsigned int> const& nEntries,
                                            std::vector<unsigned int> const& finalIndexToStoredIndex) const;
 
-    void initializeFromPrimaryInputFirstFile(std::vector<std::string> const& storedProcesses,
-                                             std::vector<unsigned int> const& storedCacheIndices,
-                                             std::vector<unsigned int>&& nEntries);
+    void fillFromPrimaryInputWhenNotEmpty(std::vector<std::string> const& storedProcesses,
+                                          std::vector<unsigned int> const& storedCacheIndices,
+                                          std::vector<unsigned int>&& nEntries);
 
-    void initializeFromPrimaryInputAfterFirstFile(std::vector<std::string> const& storedProcesses,
-                                                  std::vector<unsigned int> const& storedCacheIndices,
-                                                  std::vector<unsigned int>&& nEntries);
-
-    void initializeEntriesFromPrimaryInput(std::vector<unsigned int>&& nEntries);
+    void fillEntriesFromPrimaryInput(std::vector<unsigned int>&& nEntries);
 
     // A general comment about this class and its data members.
     // It was initially written to handle cases where all ProcessBlock

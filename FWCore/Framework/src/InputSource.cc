@@ -219,10 +219,10 @@ namespace edm {
   void InputSource::registerProducts() {}
 
   // Return a dummy file block.
-  std::unique_ptr<FileBlock> InputSource::readFile() {
+  std::shared_ptr<FileBlock> InputSource::readFile() {
     assert(state_ == IsFile);
     assert(!limitReached());
-    return callWithTryCatchAndPrint<std::unique_ptr<FileBlock> >([this]() { return readFile_(); },
+    return callWithTryCatchAndPrint<std::shared_ptr<FileBlock> >([this]() { return readFile_(); },
                                                                  "Calling InputSource::readFile_");
   }
 
@@ -237,7 +237,7 @@ namespace edm {
   // Return a dummy file block.
   // This function must be overridden for any input source that reads a file
   // containing Products.
-  std::unique_ptr<FileBlock> InputSource::readFile_() { return std::make_unique<FileBlock>(); }
+  std::shared_ptr<FileBlock> InputSource::readFile_() { return std::make_shared<FileBlock>(); }
 
   void InputSource::readRun(RunPrincipal& runPrincipal, HistoryAppender&) {
     RunSourceSentry sentry(*this, runPrincipal.index());
@@ -268,6 +268,8 @@ namespace edm {
     }
   }
 
+  void InputSource::fillProcessBlockHelper() { fillProcessBlockHelper_(); }
+
   bool InputSource::nextProcessBlock(ProcessBlockPrincipal& processBlockPrincipal) {
     return nextProcessBlock_(processBlockPrincipal);
   }
@@ -277,6 +279,8 @@ namespace edm {
     callWithTryCatchAndPrint<void>([this, &processBlockPrincipal]() { readProcessBlock_(processBlockPrincipal); },
                                    "Calling InputSource::readProcessBlock_");
   }
+
+  void InputSource::fillProcessBlockHelper_() {}
 
   bool InputSource::nextProcessBlock_(ProcessBlockPrincipal&) { return false; }
 

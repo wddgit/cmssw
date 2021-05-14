@@ -96,6 +96,9 @@ namespace edm {
     /// Read next luminosity block (same as a prior lumi)
     void readAndMergeLumi(LuminosityBlockPrincipal& lbp);
 
+    /// Fill the ProcessBlockHelper with info for the current file
+    void fillProcessBlockHelper();
+
     /// Next process block, return false if there is none, sets the processName in the principal
     bool nextProcessBlock(ProcessBlockPrincipal&);
 
@@ -103,7 +106,7 @@ namespace edm {
     void readProcessBlock(ProcessBlockPrincipal&);
 
     /// Read next file
-    std::unique_ptr<FileBlock> readFile();
+    std::shared_ptr<FileBlock> readFile();
 
     /// close current file
     void closeFile(FileBlock*, bool cleaningUpAfterException);
@@ -387,13 +390,14 @@ namespace edm {
     ItemType nextItemType_();
     virtual std::shared_ptr<RunAuxiliary> readRunAuxiliary_() = 0;
     virtual std::shared_ptr<LuminosityBlockAuxiliary> readLuminosityBlockAuxiliary_() = 0;
+    virtual void fillProcessBlockHelper_();
     virtual bool nextProcessBlock_(ProcessBlockPrincipal&);
     virtual void readProcessBlock_(ProcessBlockPrincipal&);
     virtual void readRun_(RunPrincipal& runPrincipal);
     virtual void readLuminosityBlock_(LuminosityBlockPrincipal& lumiPrincipal);
     virtual void readEvent_(EventPrincipal& eventPrincipal) = 0;
     virtual bool readIt(EventID const& id, EventPrincipal& eventPrincipal, StreamContext& streamContext);
-    virtual std::unique_ptr<FileBlock> readFile_();
+    virtual std::shared_ptr<FileBlock> readFile_();
     virtual void closeFile_() {}
     virtual bool goToEvent_(EventID const& eventID);
     virtual void setRun(RunNumber_t r);

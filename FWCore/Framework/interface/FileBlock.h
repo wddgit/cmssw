@@ -14,6 +14,7 @@ class TTree;
 #include <memory>
 #include <array>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace edm {
@@ -103,6 +104,15 @@ namespace edm {
 
     ~FileBlock() {}
 
+    void updateTTreePointers(TTree* ev,
+                             TTree* meta,
+                             TTree* lumi,
+                             TTree* lumiMeta,
+                             TTree* run,
+                             TTree* runMeta,
+                             std::vector<TTree*>&& processBlockTrees,
+                             std::vector<std::string>&& processesWithProcessBlockTrees);
+
     FileFormatVersion const& fileFormatVersion() const { return fileFormatVersion_; }
     TTree* tree() const { return tree_; }
     TTree* metaTree() const { return metaTree_; }
@@ -123,7 +133,7 @@ namespace edm {
 
     void setNotFastClonable(WhyNotFastClonable const& why) { whyNotFastClonable_ |= why; }
     BranchChildren const& branchChildren() const { return *branchChildren_; }
-    void close() { runMetaTree_ = lumiMetaTree_ = metaTree_ = runTree_ = lumiTree_ = tree_ = nullptr; }
+    void close();
 
   private:
     FileFormatVersion fileFormatVersion_;

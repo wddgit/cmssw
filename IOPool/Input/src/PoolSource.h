@@ -57,9 +57,10 @@ namespace edm {
   private:
     std::shared_ptr<RunAuxiliary> readRunAuxiliary_() override;
     void readRun_(RunPrincipal& runPrincipal) override;
+    void fillProcessBlockHelper_() override;
     bool nextProcessBlock_(ProcessBlockPrincipal&) override;
     void readProcessBlock_(ProcessBlockPrincipal&) override;
-    std::unique_ptr<FileBlock> readFile_() override;
+    std::shared_ptr<FileBlock> readFile_() override;
     void closeFile_() override;
     void endJob() override;
     bool readIt(EventID const& id, EventPrincipal& eventPrincipal, StreamContext& streamContext) override;
