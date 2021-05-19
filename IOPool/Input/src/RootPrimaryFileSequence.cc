@@ -17,7 +17,7 @@
 #include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "Utilities/StorageFactory/interface/StorageFactory.h"
-
+#include <iostream>
 namespace edm {
   RootPrimaryFileSequence::RootPrimaryFileSequence(ParameterSet const& pset,
                                                    PoolSource& input,
@@ -78,6 +78,13 @@ namespace edm {
       if (!rootFile()) {
         initFile(input_.skipBadFiles());
       }
+    } else if (goToFile_) {
+      goToFile_ = false;
+      setAtFileSequenceNumber(goToFileSequenceOffset_);
+      initFile(false);
+      assert(rootFile());
+      bool found = rootFile()->goToEvent(goToEventID_);
+      assert(found);
     } else {
       if (!nextFile()) {
         // handle case with last file bad and
@@ -95,14 +102,13 @@ namespace edm {
 
   void RootPrimaryFileSequence::closeFile_() {
     // close the currently open file, if any, and delete the RootFile object.
-    if (rootFile() && !goToEventClosedFile_) {
+    if (rootFile()) {
       auto sentry = std::make_unique<InputSource::FileCloseSentry>(input_, lfn(), usedFallback());
       rootFile()->close();
       if (duplicateChecker_)
         duplicateChecker_->inputFileClosed();
       rootFile().reset();
     }
-    goToEventClosedFile_ = false;
   }
 
   void RootPrimaryFileSequence::initFile_(bool skipBadFiles) {
@@ -206,16 +212,20 @@ namespace edm {
     if (noMoreFiles()) {
       return InputSource::IsStop;
     }
-    if (firstFile_) {
+    if (firstFile_ || goToFile_) {
+      std::cout << "RootPrimaryFileSequence::getNextItemType IsFile" << std::endl;
       return InputSource::IsFile;
     }
     if (rootFile()) {
       IndexIntoFile::EntryType entryType = rootFile()->getNextItemType(run, lumi, event);
       if (entryType == IndexIntoFile::kEvent) {
+        std::cout << "RootPrimaryFileSequence::getNextItemType IsEvent" << std::endl;
         return InputSource::IsEvent;
       } else if (entryType == IndexIntoFile::kLumi) {
+        std::cout << "RootPrimaryFileSequence::getNextItemType IsLumi" << std::endl;
         return InputSource::IsLumi;
       } else if (entryType == IndexIntoFile::kRun) {
+        std::cout << "RootPrimaryFileSequence::getNextItemType IsRun" << std::endl;
         return InputSource::IsRun;
       }
       assert(entryType == IndexIntoFile::kEnd);
@@ -276,40 +286,34 @@ namespace edm {
       if (rootFile() && indexesIntoFiles().size() == 1) {
         return false;
       }
+      // Look for item (run/lumi/event) in files previously opened without reopening unnecessary files.
+      for (auto it = indexesIntoFiles().begin(), itEnd = indexesIntoFiles().end(); it != itEnd; ++it) {
+        if (*it && (*it)->containsItem(eventID.run(), eventID.luminosityBlock(), eventID.event())) {
+          goToFile_ = true;
+          goToFileSequenceOffset_ = it - indexesIntoFiles().begin();
+          goToEventID_ = eventID;
+          return true;
+        }
+      }
+
       // Save the current file and position so that we can restore them
-      // if we fail to restore the desired event
       bool closedOriginalFile = false;
       size_t const originalFileSequenceNumber = sequenceNumberOfFile();
       IndexIntoFile::IndexIntoFileItr originalPosition = rootFile()->indexIntoFileIter();
 
-      // Look for item (run/lumi/event) in files previously opened without reopening unnecessary files.
-      for (auto it = indexesIntoFiles().begin(), itEnd = indexesIntoFiles().end(); it != itEnd; ++it) {
-        if (*it && (*it)->containsItem(eventID.run(), eventID.luminosityBlock(), eventID.event())) {
-          // We found it. Close the currently open file, and open the correct one.
-          setAtFileSequenceNumber(it - indexesIntoFiles().begin());
-          initFile(false);
-          // Now get the item from the correct file.
-          assert(rootFile());
-          bool found = rootFile()->goToEvent(eventID);
-          assert(found);
-          goToEventClosedFile_ = true;
-          firstFile_ = true;
-          return true;
-        }
-      }
       // Look for item in files not yet opened.
+      bool foundIt = false;
       for (auto it = indexesIntoFiles().begin(), itEnd = indexesIntoFiles().end(); it != itEnd; ++it) {
         if (!*it) {
           setAtFileSequenceNumber(it - indexesIntoFiles().begin());
           initFile(false);
+          assert(rootFile());
           closedOriginalFile = true;
           if ((*it)->containsItem(eventID.run(), eventID.luminosityBlock(), eventID.event())) {
-            assert(rootFile());
-            if (rootFile()->goToEvent(eventID)) {
-              goToEventClosedFile_ = true;
-              firstFile_ = true;
-              return true;
-            }
+            foundIt = true;
+            goToFile_ = true;
+            goToFileSequenceOffset_ = it - indexesIntoFiles().begin();
+            goToEventID_ = eventID;
           }
         }
       }
@@ -318,7 +322,9 @@ namespace edm {
         initFile(false);
         assert(rootFile());
         rootFile()->setPosition(originalPosition);
+        rootFile()->updateFileBlock(*fb_);
       }
+      return foundIt;
     }
     return false;
   }

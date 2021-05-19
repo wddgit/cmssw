@@ -268,6 +268,10 @@ namespace edm {
     }
   }
 
+  void InputSource::fillProcessBlockHelper() {
+    fillProcessBlockHelper_();
+  }
+
   bool InputSource::nextProcessBlock(ProcessBlockPrincipal& processBlockPrincipal) {
     return nextProcessBlock_(processBlockPrincipal);
   }
@@ -277,6 +281,8 @@ namespace edm {
     callWithTryCatchAndPrint<void>([this, &processBlockPrincipal]() { readProcessBlock_(processBlockPrincipal); },
                                    "Calling InputSource::readProcessBlock_");
   }
+
+  void InputSource::fillProcessBlockHelper_() {}
 
   bool InputSource::nextProcessBlock_(ProcessBlockPrincipal&) { return false; }
 

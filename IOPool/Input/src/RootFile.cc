@@ -285,8 +285,9 @@ namespace edm {
       metaDataTree->SetBranchAddress(poolNames::indexIntoFileBranchName().c_str(), &iifPtr);
     }
 
-    StoredProcessBlockHelper storedProcessBlockHelper;
-    StoredProcessBlockHelper* pStoredProcessBlockHelper = &storedProcessBlockHelper;
+    storedProcessBlockHelper_ = std::make_unique<StoredProcessBlockHelper>();
+    StoredProcessBlockHelper& storedProcessBlockHelper = *storedProcessBlockHelper_;
+    StoredProcessBlockHelper* pStoredProcessBlockHelper = storedProcessBlockHelper_.get();
     if (inputType == InputType::Primary) {
       if (metaDataTree->FindBranch(poolNames::processBlockHelperBranchName().c_str()) != nullptr) {
         metaDataTree->SetBranchAddress(poolNames::processBlockHelperBranchName().c_str(), &pStoredProcessBlockHelper);
@@ -548,7 +549,7 @@ namespace edm {
         thinnedAssociationsHelper->updateFromSecondaryInput(*fileThinnedAssociationsHelper_,
                                                             *associationsFromSecondary);
       } else if (inputType == InputType::Primary) {
-        initializeProcessBlockHelper(processBlockHelper, storedProcessBlockHelper);
+        processBlockHelper->initializeFromPrimaryInput(storedProcessBlockHelper);
         thinnedAssociationsHelper->updateFromPrimaryInput(*fileThinnedAssociationsHelper_);
       }
 
@@ -757,6 +758,8 @@ namespace edm {
   std::shared_ptr<FileBlock> RootFile::createFileBlock() {
     std::vector<TTree*> processBlockTrees;
     std::vector<std::string> processesWithProcessBlockTrees;
+    processBlockTrees.reserve(processBlockTrees_.size());
+    processesWithProcessBlockTrees.reserve(processBlockTrees_.size());
     for (auto& processBlockTree : processBlockTrees_) {
       processBlockTrees.push_back(processBlockTree->tree());
       processesWithProcessBlockTrees.push_back(processBlockTree->processName());
@@ -776,6 +779,25 @@ namespace edm {
                                        branchListIndexesUnchanged(),
                                        modifiedIDs(),
                                        branchChildren());
+  }
+
+  void RootFile::updateFileBlock(FileBlock& fileBlock) {
+    std::vector<TTree*> processBlockTrees;
+    std::vector<std::string> processesWithProcessBlockTrees;
+    processBlockTrees.reserve(processBlockTrees_.size());
+    processesWithProcessBlockTrees.reserve(processBlockTrees_.size());
+    for (auto& processBlockTree : processBlockTrees_) {
+      processBlockTrees.push_back(processBlockTree->tree());
+      processesWithProcessBlockTrees.push_back(processBlockTree->processName());
+    }
+    fileBlock.updateTTreePointers(eventTree_.tree(),
+                                  eventTree_.metaTree(),
+                                  lumiTree_.tree(),
+                                  lumiTree_.metaTree(),
+                                  runTree_.tree(),
+                                  runTree_.metaTree(),
+                                  std::move(processBlockTrees),
+                                  std::move(processesWithProcessBlockTrees));
   }
 
   std::string const& RootFile::newBranchToOldBranch(std::string const& newBranch) const {
@@ -1616,6 +1638,17 @@ namespace edm {
     return runAuxiliary;
   }
 
+  void RootFile::fillProcessBlockHelper_() {
+    assert(inputType_ == InputType::Primary);
+    std::vector<unsigned int> nEntries;
+    nEntries.reserve(processBlockTrees_.size());
+    for (auto const& processBlockTree : processBlockTrees_) {
+      nEntries.push_back(processBlockTree->entries());
+    }
+    processBlockHelper_->fillFromPrimaryInput(*storedProcessBlockHelper_, std::move(nEntries));
+    storedProcessBlockHelper_ = std::make_unique<StoredProcessBlockHelper>(); // propagate_const<T> has no reset() function
+  }
+
   bool RootFile::initializeFirstProcessBlockEntry() {
     if (processBlockTrees_[currentProcessBlockTree_]->entryNumber() == IndexIntoFile::invalidEntry) {
       processBlockTrees_[currentProcessBlockTree_]->setEntryNumber(0);
@@ -2053,16 +2086,6 @@ namespace edm {
       }
       processBlockTrees_.swap(newProcessBlockTrees);
     }
-  }
-
-  void RootFile::initializeProcessBlockHelper(ProcessBlockHelper* processBlockHelper,
-                                              StoredProcessBlockHelper& storedProcessBlockHelper) {
-    std::vector<unsigned int> nEntries;
-    nEntries.reserve(processBlockTrees_.size());
-    for (auto const& processBlockTree : processBlockTrees_) {
-      nEntries.push_back(processBlockTree->entries());
-    }
-    processBlockHelper->initializeFromPrimaryInput(storedProcessBlockHelper, std::move(nEntries));
   }
 
   void RootFile::setSignals(

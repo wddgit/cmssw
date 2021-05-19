@@ -96,6 +96,9 @@ namespace edm {
     /// Read next luminosity block (same as a prior lumi)
     void readAndMergeLumi(LuminosityBlockPrincipal& lbp);
 
+    /// Fill the ProcessBlockHelper with info for the current file
+    void fillProcessBlockHelper();
+
     /// Next process block, return false if there is none, sets the processName in the principal
     bool nextProcessBlock(ProcessBlockPrincipal&);
 
@@ -387,6 +390,7 @@ namespace edm {
     ItemType nextItemType_();
     virtual std::shared_ptr<RunAuxiliary> readRunAuxiliary_() = 0;
     virtual std::shared_ptr<LuminosityBlockAuxiliary> readLuminosityBlockAuxiliary_() = 0;
+    virtual void fillProcessBlockHelper_();
     virtual bool nextProcessBlock_(ProcessBlockPrincipal&);
     virtual void readProcessBlock_(ProcessBlockPrincipal&);
     virtual void readRun_(RunPrincipal& runPrincipal);

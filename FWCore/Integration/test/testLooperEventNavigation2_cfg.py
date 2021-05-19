@@ -12,7 +12,8 @@ process.source = cms.Source("PoolSource",
     )
 )
 
-# 50 transitions = 14 events + 12 access input ProcessBlock transitions + 24 fill calls 
+# 50 transitions = 14 events + 12 access input ProcessBlock transitions + 24 fill calls
+# sum 16442 = 2 x (11 + 22 + 3300 + 4400 + 44 + 444)
 process.readProcessBlocksOneAnalyzer = cms.EDAnalyzer("edmtest::one::InputProcessBlockIntAnalyzer",
                                             transitions = cms.int32(50),
                                             consumesBeginProcessBlock = cms.InputTag("intProducerBeginProcessBlock", ""),
@@ -26,10 +27,10 @@ process.readProcessBlocksOneAnalyzer = cms.EDAnalyzer("edmtest::one::InputProces
 process.testOneOutput = cms.OutputModule("TestOneOutput",
     verbose = cms.untracked.bool(False),
     expectedProcessesWithProcessBlockProducts = cms.untracked.vstring('PROD1', 'MERGE'),
-    expectedProcessNamesAtWrite = cms.untracked.vstring('PROD1', 'PROD1', 'MERGE', 'PROD1', 'PROD1', 'MERGE', 'PROD1', 'PROD1', 'MERGE', 'PROD1', 'PROD1', 'MERGE'),
-    expectedWriteProcessBlockTransitions = cms.untracked.int32(13),
+    expectedProcessNamesAtWrite = cms.untracked.vstring('PROD1', 'PROD1', 'MERGE', 'PROD1', 'PROD1', 'MERGE', 'PROD1', 'PROD1', 'MERGE', 'PROD1', 'PROD1', 'MERGE', 'PROD1', 'PROD1', 'MERGE', 'TEST'),
+    expectedWriteProcessBlockTransitions = cms.untracked.int32(16),
     testTTreesInFileBlock = cms.untracked.bool(True),
-    expectedCacheIndexSize = cms.untracked.vuint32(2, 2, 2, 4, 4, 4, 6, 6, 6, 8, 8, 8)
+    expectedCacheIndexSize = cms.untracked.vuint32(2, 2, 2, 4, 4, 4, 6, 6, 6, 8, 8, 8, 10, 10, 11)
 )
 
 process.looper = cms.Looper("NavigateEventsLooper")

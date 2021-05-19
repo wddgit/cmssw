@@ -221,6 +221,7 @@ namespace edm {
     std::shared_ptr<RunAuxiliary> readRunAuxiliary_();
     std::shared_ptr<RunAuxiliary> readFakeRunAuxiliary_();
 
+    void fillProcessBlockHelper_();
     bool initializeFirstProcessBlockEntry();
     bool endOfProcessBlocksReached() const;
     bool nextProcessBlock_(ProcessBlockPrincipal&);
@@ -243,6 +244,8 @@ namespace edm {
     bool branchListIndexesUnchanged() const { return branchListIndexesUnchanged_; }
     bool modifiedIDs() const { return daqProvenanceHelper_.get() != nullptr; }
     std::shared_ptr<FileBlock> createFileBlock();
+    void updateFileBlock(FileBlock&);
+
     bool setEntryAtItem(RunNumber_t run, LuminosityBlockNumber_t lumi, EventNumber_t event) {
       return (event != 0) ? setEntryAtEvent(run, lumi, event) : (lumi ? setEntryAtLumi(run, lumi) : setEntryAtRun(run));
     }
@@ -322,8 +325,6 @@ namespace edm {
                                  std::set<std::string> const& processesWithKeptProcessBlockProducts,
                                  ProcessBlockHelper const*);
 
-    void initializeProcessBlockHelper(ProcessBlockHelper*, StoredProcessBlockHelper&);
-
     void readParentageTree(InputType inputType);
     void readEntryDescriptionTree(EntryDescriptionMap& entryDescriptionMap,
                                   InputType inputType);  // backward compatibility
@@ -386,6 +387,7 @@ namespace edm {
     std::shared_ptr<BranchIDLists const> branchIDLists_;
     edm::propagate_const<std::shared_ptr<BranchIDListHelper>> branchIDListHelper_;
     edm::propagate_const<ProcessBlockHelper*> processBlockHelper_;
+    edm::propagate_const<std::unique_ptr<StoredProcessBlockHelper>> storedProcessBlockHelper_;
     edm::propagate_const<std::unique_ptr<ThinnedAssociationsHelper>> fileThinnedAssociationsHelper_;
     edm::propagate_const<std::shared_ptr<ThinnedAssociationsHelper>> thinnedAssociationsHelper_;
     InputSource::ProcessingMode processingMode_;
