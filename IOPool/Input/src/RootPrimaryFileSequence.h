@@ -15,6 +15,7 @@ RootPrimaryFileSequence: This is an InputSource
 #include "FWCore/Sources/interface/EventSkipperByID.h"
 #include "FWCore/Utilities/interface/get_underlying_safe.h"
 #include "DataFormats/Provenance/interface/BranchDescription.h"
+#include "DataFormats/Provenance/interface/IndexIntoFile.h"
 #include "DataFormats/Provenance/interface/ProcessHistoryID.h"
 
 #include <memory>
@@ -43,7 +44,8 @@ namespace edm {
     void closeFile_() override;
     void endJob();
     InputSource::ItemType getNextItemType(RunNumber_t& run, LuminosityBlockNumber_t& lumi, EventNumber_t& event);
-    bool skipEvents(int offset);
+    void skipEventsAtBeginning(int offset);
+    void skipEvents(int offset);
     bool goToEvent(EventID const& eventID);
     void rewind_();
     static void fillDescription(ParameterSetDescription& desc);
@@ -77,9 +79,13 @@ namespace edm {
     unsigned int treeCacheSize_;
     edm::propagate_const<std::shared_ptr<DuplicateChecker>> duplicateChecker_;
     bool usingGoToEvent_;
-    bool goToFile_ = false;
+    bool goToEventInNewFile_ = false;
     size_t goToFileSequenceOffset_ = 0;
     EventID goToEventID_;
+    bool skipToStop_ = false;
+    bool skipIntoNewFile_ = false;
+    size_t skipToFileSequenceNumber_ = 0;
+    int skipToOffsetInFinalFile_ = 0;
     bool enablePrefetching_;
     bool enforceGUIDInFileName_;
   };  // class RootPrimaryFileSequence

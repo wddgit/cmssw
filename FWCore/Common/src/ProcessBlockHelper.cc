@@ -146,7 +146,7 @@ namespace edm {
       return;
     } else if (!storedProcesses.empty()) {
       // Subsequent input file with ProcessBlock products
-      fillFromPrimaryInputAfterFirstFile(storedProcesses, storedCacheIndices, std::move(nEntries));
+      fillFromPrimaryInputWhenNotEmpty(storedProcesses, storedCacheIndices, std::move(nEntries));
     } else if (storedProcesses.empty()) {
       // Subsequent input file without ProcessBlock products
       processBlockCacheIndices_.emplace_back(nProcessesInFirstFile_, invalidCacheIndex());
@@ -220,9 +220,9 @@ namespace edm {
     storedProcesses.swap(finalProcesses);
   }
 
-  void ProcessBlockHelper::fillFromPrimaryInputAfterFirstFile(std::vector<std::string> const& storedProcesses,
-                                                                    std::vector<unsigned int> const& storedCacheIndices,
-                                                                    std::vector<unsigned int>&& nEntries) {
+  void ProcessBlockHelper::fillFromPrimaryInputWhenNotEmpty(std::vector<std::string> const& storedProcesses,
+                                                            std::vector<unsigned int> const& storedCacheIndices,
+                                                            std::vector<unsigned int>&& nEntries) {
     assert(nProcessesInFirstFile_ <= processesWithProcessBlockProducts().size());
 
     // Calculate a translation from an index into the process names from the first file

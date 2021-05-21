@@ -57,9 +57,9 @@ namespace edm {
                                            std::vector<unsigned int> const& nEntries,
                                            std::vector<unsigned int> const& finalIndexToStoredIndex) const;
 
-    void fillFromPrimaryInputAfterFirstFile(std::vector<std::string> const& storedProcesses,
-                                                  std::vector<unsigned int> const& storedCacheIndices,
-                                                  std::vector<unsigned int>&& nEntries);
+    void fillFromPrimaryInputWhenNotEmpty(std::vector<std::string> const& storedProcesses,
+                                          std::vector<unsigned int> const& storedCacheIndices,
+                                          std::vector<unsigned int>&& nEntries);
 
     void fillEntriesFromPrimaryInput(std::vector<unsigned int>&& nEntries);
 

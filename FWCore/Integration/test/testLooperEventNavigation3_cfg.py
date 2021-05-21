@@ -10,27 +10,28 @@ process.source = cms.Source("PoolSource",
         'file:testProcessBlockMerge.root',
         'file:testProcessBlockMerge2.root'
     )
+    , skipEvents = cms.untracked.uint32(7)
 )
 
-# 57 transitions = 12 events + 15 access input ProcessBlock transitions + 30 fill calls
-# sum 16442 = 2 x (3300 + 4400 + 444) + 3 x (11 + 22 + 44) = 16288 + 231 = 
+# 24 transitions = 6 events + 6 access input ProcessBlock transitions + 12 fill calls
+# sum 8221 = 3300 + 4400 + 444 + 11 + 22 + 44 = 7700 + 444 + 77 = 
 process.readProcessBlocksOneAnalyzer = cms.EDAnalyzer("edmtest::one::InputProcessBlockIntAnalyzer",
-                                            transitions = cms.int32(57),
+                                            transitions = cms.int32(24),
                                             consumesBeginProcessBlock = cms.InputTag("intProducerBeginProcessBlock", ""),
                                             consumesEndProcessBlock = cms.InputTag("intProducerEndProcessBlock", ""),
                                             consumesBeginProcessBlockM = cms.InputTag("intProducerBeginProcessBlockM", ""),
                                             consumesEndProcessBlockM = cms.InputTag("intProducerEndProcessBlockM", ""),
                                             expectedByRun = cms.vint32(0, 11, 22, 3300, 4400),
-                                            expectedSum = cms.int32(16519)
+                                            expectedSum = cms.int32(8221)
 )
 
 process.testOneOutput = cms.OutputModule("TestOneOutput",
     verbose = cms.untracked.bool(False),
     expectedProcessesWithProcessBlockProducts = cms.untracked.vstring('PROD1', 'MERGE'),
-    expectedProcessNamesAtWrite = cms.untracked.vstring('PROD1', 'PROD1', 'MERGE', 'PROD1', 'PROD1', 'MERGE', 'PROD1', 'PROD1', 'MERGE', 'PROD1', 'PROD1', 'MERGE', 'PROD1', 'PROD1', 'MERGE', 'TEST'),
-    expectedWriteProcessBlockTransitions = cms.untracked.int32(16),
+    expectedProcessNamesAtWrite = cms.untracked.vstring('PROD1', 'PROD1', 'MERGE', 'PROD1', 'PROD1', 'MERGE', 'TEST'),
+    expectedWriteProcessBlockTransitions = cms.untracked.int32(7),
     testTTreesInFileBlock = cms.untracked.bool(True),
-    expectedCacheIndexSize = cms.untracked.vuint32(2, 2, 2, 4, 4, 4, 6, 6, 6, 8, 8, 8, 10, 10, 10)
+    expectedCacheIndexSize = cms.untracked.vuint32(2, 2, 2, 4, 4, 4, 4)
 )
 
 process.looper = cms.Looper("NavigateEventsLooper")

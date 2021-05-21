@@ -237,8 +237,9 @@ namespace edm {
             << "TestOneOutput::writeProcessBlock unexpected value for outerOffset, file " << (countInputFiles_ - 1);
       }
     }
-    std::cout << "countWriteProcessBlockTransitions_ = " << countWriteProcessBlockTransitions_ << " " << expectedCacheIndexSize_[countWriteProcessBlockTransitions_] << std::endl; 
-
+    //if (countWriteProcessBlockTransitions_ < expectedCacheIndexSize_.size()) {
+    //  std::cout << "countWriteProcessBlockTransitions_ = " << countWriteProcessBlockTransitions_ << " " << expectedCacheIndexSize_[countWriteProcessBlockTransitions_] << std::endl; 
+    //}
     if (countWriteProcessBlockTransitions_ < expectedCacheIndexSize_.size()) {
       if (expectedCacheIndexSize_[countWriteProcessBlockTransitions_] !=
           outputProcessBlockHelper().processBlockHelper()->processBlockCacheIndices().size()) {
@@ -247,11 +248,11 @@ namespace edm {
             << outputProcessBlockHelper().processBlockHelper()->processBlockCacheIndices().size();
       }
     }
-    for (auto const& x : outputProcessBlockHelper().processBlockHelper()->processBlockCacheIndices()) {
-      for (auto const& y : x) {
-        std::cout << "   " << y << std::endl;
-      }
-    }
+    //for (auto const& x : outputProcessBlockHelper().processBlockHelper()->processBlockCacheIndices()) {
+    //  for (auto const& y : x) {
+    //    std::cout << "   " << y << std::endl;
+    //  }
+    //}
     ++countWriteProcessBlockTransitions_;
   }
 
@@ -279,10 +280,10 @@ namespace edm {
             << "TestOneOutput::respondToOpenInputFile expected null TTree pointers in FileBlock";
       }
     } else if (testTTreesInFileBlock_) {
-      std::cout << fb.processBlockTrees()[0] << " " << fb.processBlockTrees()[1] << " " << fb.processBlockTree("PROD1")
-                << " " << fb.processBlockTree("MERGE") << std::endl;
-      std::cout << "size = " << fb.processBlockTrees().size() << " " << fb.tree() << " " << fb.lumiTree() << " "
-                << fb.runTree() << std::endl;
+      //std::cout << fb.processBlockTrees()[0] << " " << fb.processBlockTrees()[1] << " " << fb.processBlockTree("PROD1")
+      //          << " " << fb.processBlockTree("MERGE") << std::endl;
+      //std::cout << "size = " << fb.processBlockTrees().size() << " " << fb.tree() << " " << fb.lumiTree() << " "
+      //          << fb.runTree() << std::endl;
       if (std::string("Events") != fb.tree()->GetName() ||
           std::string("LuminosityBlocks") != fb.lumiTree()->GetName() ||
           std::string("Runs") != fb.runTree()->GetName() || fb.processesWithProcessBlockTrees().size() != 2 ||

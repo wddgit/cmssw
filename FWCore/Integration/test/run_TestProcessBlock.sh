@@ -100,6 +100,12 @@ pushd ${LOCAL_TMP_DIR}
   echo "testProcessBlockThreeFileInput"
   cmsRun -p ${LOCAL_TEST_DIR}/testProcessBlockThreeFileInput_cfg.py > /dev/null 2>&1 || die "cmsRun testProcessBlockThreeFileInput_cfg.py" $?
 
+  echo "testLooperEventNavigation2"
+  cmsRun -p ${LOCAL_TEST_DIR}/testLooperEventNavigation2_cfg.py < ${LOCAL_TEST_DIR}/testLooperEventNavigation2.txt > /dev/null 2>&1 || die "cmsRun testLooperEventNavigation2_cfg.py" $?
+
+  echo "testLooperEventNavigation3"
+  cmsRun -p ${LOCAL_TEST_DIR}/testLooperEventNavigation3_cfg.py < ${LOCAL_TEST_DIR}/testLooperEventNavigation3.txt > /dev/null 2>&1 || die "cmsRun testLooperEventNavigation3_cfg.py" $?
+
   # The next three tests would be relevant if we disabled the strict merging requirement
   # in ProductRegistry.cc for ProcessBlock products (a one line code change). As long
   # as we always enforce the strict merging requirement these tests will fail, but they

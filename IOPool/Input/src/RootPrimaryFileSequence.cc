@@ -62,7 +62,7 @@ namespace edm {
     if (rootFile()) {
       input_.productRegistryUpdate().updateFromInput(rootFile()->productRegistry()->productList());
       if (initialNumberOfEventsToSkip_ != 0) {
-        skipEvents(initialNumberOfEventsToSkip_);
+        skipEventsAtBeginning(initialNumberOfEventsToSkip_);
       }
     }
   }
@@ -72,30 +72,44 @@ namespace edm {
   void RootPrimaryFileSequence::endJob() { closeFile_(); }
 
   std::shared_ptr<FileBlock> RootPrimaryFileSequence::readFile_() {
+    std::shared_ptr<FileBlock> fileBlock;
     if (firstFile_) {
-      // The first input file has already been opened.
       firstFile_ = false;
+      // Usually the first input file will already be open
       if (!rootFile()) {
         initFile(input_.skipBadFiles());
       }
-    } else if (goToFile_) {
-      goToFile_ = false;
+    } else if (goToEventInNewFile_) {
+      goToEventInNewFile_ = false;
       setAtFileSequenceNumber(goToFileSequenceOffset_);
       initFile(false);
       assert(rootFile());
       bool found = rootFile()->goToEvent(goToEventID_);
       assert(found);
+    } else if (skipIntoNewFile_) {
+      skipIntoNewFile_ = false;
+      setAtFileSequenceNumber(skipToFileSequenceNumber_);
+      initFile(false);
+      assert(rootFile());
+      if (skipToOffsetInFinalFile_ < 0) {
+        rootFile()->setToLastEntry();
+      }
+      bool atEnd = rootFile()->skipEvents(skipToOffsetInFinalFile_);
+      assert(!atEnd && skipToOffsetInFinalFile_ == 0);
     } else {
       if (!nextFile()) {
         // handle case with last file bad and
         // skipBadFiles true
-        return std::make_shared<FileBlock>();
+        fb_ = fileBlock;
+        return fileBlock;
       }
     }
     if (!rootFile()) {
-      return std::make_shared<FileBlock>();
+      fileBlock = std::make_shared<FileBlock>();
+      fb_ = fileBlock;
+      return fileBlock;
     }
-    std::shared_ptr<FileBlock> fileBlock = rootFile()->createFileBlock();
+    fileBlock = rootFile()->createFileBlock();
     fb_ = fileBlock;
     return fileBlock;
   }
@@ -172,10 +186,6 @@ namespace edm {
       assert(input_.skipBadFiles());
     } while (true);
 
-    if (not rootFile()) {
-      return false;
-    }
-
     // make sure the new product registry is compatible with the main one
     std::string mergeInfo =
         input_.productRegistryUpdate().merge(*rootFile()->productRegistry(), fileNames()[0], branchesMustMatch_);
@@ -209,23 +219,24 @@ namespace edm {
   InputSource::ItemType RootPrimaryFileSequence::getNextItemType(RunNumber_t& run,
                                                                  LuminosityBlockNumber_t& lumi,
                                                                  EventNumber_t& event) {
-    if (noMoreFiles()) {
+    if (noMoreFiles() || skipToStop_) {
+      skipToStop_ = false;
       return InputSource::IsStop;
     }
-    if (firstFile_ || goToFile_) {
-      std::cout << "RootPrimaryFileSequence::getNextItemType IsFile" << std::endl;
+    if (firstFile_ || goToEventInNewFile_ || skipIntoNewFile_) {
+      //std::cout << "RootPrimaryFileSequence::getNextItemType IsFile" << std::endl;
       return InputSource::IsFile;
     }
     if (rootFile()) {
       IndexIntoFile::EntryType entryType = rootFile()->getNextItemType(run, lumi, event);
       if (entryType == IndexIntoFile::kEvent) {
-        std::cout << "RootPrimaryFileSequence::getNextItemType IsEvent" << std::endl;
+        //std::cout << "RootPrimaryFileSequence::getNextItemType IsEvent" << std::endl;
         return InputSource::IsEvent;
       } else if (entryType == IndexIntoFile::kLumi) {
-        std::cout << "RootPrimaryFileSequence::getNextItemType IsLumi" << std::endl;
+        //std::cout << "RootPrimaryFileSequence::getNextItemType IsLumi" << std::endl;
         return InputSource::IsLumi;
       } else if (entryType == IndexIntoFile::kRun) {
-        std::cout << "RootPrimaryFileSequence::getNextItemType IsRun" << std::endl;
+        //std::cout << "RootPrimaryFileSequence::getNextItemType IsRun" << std::endl;
         return InputSource::IsRun;
       }
       assert(entryType == IndexIntoFile::kEnd);
@@ -247,9 +258,12 @@ namespace edm {
     }
     rewindFile();
     firstFile_ = true;
+    goToEventInNewFile_ = false;
+    skipIntoNewFile_ = false;
+    skipToStop_ = false;
     if (rootFile()) {
       if (initialNumberOfEventsToSkip_ != 0) {
-        skipEvents(initialNumberOfEventsToSkip_);
+        skipEventsAtBeginning(initialNumberOfEventsToSkip_);
       }
     }
   }
@@ -260,20 +274,77 @@ namespace edm {
       rootFile()->rewind();
   }
 
-  // Advance "offset" events.  Offset can be positive or negative (or zero).
-  bool RootPrimaryFileSequence::skipEvents(int offset) {
+  // Advance "offset" events.  Offset will be positive.
+  void RootPrimaryFileSequence::skipEventsAtBeginning(int offset) {
     assert(rootFile());
+    assert(offset >= 0);
     while (offset != 0) {
       bool atEnd = rootFile()->skipEvents(offset);
       if ((offset > 0 || atEnd) && !nextFile()) {
-        return false;
-      }
-      if (offset < 0 && !previousFile()) {
-        setNoMoreFiles();
-        return false;
+        return;
       }
     }
-    return true;
+  }
+
+  // Advance "offset" events.  Offset can be positive or negative (or zero).
+  void RootPrimaryFileSequence::skipEvents(int offset) {
+    assert(rootFile());
+
+    bool atEnd = rootFile()->skipEvents(offset);
+    if (!atEnd && offset == 0) {
+      // successfully completed skip within current file
+      return;
+    }
+
+    // Return, if without closing the current file we know the skip cannot be completed
+    skipToStop_ = false;
+    if (offset > 0 || atEnd) {
+      if (atLastFile() || noMoreFiles()) {
+        skipToStop_ = true;
+        return;
+      }
+    }
+    if (offset < 0 && atFirstFile()) {
+      skipToStop_ = true;
+      return;
+    }
+
+    // Save the current file and position so that we can restore them
+    size_t const originalFileSequenceNumber = sequenceNumberOfFile();
+    IndexIntoFile::IndexIntoFileItr originalPosition = rootFile()->indexIntoFileIter();
+
+    if ((offset > 0 || atEnd) && !nextFile()) {
+      skipToStop_ = true; // Can only get here if skipBadFiles is true
+    }
+    if (offset < 0 && !previousFile()) {
+      skipToStop_ = true; // Can't actually get here
+    }
+
+    if (!skipToStop_) {
+      while (offset != 0) {
+        skipToOffsetInFinalFile_ = offset;
+        bool atEnd = rootFile()->skipEvents(offset);
+        if ((offset > 0 || atEnd) && !nextFile()) {
+          skipToStop_ = true;
+          break;
+        }
+        if (offset < 0 && !previousFile()) {
+          skipToStop_ = true;
+          break;
+        }
+      }
+      if (!skipToStop_) {
+        skipIntoNewFile_ = true;
+      }
+    }
+    skipToFileSequenceNumber_ = sequenceNumberOfFile();
+
+    // Restore the original file and position
+    setAtFileSequenceNumber(originalFileSequenceNumber);
+    initFile(false);
+    assert(rootFile());
+    rootFile()->setPosition(originalPosition);
+    rootFile()->updateFileBlock(*fb_);
   }
 
   bool RootPrimaryFileSequence::goToEvent(EventID const& eventID) {
@@ -289,7 +360,7 @@ namespace edm {
       // Look for item (run/lumi/event) in files previously opened without reopening unnecessary files.
       for (auto it = indexesIntoFiles().begin(), itEnd = indexesIntoFiles().end(); it != itEnd; ++it) {
         if (*it && (*it)->containsItem(eventID.run(), eventID.luminosityBlock(), eventID.event())) {
-          goToFile_ = true;
+          goToEventInNewFile_ = true;
           goToFileSequenceOffset_ = it - indexesIntoFiles().begin();
           goToEventID_ = eventID;
           return true;
@@ -311,7 +382,7 @@ namespace edm {
           closedOriginalFile = true;
           if ((*it)->containsItem(eventID.run(), eventID.luminosityBlock(), eventID.event())) {
             foundIt = true;
-            goToFile_ = true;
+            goToEventInNewFile_ = true;
             goToFileSequenceOffset_ = it - indexesIntoFiles().begin();
             goToEventID_ = eventID;
           }
