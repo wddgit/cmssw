@@ -15,7 +15,6 @@ RootPrimaryFileSequence: This is an InputSource
 #include "FWCore/Sources/interface/EventSkipperByID.h"
 #include "FWCore/Utilities/interface/get_underlying_safe.h"
 #include "DataFormats/Provenance/interface/BranchDescription.h"
-#include "DataFormats/Provenance/interface/IndexIntoFile.h"
 #include "DataFormats/Provenance/interface/ProcessHistoryID.h"
 
 #include <memory>

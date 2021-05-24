@@ -17,7 +17,7 @@
 #include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "Utilities/StorageFactory/interface/StorageFactory.h"
-#include <iostream>
+
 namespace edm {
   RootPrimaryFileSequence::RootPrimaryFileSequence(ParameterSet const& pset,
                                                    PoolSource& input,
@@ -224,19 +224,15 @@ namespace edm {
       return InputSource::IsStop;
     }
     if (firstFile_ || goToEventInNewFile_ || skipIntoNewFile_) {
-      //std::cout << "RootPrimaryFileSequence::getNextItemType IsFile" << std::endl;
       return InputSource::IsFile;
     }
     if (rootFile()) {
       IndexIntoFile::EntryType entryType = rootFile()->getNextItemType(run, lumi, event);
       if (entryType == IndexIntoFile::kEvent) {
-        //std::cout << "RootPrimaryFileSequence::getNextItemType IsEvent" << std::endl;
         return InputSource::IsEvent;
       } else if (entryType == IndexIntoFile::kLumi) {
-        //std::cout << "RootPrimaryFileSequence::getNextItemType IsLumi" << std::endl;
         return InputSource::IsLumi;
       } else if (entryType == IndexIntoFile::kRun) {
-        //std::cout << "RootPrimaryFileSequence::getNextItemType IsRun" << std::endl;
         return InputSource::IsRun;
       }
       assert(entryType == IndexIntoFile::kEnd);

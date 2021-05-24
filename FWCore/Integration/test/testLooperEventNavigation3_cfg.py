@@ -1,9 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
 process = cms.Process("TEST")
-#process.Tracer = cms.Service('Tracer')
-
-import FWCore.Framework.test.cmsExceptionsFatalOption_cff
 
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(

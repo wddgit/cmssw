@@ -1,15 +1,10 @@
 import FWCore.ParameterSet.Config as cms
 
 process = cms.Process("TEST")
-process.Tracer = cms.Service('Tracer')
+
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 process.MessageLogger.cerr.threshold = 'ERROR'
-
-import FWCore.Framework.test.cmsExceptionsFatalOption_cff
-process.options = cms.untracked.PSet(
-  Rethrow = FWCore.Framework.test.cmsExceptionsFatalOption_cff.Rethrow
-)
 
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
