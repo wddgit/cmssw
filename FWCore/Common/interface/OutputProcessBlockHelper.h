@@ -34,6 +34,10 @@ namespace edm {
 
     ProcessBlockHelperBase const* processBlockHelper() const { return processBlockHelper_; }
 
+    // These are intended to be used only for testing purposes
+    std::vector<unsigned int> const& translateFromStoredIndex() const { return translateFromStoredIndex_; }
+    unsigned int nAddedProcesses() const { return nAddedProcesses_; }
+
   private:
     void setStoredProcessOffset(unsigned int nInputProcesses,
                                 std::vector<std::vector<unsigned int>> const& nEntries,

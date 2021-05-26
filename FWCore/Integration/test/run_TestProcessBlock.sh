@@ -106,6 +106,12 @@ pushd ${LOCAL_TMP_DIR}
   echo "testLooperEventNavigation3"
   cmsRun -p ${LOCAL_TEST_DIR}/testLooperEventNavigation3_cfg.py < ${LOCAL_TEST_DIR}/testLooperEventNavigation3.txt > /dev/null 2>&1 || die "cmsRun testLooperEventNavigation3_cfg.py" $?
 
+  echo "testProcessBlockDropOnOutput"
+  cmsRun -p ${LOCAL_TEST_DIR}/testProcessBlockDropOnOutput_cfg.py > /dev/null 2>&1 || die "cmsRun testProcessBlockDropOnOutput_cfg.py" $?
+
+  echo "testProcessBlockDropOnOutput2"
+  cmsRun -p ${LOCAL_TEST_DIR}/testProcessBlockDropOnOutput2_cfg.py > /dev/null 2>&1 || die "cmsRun testProcessBlockDropOnOutput2_cfg.py" $?
+
   # The next three tests would be relevant if we disabled the strict merging requirement
   # in ProductRegistry.cc for ProcessBlock products (a one line code change). As long
   # as we always enforce the strict merging requirement these tests will fail, but they
@@ -156,6 +162,9 @@ pushd ${LOCAL_TMP_DIR}
   rm testProcessBlockMergeOfMergedFiles2.root
   rm testProcessBlockDropOnInput.root
   rm testProcessBlockThreeFileInput.root
+  rm testProcessBlockDropOnOutput.root
+  rm testProcessBlockDropOnOutput2.root
+  rm testProcessBlockDropOnOutput2_2.root
 
 popd
 

@@ -45,6 +45,7 @@ namespace edm {
     bool verbose_;
     std::vector<std::string> expectedProcessesWithProcessBlockProducts_;
     std::vector<std::string> expectedTopProcessesWithProcessBlockProducts_;
+    std::vector<std::string> expectedTopAddedProcesses_;
     std::vector<unsigned int> expectedTopCacheIndices0_;
     std::vector<unsigned int> expectedTopCacheIndices1_;
     std::vector<unsigned int> expectedTopCacheIndices2_;
@@ -64,6 +65,9 @@ namespace edm {
     std::vector<unsigned int> expectedCacheEntriesPerFile1_;
     std::vector<unsigned int> expectedCacheEntriesPerFile2_;
     std::vector<unsigned int> expectedOuterOffset_;
+    std::vector<unsigned int> expectedTranslateFromStoredIndex_;
+    unsigned int expectedNAddedProcesses_;
+    bool expectedProductsFromInputKept_;
   };
 
   TestOneOutput::TestOneOutput(ParameterSet const& pset)
@@ -74,6 +78,7 @@ namespace edm {
             pset.getUntrackedParameter<std::vector<std::string>>("expectedProcessesWithProcessBlockProducts")),
         expectedTopProcessesWithProcessBlockProducts_(
             pset.getUntrackedParameter<std::vector<std::string>>("expectedTopProcessesWithProcessBlockProducts")),
+        expectedTopAddedProcesses_(pset.getUntrackedParameter<std::vector<std::string>>("expectedTopAddedProcesses")),
         expectedTopCacheIndices0_(pset.getUntrackedParameter<std::vector<unsigned int>>("expectedTopCacheIndices0")),
         expectedTopCacheIndices1_(pset.getUntrackedParameter<std::vector<unsigned int>>("expectedTopCacheIndices1")),
         expectedTopCacheIndices2_(pset.getUntrackedParameter<std::vector<unsigned int>>("expectedTopCacheIndices2")),
@@ -95,7 +100,10 @@ namespace edm {
             pset.getUntrackedParameter<std::vector<unsigned int>>("expectedCacheEntriesPerFile1")),
         expectedCacheEntriesPerFile2_(
             pset.getUntrackedParameter<std::vector<unsigned int>>("expectedCacheEntriesPerFile2")),
-        expectedOuterOffset_(pset.getUntrackedParameter<std::vector<unsigned int>>("expectedOuterOffset")) {}
+        expectedOuterOffset_(pset.getUntrackedParameter<std::vector<unsigned int>>("expectedOuterOffset")),
+        expectedTranslateFromStoredIndex_(pset.getUntrackedParameter<std::vector<unsigned int>>("expectedTranslateFromStoredIndex")),
+        expectedNAddedProcesses_(pset.getUntrackedParameter<unsigned int>("expectedNAddedProcesses")),
+        expectedProductsFromInputKept_(pset.getUntrackedParameter<bool>("expectedProductsFromInputKept")) {}
 
   TestOneOutput::~TestOneOutput() {}
 
@@ -135,6 +143,13 @@ namespace edm {
       if (expectedProcessesWithProcessBlockProducts_ !=
           outputProcessBlockHelper().processesWithProcessBlockProducts()) {
         throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected process name list";
+      }
+    }
+    if (!(!expectedTopAddedProcesses_.empty() && expectedTopAddedProcesses_[0] == "DONOTTEST")) {
+      if (expectedTopAddedProcesses_ != outputProcessBlockHelper().processBlockHelper()
+                                                                   ->topProcessBlockHelper()
+                                                                   ->addedProcesses()) {
+        throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected top addedProcesses list";
       }
     }
     if (!expectedTopProcessesWithProcessBlockProducts_.empty()) {
@@ -245,6 +260,22 @@ namespace edm {
             << outputProcessBlockHelper().processBlockHelper()->processBlockCacheIndices().size();
       }
     }
+    if (!expectedTranslateFromStoredIndex_.empty()) {
+      if (expectedTranslateFromStoredIndex_ != outputProcessBlockHelper().translateFromStoredIndex()) {
+        throw cms::Exception("TestFailure")
+            << "TestOneOutput::writeProcessBlock unexpected value for translateFromStoredIndex";
+      }
+    }
+    if (expectedNAddedProcesses_ != 0xffffffff) {
+      if (expectedNAddedProcesses_ != outputProcessBlockHelper().nAddedProcesses()) {
+        throw cms::Exception("TestFailure")
+            << "TestOneOutput::writeProcessBlock unexpected value for nAddedProcesses";
+      }
+    }
+    if (expectedProductsFromInputKept_ != outputProcessBlockHelper().productsFromInputKept()) {
+      throw cms::Exception("TestFailure")
+          << "TestOneOutput::writeProcessBlock unexpected value for productsFromInputKept";
+    }
     ++countWriteProcessBlockTransitions_;
   }
 
@@ -334,6 +365,8 @@ namespace edm {
                                                 std::vector<std::string>());
     desc.addUntracked<std::vector<std::string>>("expectedTopProcessesWithProcessBlockProducts",
                                                 std::vector<std::string>());
+    desc.addUntracked<std::vector<std::string>>("expectedTopAddedProcesses",
+                                                std::vector<std::string>(1, std::string("DONOTTEST")));
     desc.addUntracked<std::vector<unsigned int>>("expectedTopCacheIndices0", std::vector<unsigned int>());
     desc.addUntracked<std::vector<unsigned int>>("expectedTopCacheIndices1", std::vector<unsigned int>());
     desc.addUntracked<std::vector<unsigned int>>("expectedTopCacheIndices2", std::vector<unsigned int>());
@@ -351,6 +384,10 @@ namespace edm {
     desc.addUntracked<std::vector<unsigned int>>("expectedCacheEntriesPerFile1", std::vector<unsigned int>());
     desc.addUntracked<std::vector<unsigned int>>("expectedCacheEntriesPerFile2", std::vector<unsigned int>());
     desc.addUntracked<std::vector<unsigned int>>("expectedOuterOffset", std::vector<unsigned int>());
+    desc.addUntracked<std::vector<unsigned int>>("expectedTranslateFromStoredIndex", std::vector<unsigned int>());
+    desc.addUntracked<unsigned int>("expectedNAddedProcesses", 0xffffffff);
+    desc.addUntracked<bool>("expectedProductsFromInputKept", true);
+
     descriptions.addDefault(desc);
   }
 }  // namespace edm

@@ -32,6 +32,7 @@ process.testLimitedOutput = cms.OutputModule("TestLimitedOutput",
 process.testOneOutput = cms.OutputModule("TestOneOutput",
     verbose = cms.untracked.bool(False),
     expectedProcessesWithProcessBlockProducts = cms.untracked.vstring('PROD1'),
+    expectedTopProcessesWithProcessBlockProducts = cms.untracked.vstring('PROD1'),
     expectedWriteProcessBlockTransitions = cms.untracked.int32(1),
     requireNullTTreesInFileBlock = cms.untracked.bool(True)
 )

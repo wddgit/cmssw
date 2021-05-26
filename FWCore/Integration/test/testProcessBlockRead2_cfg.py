@@ -25,6 +25,10 @@ process.readProcessBlocksOneAnalyzer = cms.EDAnalyzer("edmtest::one::InputProces
                                             expectedSum = cms.int32(8221)
 )
 
+process.transientIntProducerEndProcessBlock = cms.EDProducer("TransientIntProducerEndProcessBlock",
+    ivalue = cms.int32(90)
+)
+
 process.out = cms.OutputModule("PoolOutputModule",
     fileName = cms.untracked.string('testProcessBlockRead2.root')
 )
@@ -33,12 +37,13 @@ process.testOneOutput = cms.OutputModule("TestOneOutput",
     verbose = cms.untracked.bool(False),
     expectedProcessesWithProcessBlockProducts = cms.untracked.vstring('PROD1', 'MERGE', 'MERGEOFMERGED'),
     expectedTopProcessesWithProcessBlockProducts = cms.untracked.vstring('PROD1', 'MERGE', 'MERGEOFMERGED'),
+    expectedTopAddedProcesses = cms.untracked.vstring(),
     expectedTopCacheIndices0 = cms.untracked.vuint32(0, 4, 6, 1, 4, 6, 2, 5, 6, 3, 5, 6),
     expectedWriteProcessBlockTransitions = cms.untracked.int32(8)
 )
 
 
-process.p = cms.Path(process.readProcessBlocksOneAnalyzer)
+process.p = cms.Path(process.transientIntProducerEndProcessBlock * process.readProcessBlocksOneAnalyzer)
 
 process.e = cms.EndPath(
     process.out *

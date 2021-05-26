@@ -45,6 +45,7 @@ process.testLimitedOutput = cms.OutputModule("TestLimitedOutput",
 process.testOneOutput = cms.OutputModule("TestOneOutput",
     verbose = cms.untracked.bool(False),
     expectedProcessesWithProcessBlockProducts = cms.untracked.vstring('PROD1', 'MERGE'),
+    expectedTopProcessesWithProcessBlockProducts = cms.untracked.vstring('PROD1', 'MERGE'),
     expectedWriteProcessBlockTransitions = cms.untracked.int32(3)
 )
 
