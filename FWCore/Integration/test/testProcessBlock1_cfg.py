@@ -34,7 +34,8 @@ process.testOneOutput = cms.OutputModule("TestOneOutput",
     expectedProcessesWithProcessBlockProducts = cms.untracked.vstring('PROD1'),
     expectedTopProcessesWithProcessBlockProducts = cms.untracked.vstring('PROD1'),
     expectedWriteProcessBlockTransitions = cms.untracked.int32(1),
-    requireNullTTreesInFileBlock = cms.untracked.bool(True)
+    requireNullTTreesInFileBlock = cms.untracked.bool(True),
+    expectedProductsFromInputKept = cms.untracked.bool(False)
 )
 
 process.intProducerBeginProcessBlock = cms.EDProducer("IntProducerBeginProcessBlock", ivalue = cms.int32(1))

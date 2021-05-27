@@ -171,17 +171,22 @@ namespace edm {
         expectedTopCacheIndices = &expectedTopCacheIndices2_;
       }
       if (expectedTopCacheIndices != nullptr) {
+        unsigned int expectedInputProcesses = expectedTopProcessesWithProcessBlockProducts_.size();
+        if (expectedNAddedProcesses_ != 0xffffffff) {
+          expectedInputProcesses -= expectedNAddedProcesses_;
+        }
+
         std::vector<std::vector<unsigned int>> const& topProcessBlockCacheIndices =
             outputProcessBlockHelper().processBlockHelper()->processBlockCacheIndices();
         if (expectedTopCacheIndices->size() !=
-            expectedTopProcessesWithProcessBlockProducts_.size() * topProcessBlockCacheIndices.size()) {
+            expectedInputProcesses * topProcessBlockCacheIndices.size()) {
           throw cms::Exception("TestFailure")
               << "TestOneOutput::writeProcessBlock unexpected sizes related to top cache indices on input file "
               << (countInputFiles_ - 1);
         }
         unsigned int iStored = 0;
         for (unsigned int i = 0; i < topProcessBlockCacheIndices.size(); ++i) {
-          if (topProcessBlockCacheIndices[i].size() != expectedTopProcessesWithProcessBlockProducts_.size()) {
+          if (topProcessBlockCacheIndices[i].size() != expectedInputProcesses) {
             throw cms::Exception("TestFailure")
                 << "TestOneOutput::writeProcessBlock unexpected size of inner cache indices vector on input file "
                 << (countInputFiles_ - 1);

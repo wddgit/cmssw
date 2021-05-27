@@ -46,7 +46,10 @@ process.testOneOutput = cms.OutputModule("TestOneOutput",
     verbose = cms.untracked.bool(False),
     expectedProcessesWithProcessBlockProducts = cms.untracked.vstring('PROD1', 'MERGE'),
     expectedTopProcessesWithProcessBlockProducts = cms.untracked.vstring('PROD1', 'MERGE'),
-    expectedWriteProcessBlockTransitions = cms.untracked.int32(3)
+    expectedWriteProcessBlockTransitions = cms.untracked.int32(3),
+    expectedNAddedProcesses = cms.untracked.uint32(1),
+    expectedTopCacheIndices0 = cms.untracked.vuint32(0),
+    expectedTopCacheIndices1 = cms.untracked.vuint32(0, 1)
 )
 
 process.intProducerBeginProcessBlockM = cms.EDProducer("IntProducerBeginProcessBlock", ivalue = cms.int32(4))
