@@ -1,6 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
-process = cms.Process("READ")
+process = cms.Process("DROPONOUTPUT")
 
 process.options = cms.untracked.PSet(
     numberOfStreams = cms.untracked.uint32(1),
@@ -41,7 +41,9 @@ process.testOneOutput = cms.OutputModule("TestOneOutput",
     expectedTopProcessesWithProcessBlockProducts = cms.untracked.vstring('PROD1', 'MERGE', 'MERGEOFMERGED'),
     expectedTranslateFromStoredIndex = cms.untracked.vuint32(0, 2),
     expectedNAddedProcesses = cms.untracked.uint32(0),
-    expectedProductsFromInputKept = cms.untracked.bool(True)
+    expectedProductsFromInputKept = cms.untracked.bool(True),
+    expectedTopCacheIndices0 = cms.untracked.vuint32(0, 4, 6, 1, 4, 6, 2, 5, 6, 3, 5, 6),
+    expectedTopCacheIndices1 = cms.untracked.vuint32(0, 4, 6, 1, 4, 6, 2, 5, 6, 3, 5, 6, 7, 8, 9)
 )
 
 process.e = cms.EndPath(

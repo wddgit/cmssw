@@ -466,7 +466,8 @@ copyProcess.processBlockTest1 = cms.EDAnalyzer("TestFindProduct",
 copyProcess.testOneOutput = cms.OutputModule("TestOneOutput",
     verbose = cms.untracked.bool(False),
     expectedProcessesWithProcessBlockProducts = cms.untracked.vstring('PROD1', 'COPY'),
-    expectedWriteProcessBlockTransitions = cms.untracked.int32(2)
+    expectedWriteProcessBlockTransitions = cms.untracked.int32(2),
+    expectedProductsFromInputKept = cms.untracked.bool(False)
 )
 
 copyProcess.path3 = cms.Path(

@@ -1,19 +1,10 @@
 import FWCore.ParameterSet.Config as cms
 
-process = cms.Process("THREETEST")
-
-process.options = cms.untracked.PSet(
-    numberOfStreams = cms.untracked.uint32(1),
-    numberOfThreads = cms.untracked.uint32(1),
-    numberOfConcurrentRuns = cms.untracked.uint32(1),
-    numberOfConcurrentLuminosityBlocks = cms.untracked.uint32(1)
-)
+process = cms.Process("READ")
 
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-        'file:testProcessBlockMergeOfMergedFiles.root',
-        'file:testProcessBlockMergeOfMergedFiles2.root',
-        'file:testProcessBlockMergeOfMergedFiles.root',
+        'file:testProcessBlockThreeFileInput.root'
     ),
     duplicateCheckMode = cms.untracked.string("noDuplicateCheck")
 )
@@ -39,26 +30,20 @@ process.readProcessBlocksOneAnalyzer2 = cms.EDAnalyzer("edmtest::one::InputProce
 )
 
 process.out = cms.OutputModule("PoolOutputModule",
-    fileName = cms.untracked.string('testProcessBlockThreeFileInput.root')
+    fileName = cms.untracked.string('testProcessBlockReadThreeFileInput.root')
 )
 
 process.testOneOutput = cms.OutputModule("TestOneOutput",
     verbose = cms.untracked.bool(False),
     expectedProcessesWithProcessBlockProducts = cms.untracked.vstring('PROD1', 'MERGE', 'MERGEOFMERGED'),
     expectedTopProcessesWithProcessBlockProducts = cms.untracked.vstring('PROD1', 'MERGE', 'MERGEOFMERGED'),
-    expectedTopCacheIndices0 = cms.untracked.vuint32(0, 4, 6, 1, 4, 6, 2, 5, 6, 3, 5, 6),
-    expectedTopCacheIndices1 = cms.untracked.vuint32(0, 4, 6, 1, 4, 6, 2, 5, 6, 3, 5, 6, 7, 8, 9),
-    expectedTopCacheIndices2 = cms.untracked.vuint32(0, 4, 6, 1, 4, 6, 2, 5, 6, 3, 5, 6, 7, 8, 9, 10, 14, 16, 11, 14, 16, 12, 15, 16, 13, 15, 16),
+    expectedTopCacheIndices0 = cms.untracked.vuint32(0, 9, 14, 1, 9, 14, 2, 10, 14, 3, 10, 14, 4, 11, 15, 5, 12, 16, 6, 12, 16, 7, 13, 16, 8, 13, 16),
     expectedWriteProcessBlockTransitions = cms.untracked.int32(18),
     expectedProcessesInFirstFile = cms.untracked.uint32(3),
-    expectedCacheIndexVectorsPerFile = cms.untracked.vuint32(4, 1, 4),
-    expectedNEntries0 = cms.untracked.vuint32(4, 2, 1),
-    expectedNEntries1 = cms.untracked.vuint32(1, 1, 1),
-    expectedNEntries2 = cms.untracked.vuint32(4, 2, 1),
-    expectedCacheEntriesPerFile0 =  cms.untracked.vuint32(7),
-    expectedCacheEntriesPerFile1 =  cms.untracked.vuint32(7, 3),
-    expectedCacheEntriesPerFile2 =  cms.untracked.vuint32(7, 3, 7),
-    expectedOuterOffset = cms.untracked.vuint32(0, 4, 5)
+    expectedCacheIndexVectorsPerFile = cms.untracked.vuint32(9),
+    expectedNEntries0 = cms.untracked.vuint32(9, 5, 3),
+    expectedCacheEntriesPerFile0 =  cms.untracked.vuint32(17),
+    expectedOuterOffset = cms.untracked.vuint32(0)
 )
 
 process.p = cms.Path(process.readProcessBlocksOneAnalyzer1 * process.readProcessBlocksOneAnalyzer2)

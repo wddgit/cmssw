@@ -1,6 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
-process = cms.Process("READ")
+process = cms.Process("DROPONOUTPUT")
 
 process.options = cms.untracked.PSet(
     numberOfStreams = cms.untracked.uint32(1),
@@ -40,8 +40,8 @@ process.testOneOutput = cms.OutputModule("TestOneOutput",
         'drop *_intProducerEndProcessBlockM_*_*'
     ),
     verbose = cms.untracked.bool(False),
-    expectedProcessesWithProcessBlockProducts = cms.untracked.vstring('PROD1', 'MERGEOFMERGED', 'READ'),
-    expectedTopProcessesWithProcessBlockProducts = cms.untracked.vstring('PROD1', 'MERGE', 'MERGEOFMERGED', 'READ'),
+    expectedProcessesWithProcessBlockProducts = cms.untracked.vstring('PROD1', 'MERGEOFMERGED', 'DROPONOUTPUT'),
+    expectedTopProcessesWithProcessBlockProducts = cms.untracked.vstring('PROD1', 'MERGE', 'MERGEOFMERGED', 'DROPONOUTPUT'),
     expectedTranslateFromStoredIndex = cms.untracked.vuint32(0, 2, 3),
     expectedNAddedProcesses = cms.untracked.uint32(1),
     expectedProductsFromInputKept = cms.untracked.bool(True)
@@ -75,8 +75,8 @@ process.testOneOutput2 = cms.OutputModule("TestOneOutput",
         'drop *_intProducerEndProcessBlockMM_*_*'
     ),
     verbose = cms.untracked.bool(False),
-    expectedProcessesWithProcessBlockProducts = cms.untracked.vstring('READ'),
-    expectedTopProcessesWithProcessBlockProducts = cms.untracked.vstring('PROD1', 'MERGE', 'MERGEOFMERGED', 'READ'),
+    expectedProcessesWithProcessBlockProducts = cms.untracked.vstring('DROPONOUTPUT'),
+    expectedTopProcessesWithProcessBlockProducts = cms.untracked.vstring('PROD1', 'MERGE', 'MERGEOFMERGED', 'DROPONOUTPUT'),
     expectedTranslateFromStoredIndex = cms.untracked.vuint32(3),
     expectedNAddedProcesses = cms.untracked.uint32(1),
     expectedProductsFromInputKept = cms.untracked.bool(False)

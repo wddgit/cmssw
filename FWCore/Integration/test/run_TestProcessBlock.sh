@@ -100,6 +100,9 @@ pushd ${LOCAL_TMP_DIR}
   echo "testProcessBlockThreeFileInput"
   cmsRun -p ${LOCAL_TEST_DIR}/testProcessBlockThreeFileInput_cfg.py > /dev/null 2>&1 || die "cmsRun testProcessBlockThreeFileInput_cfg.py" $?
 
+  echo "testProcessBlockReadThreeFileInput"
+  cmsRun -p ${LOCAL_TEST_DIR}/testProcessBlockReadThreeFileInput_cfg.py > /dev/null 2>&1 || die "cmsRun testProcessBlockReadThreeFileInput_cfg.py" $?
+
   echo "testLooperEventNavigation2"
   cmsRun -p ${LOCAL_TEST_DIR}/testLooperEventNavigation2_cfg.py < ${LOCAL_TEST_DIR}/testLooperEventNavigation2.txt > /dev/null 2>&1 || die "cmsRun testLooperEventNavigation2_cfg.py" $?
 
@@ -111,6 +114,12 @@ pushd ${LOCAL_TMP_DIR}
 
   echo "testProcessBlockDropOnOutput2"
   cmsRun -p ${LOCAL_TEST_DIR}/testProcessBlockDropOnOutput2_cfg.py > /dev/null 2>&1 || die "cmsRun testProcessBlockDropOnOutput2_cfg.py" $?
+
+  echo "testProcessBlockReadDropOnOutput"
+  cmsRun -p ${LOCAL_TEST_DIR}/testProcessBlockReadDropOnOutput_cfg.py > /dev/null 2>&1 || die "cmsRun testProcessBlockReadDropOnOutput_cfg.py" $?
+
+  echo "testProcessBlockReadDropOnOutput2"
+  cmsRun -p ${LOCAL_TEST_DIR}/testProcessBlockReadDropOnOutput2_cfg.py > /dev/null 2>&1 || die "cmsRun testProcessBlockReadDropOnOutput2_cfg.py" $?
 
   # The next three tests would be relevant if we disabled the strict merging requirement
   # in ProductRegistry.cc for ProcessBlock products (a one line code change). As long
@@ -162,10 +171,12 @@ pushd ${LOCAL_TMP_DIR}
   rm testProcessBlockMergeOfMergedFiles2.root
   rm testProcessBlockDropOnInput.root
   rm testProcessBlockThreeFileInput.root
+  rm testProcessBlockReadThreeFileInput.root
   rm testProcessBlockDropOnOutput.root
   rm testProcessBlockDropOnOutput2.root
   rm testProcessBlockDropOnOutput2_2.root
-
+  rm testProcessBlockReadDropOnOutput.root
+  rm testProcessBlockReadDropOnOutput2.root
 popd
 
 exit 0

@@ -19,7 +19,7 @@ process.out = cms.OutputModule("PoolOutputModule",
     fileName = cms.untracked.string('testProcessBlockMergeOfMergedFiles2.root')
 )
 
-process.intProducerBeginProcessBlock = cms.EDProducer("IntProducerBeginProcessBlock", ivalue = cms.int32(700))
+process.intProducerBeginProcessBlock = cms.EDProducer("IntProducerBeginProcessBlock", ivalue = cms.int32(707))
 
 process.intProducerEndProcessBlock = cms.EDProducer("IntProducerEndProcessBlock", ivalue = cms.int32(7000))
 

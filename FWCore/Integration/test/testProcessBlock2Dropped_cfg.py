@@ -56,7 +56,8 @@ process.testOneOutput = cms.OutputModule("TestOneOutput",
       'keep *',
       'drop *_intProducerBeginProcessBlock_*_*',
       'drop *_intProducerEndProcessBlock_*_*'
-    )
+    ),
+    expectedProductsFromInputKept = cms.untracked.bool(False)
 )
 
 process.intProducerBeginProcessBlock = cms.EDProducer("IntProducerBeginProcessBlock", ivalue = cms.int32(1))
