@@ -25,15 +25,15 @@ process.source = cms.Source("PoolSource",
 )
 
 # 77 transitions = 30 events + 17 InputProcessBlock transitions + (3 x 10) Cache filling transitions
-# sum = (11 + 22 + 3300 + 4400 + 7700) x 2 + 44 + 444 + 44 = 31398 
+# sum = (11 + 22 + 3300 + 4400 + 7707) x 2 + 44 + 444 + 44 = 31412
 process.readProcessBlocksOneAnalyzer1 = cms.EDAnalyzer("edmtest::one::InputProcessBlockIntAnalyzer",
                                             transitions = cms.int32(77),
                                             consumesBeginProcessBlock = cms.InputTag("intProducerBeginProcessBlock", ""),
                                             consumesEndProcessBlock = cms.InputTag("intProducerEndProcessBlock", ""),
                                             consumesBeginProcessBlockM = cms.InputTag("intProducerBeginProcessBlockM", ""),
                                             consumesEndProcessBlockM = cms.InputTag("intProducerEndProcessBlockM", ""),
-                                            expectedByRun = cms.vint32(0, 11, 22, 3300, 4400, 7700),
-                                            expectedSum = cms.int32(31398)
+                                            expectedByRun = cms.vint32(0, 11, 22, 3300, 4400, 7707),
+                                            expectedSum = cms.int32(31412)
 )
 
 # 59 transitions = 30 events + 17 InputProcessBlock transitions + (3 x 4) Cache filling transitions
