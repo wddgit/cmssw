@@ -27,7 +27,11 @@ process.readProcessBlocksOneAnalyzer1 = cms.EDAnalyzer("edmtest::one::InputProce
 )
 
 process.out = cms.OutputModule("PoolOutputModule",
-    fileName = cms.untracked.string('testProcessBlockMerge.root')
+    fileName = cms.untracked.string('testProcessBlockMerge.root'),
+    outputCommands = cms.untracked.vstring(
+        "keep *",
+        "drop *_testEDAliasAlias_*_*"
+    )
 )
 
 process.testGlobalOutput = cms.OutputModule("TestGlobalOutput",
@@ -46,6 +50,7 @@ process.testOneOutput = cms.OutputModule("TestOneOutput",
     verbose = cms.untracked.bool(False),
     expectedProcessesWithProcessBlockProducts = cms.untracked.vstring('PROD1', 'MERGE'),
     expectedTopProcessesWithProcessBlockProducts = cms.untracked.vstring('PROD1', 'MERGE'),
+    expectedTopAddedProcesses = cms.untracked.vstring('MERGE'),
     expectedWriteProcessBlockTransitions = cms.untracked.int32(3),
     expectedNAddedProcesses = cms.untracked.uint32(1),
     expectedTopCacheIndices0 = cms.untracked.vuint32(0),
@@ -60,11 +65,19 @@ process.intProducerBeginProcessBlockB = cms.EDProducer("IntProducerBeginProcessB
 
 process.intProducerEndProcessBlockB = cms.EDProducer("IntProducerEndProcessBlock", ivalue = cms.int32(80))
 
+process.a2000 = cms.EDAnalyzer("TestFindProduct",
+  inputTags = cms.untracked.VInputTag(),
+  inputTagsInputProcessBlock = cms.untracked.VInputTag( cms.InputTag("testEDAliasAlias")),
+  expectedSum = cms.untracked.int32(222),
+  expectedCache = cms.untracked.int32(111)
+)
+
 process.p = cms.Path(process.intProducerBeginProcessBlockM *
                      process.intProducerEndProcessBlockM *
                      process.intProducerBeginProcessBlockB *
                      process.intProducerEndProcessBlockB *
-                     process.readProcessBlocksOneAnalyzer1
+                     process.readProcessBlocksOneAnalyzer1 *
+                     process.a2000
 )
 
 process.e = cms.EndPath(process.out *

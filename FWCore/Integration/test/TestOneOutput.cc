@@ -45,6 +45,7 @@ namespace edm {
     bool verbose_;
     std::vector<std::string> expectedProcessesWithProcessBlockProducts_;
     std::vector<std::string> expectedTopProcessesWithProcessBlockProducts_;
+    std::vector<std::string> expectedAddedProcesses_;
     std::vector<std::string> expectedTopAddedProcesses_;
     std::vector<unsigned int> expectedTopCacheIndices0_;
     std::vector<unsigned int> expectedTopCacheIndices1_;
@@ -78,6 +79,7 @@ namespace edm {
             pset.getUntrackedParameter<std::vector<std::string>>("expectedProcessesWithProcessBlockProducts")),
         expectedTopProcessesWithProcessBlockProducts_(
             pset.getUntrackedParameter<std::vector<std::string>>("expectedTopProcessesWithProcessBlockProducts")),
+        expectedAddedProcesses_(pset.getUntrackedParameter<std::vector<std::string>>("expectedAddedProcesses")),
         expectedTopAddedProcesses_(pset.getUntrackedParameter<std::vector<std::string>>("expectedTopAddedProcesses")),
         expectedTopCacheIndices0_(pset.getUntrackedParameter<std::vector<unsigned int>>("expectedTopCacheIndices0")),
         expectedTopCacheIndices1_(pset.getUntrackedParameter<std::vector<unsigned int>>("expectedTopCacheIndices1")),
@@ -145,6 +147,11 @@ namespace edm {
         throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected process name list";
       }
     }
+    if (!(!expectedAddedProcesses_.empty() && expectedAddedProcesses_[0] == "DONOTTEST")) {
+      if (expectedAddedProcesses_ != outputProcessBlockHelper().processBlockHelper()->addedProcesses()) {
+        throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected addedProcesses list";
+      }
+    }
     if (!(!expectedTopAddedProcesses_.empty() && expectedTopAddedProcesses_[0] == "DONOTTEST")) {
       if (expectedTopAddedProcesses_ != outputProcessBlockHelper().processBlockHelper()
                                                                    ->topProcessBlockHelper()
@@ -161,6 +168,12 @@ namespace edm {
                                                                ->topProcessesWithProcessBlockProducts()) {
         throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected top process name list";
       }
+      // Almost the same as the previous test, should get the same result
+      if (expectedTopProcessesWithProcessBlockProducts_ != outputProcessBlockHelper()
+                                                               .processBlockHelper()
+                                                               ->topProcessesWithProcessBlockProducts()) {
+        throw cms::Exception("TestFailure") << "TestOneOutput::writeProcessBlock unexpected top process name list 2";
+      }
 
       std::vector<unsigned int> const* expectedTopCacheIndices = nullptr;
       if (countInputFiles_ == 1 && !expectedTopCacheIndices0_.empty()) {
@@ -171,10 +184,8 @@ namespace edm {
         expectedTopCacheIndices = &expectedTopCacheIndices2_;
       }
       if (expectedTopCacheIndices != nullptr) {
-        unsigned int expectedInputProcesses = expectedTopProcessesWithProcessBlockProducts_.size();
-        if (expectedNAddedProcesses_ != 0xffffffff) {
-          expectedInputProcesses -= expectedNAddedProcesses_;
-        }
+        unsigned int expectedInputProcesses = expectedTopProcessesWithProcessBlockProducts_.size()
+                                              - outputProcessBlockHelper().processBlockHelper()->topProcessBlockHelper()->addedProcesses().size();
 
         std::vector<std::vector<unsigned int>> const& topProcessBlockCacheIndices =
             outputProcessBlockHelper().processBlockHelper()->processBlockCacheIndices();
@@ -308,7 +319,8 @@ namespace edm {
             << "TestOneOutput::respondToOpenInputFile expected null TTree pointers in FileBlock";
       }
     } else if (testTTreesInFileBlock_) {
-      if (std::string("Events") != fb.tree()->GetName() ||
+      if (fb.tree() == nullptr ||
+          std::string("Events") != fb.tree()->GetName() ||
           std::string("LuminosityBlocks") != fb.lumiTree()->GetName() ||
           std::string("Runs") != fb.runTree()->GetName() || fb.processesWithProcessBlockTrees().size() != 2 ||
           fb.processesWithProcessBlockTrees()[0] != "PROD1" || fb.processesWithProcessBlockTrees()[1] != "MERGE" ||
@@ -370,6 +382,8 @@ namespace edm {
                                                 std::vector<std::string>());
     desc.addUntracked<std::vector<std::string>>("expectedTopProcessesWithProcessBlockProducts",
                                                 std::vector<std::string>());
+    desc.addUntracked<std::vector<std::string>>("expectedAddedProcesses",
+                                                std::vector<std::string>(1, std::string("DONOTTEST")));
     desc.addUntracked<std::vector<std::string>>("expectedTopAddedProcesses",
                                                 std::vector<std::string>(1, std::string("DONOTTEST")));
     desc.addUntracked<std::vector<unsigned int>>("expectedTopCacheIndices0", std::vector<unsigned int>());

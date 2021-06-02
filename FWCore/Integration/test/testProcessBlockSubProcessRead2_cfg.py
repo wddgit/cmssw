@@ -74,6 +74,9 @@ process.out = cms.OutputModule("PoolOutputModule",
 process.testOneOutput = cms.OutputModule("TestOneOutput",
     verbose = cms.untracked.bool(False),
     expectedProcessesWithProcessBlockProducts = cms.untracked.vstring('PROD1', 'MERGE', 'MERGEOFMERGED', 'TEST', 'READ', 'READAGAIN'),
+    expectedTopProcessesWithProcessBlockProducts = cms.untracked.vstring('PROD1', 'MERGE', 'MERGEOFMERGED', 'TEST', 'READ', 'READAGAIN'),
+    expectedTopAddedProcesses = cms.untracked.vstring(),
+    expectedTopCacheIndices0 = cms.untracked.vuint32(0, 4, 6, 7, 8, 9, 1, 4, 6, 7, 8, 9, 2, 5, 6, 7, 8, 9, 3, 5, 6, 7, 8, 9),
     expectedWriteProcessBlockTransitions = cms.untracked.int32(11)
 )
 

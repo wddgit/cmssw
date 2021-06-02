@@ -42,6 +42,7 @@ process.testOneOutput = cms.OutputModule("TestOneOutput",
     expectedTranslateFromStoredIndex = cms.untracked.vuint32(0, 2),
     expectedNAddedProcesses = cms.untracked.uint32(0),
     expectedProductsFromInputKept = cms.untracked.bool(True),
+    expectedTopAddedProcesses = cms.untracked.vstring(),
     expectedTopCacheIndices0 = cms.untracked.vuint32(0, 4, 6, 1, 4, 6, 2, 5, 6, 3, 5, 6),
     expectedTopCacheIndices1 = cms.untracked.vuint32(0, 4, 6, 1, 4, 6, 2, 5, 6, 3, 5, 6, 7, 8, 9)
 )

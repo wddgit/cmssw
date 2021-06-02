@@ -16,7 +16,11 @@ process.maxEvents = cms.untracked.PSet(
 )
 
 process.out = cms.OutputModule("PoolOutputModule",
-    fileName = cms.untracked.string('testProcessBlock2.root')
+    fileName = cms.untracked.string('testProcessBlock2.root'),
+    outputCommands = cms.untracked.vstring(
+        "keep *",
+        "drop *_testEDAliasOriginal_*_*"
+    )
 )
 
 process.intProducerBeginProcessBlock = cms.EDProducer("IntProducerBeginProcessBlock", ivalue = cms.int32(2))
@@ -27,10 +31,15 @@ process.intProducerBeginProcessBlockB = cms.EDProducer("IntProducerBeginProcessB
 
 process.intProducerEndProcessBlockB = cms.EDProducer("IntProducerEndProcessBlock", ivalue = cms.int32(70))
 
+process.testEDAliasOriginal = cms.EDProducer("IntProducerBeginProcessBlock", ivalue = cms.int32(111))
+
+process.testEDAliasAlias = cms.EDAlias(testEDAliasOriginal = cms.VPSet( cms.PSet(type=cms.string('edmtestIntProduct') ) ) )
+
 process.p = cms.Path(process.intProducerBeginProcessBlock *
                      process.intProducerEndProcessBlock *
                      process.intProducerBeginProcessBlockB *
-                     process.intProducerEndProcessBlockB
+                     process.intProducerEndProcessBlockB *
+                     process.testEDAliasOriginal
 )
 
 process.e = cms.EndPath(process.out)

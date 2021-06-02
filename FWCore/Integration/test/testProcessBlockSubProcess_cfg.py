@@ -110,6 +110,8 @@ readProcess.addSubProcess(cms.SubProcess(readAgainProcess,
     )
 ))
 
+# transitions = 12 events + 9 access input ProcessBlock transitions + 12 fill cache functor calls
+# sum = 11 + 22 + 3300 + 4400 + 44 + 444
 readAgainProcess.readProcessBlocksOneAnalyzer1 = cms.EDAnalyzer("edmtest::one::InputProcessBlockIntAnalyzer",
                                             transitions = cms.int32(33),
                                             consumesBeginProcessBlock = cms.InputTag("intProducerBeginProcessBlock", ""),
@@ -120,6 +122,8 @@ readAgainProcess.readProcessBlocksOneAnalyzer1 = cms.EDAnalyzer("edmtest::one::I
                                             expectedSum = cms.int32(8221)
 )
 
+# transitions = 12 events + 9 access input ProcessBlock transitions + 6 fill cache functor calls
+# sum = 44 + 444
 readAgainProcess.readProcessBlocksOneAnalyzer2 = cms.EDAnalyzer("edmtest::one::InputProcessBlockIntAnalyzer",
                                             transitions = cms.int32(27),
                                             consumesBeginProcessBlock = cms.InputTag("intProducerBeginProcessBlockM", ""),
@@ -130,6 +134,8 @@ readAgainProcess.readProcessBlocksOneAnalyzer2 = cms.EDAnalyzer("edmtest::one::I
                                             expectedSum = cms.int32(488)
 )
 
+# transitions = 12 events + 9 access input ProcessBlock transitions + 3 fill cache functor calls
+# sum = 44 + 444
 readAgainProcess.readProcessBlocksOneAnalyzer3 = cms.EDAnalyzer("edmtest::one::InputProcessBlockIntAnalyzer",
                                             transitions = cms.int32(24),
                                             consumesBeginProcessBlock = cms.InputTag("intProducerBeginProcessBlockMM", ""),
@@ -140,6 +146,9 @@ readAgainProcess.readProcessBlocksOneAnalyzer3 = cms.EDAnalyzer("edmtest::one::I
                                             expectedSum = cms.int32(488)
 )
 
+# transitions = 12 events + 9 access input ProcessBlock transitions + 3 fill cache functor calls
+# sum = 44 + 444
+# filler sum = 3 x 44000
 readAgainProcess.readProcessBlocksOneAnalyzer4 = cms.EDAnalyzer("edmtest::one::InputProcessBlockIntAnalyzer",
                                             transitions = cms.int32(24),
                                             consumesBeginProcessBlock = cms.InputTag("intProducerBeginProcessBlockT", ""),
@@ -152,6 +161,9 @@ readAgainProcess.readProcessBlocksOneAnalyzer4 = cms.EDAnalyzer("edmtest::one::I
                                             expectedSum = cms.int32(488)
 )
 
+# transitions = 12 events + 9 access input ProcessBlock transitions + 3 fill cache functor calls
+# sum = 44 + 444
+# filler sum = 3 x 55000
 readAgainProcess.readProcessBlocksOneAnalyzer5 = cms.EDAnalyzer("edmtest::one::InputProcessBlockIntAnalyzer",
                                             transitions = cms.int32(24),
                                             consumesBeginProcessBlock = cms.InputTag("intProducerBeginProcessBlockR", ""),
@@ -182,7 +194,16 @@ readAgainProcess.out = cms.OutputModule("PoolOutputModule",
 readAgainProcess.testOneOutput = cms.OutputModule("TestOneOutput",
     verbose = cms.untracked.bool(False),
     expectedProcessesWithProcessBlockProducts = cms.untracked.vstring('PROD1', 'MERGE', 'MERGEOFMERGED', 'TEST',  'READ', 'READAGAIN'),
+    expectedTopProcessesWithProcessBlockProducts = cms.untracked.vstring('PROD1', 'MERGE', 'MERGEOFMERGED', 'TEST'),
+    expectedProcessesInFirstFile = cms.untracked.uint32(3),
+    expectedAddedProcesses = cms.untracked.vstring('TEST',  'READ', 'READAGAIN'),
+    expectedTopAddedProcesses = cms.untracked.vstring('TEST'),
+    expectedTopCacheIndices0 = cms.untracked.vuint32(0, 4, 6, 1, 4, 6, 2, 5, 6, 3, 5, 6),
     expectedWriteProcessBlockTransitions = cms.untracked.int32(10),
+    expectedNEntries0 = cms.untracked.vuint32(4, 2, 1),
+    expectedCacheIndexVectorsPerFile = cms.untracked.vuint32(4),
+    expectedCacheEntriesPerFile0 =  cms.untracked.vuint32(7),
+    expectedOuterOffset = cms.untracked.vuint32(0),
     outputCommands = cms.untracked.vstring(
         "keep *",
         "drop *_*_beginProcessBlock_*",
