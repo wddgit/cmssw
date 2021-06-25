@@ -136,7 +136,6 @@ namespace edm {
   template <module::Abilities ABILITY>
   struct CheckAbility<ABILITY> {
     static constexpr bool kHasIt = false;
-    typedef edm::module::Empty Type;
   };
 
   template <typename... VArgs>
