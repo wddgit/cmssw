@@ -108,6 +108,7 @@ namespace edm {
   class WorkerInPath;
   class ModuleRegistry;
   class TriggerResultInserter;
+  class AcceleratorProvenanceInserter;
   class PathStatusInserter;
   class EndPathStatusInserter;
   class PreallocationConfiguration;
@@ -164,6 +165,7 @@ namespace edm {
     typedef std::vector<WorkerInPath> PathWorkers;
 
     StreamSchedule(std::shared_ptr<TriggerResultInserter> inserter,
+                   std::shared_ptr<AcceleratorProvenanceInserter> acceleratorProvenanceInserter,
                    std::vector<edm::propagate_const<std::shared_ptr<PathStatusInserter>>>& pathStatusInserters,
                    std::vector<edm::propagate_const<std::shared_ptr<EndPathStatusInserter>>>& endPathStatusInserters,
                    std::shared_ptr<ModuleRegistry>,
@@ -331,6 +333,7 @@ namespace edm {
     edm::propagate_const<TrigResPtr> results_;
 
     edm::propagate_const<WorkerPtr> results_inserter_;
+    edm::propagate_const<WorkerPtr> acceleratorProvenanceInserter_;
     std::vector<edm::propagate_const<WorkerPtr>> pathStatusInserterWorkers_;
     std::vector<edm::propagate_const<WorkerPtr>> endPathStatusInserterWorkers_;
 

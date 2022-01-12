@@ -3,6 +3,7 @@
 #include "DataFormats/Provenance/interface/BranchIDListHelper.h"
 #include "DataFormats/Provenance/interface/ProcessConfiguration.h"
 #include "DataFormats/Provenance/interface/ProductRegistry.h"
+#include "FWCore/Framework/src/AcceleratorProvenanceInserter.h"
 #include "FWCore/Framework/src/OutputModuleDescription.h"
 #include "FWCore/Framework/interface/TriggerNamesService.h"
 #include "FWCore/Framework/src/TriggerReport.h"
@@ -81,6 +82,16 @@ namespace edm {
       return ptr;
     }
 
+    StreamSchedule::WorkerPtr makeAcceleratorProvenanceInserter(
+        ExceptionToActionTable const& actions,
+        std::shared_ptr<ActivityRegistry> areg,
+        std::shared_ptr<AcceleratorProvenanceInserter> inserter) {
+      StreamSchedule::WorkerPtr ptr(new edm::WorkerT<AcceleratorProvenanceInserter::ModuleType>(
+          inserter, inserter->moduleDescription(), &actions));
+      ptr->setActivityRegistry(areg);
+      return ptr;
+    }
+
     void initializeBranchToReadingWorker(ParameterSet const& opts,
                                          ProductRegistry const& preg,
                                          std::multimap<std::string, Worker*>& branchToReadingWorker) {
@@ -137,6 +148,7 @@ namespace edm {
 
   StreamSchedule::StreamSchedule(
       std::shared_ptr<TriggerResultInserter> inserter,
+      std::shared_ptr<AcceleratorProvenanceInserter> acceleratorProvenanceInserter,
       std::vector<edm::propagate_const<std::shared_ptr<PathStatusInserter>>>& pathStatusInserters,
       std::vector<edm::propagate_const<std::shared_ptr<EndPathStatusInserter>>>& endPathStatusInserters,
       std::shared_ptr<ModuleRegistry> modReg,
@@ -183,6 +195,9 @@ namespace edm {
       results_inserter_ = makeInserter(actions, actReg_, inserter);
       addToAllWorkers(results_inserter_.get());
     }
+
+    acceleratorProvenanceInserter_ = makeAcceleratorProvenanceInserter(actions, actReg_, acceleratorProvenanceInserter);
+    addToAllWorkers(acceleratorProvenanceInserter_.get());
 
     // fill normal endpaths
     int bitpos = 0;

@@ -115,6 +115,7 @@ namespace edm {
   class ThinnedAssociationsHelper;
   class SubProcessParentageHelper;
   class TriggerResultInserter;
+  class AcceleratorProvenanceInserter;
   class PathStatusInserter;
   class EndPathStatusInserter;
   class WaitingTaskHolder;
@@ -296,6 +297,7 @@ namespace edm {
     std::shared_ptr<ModuleRegistry>& moduleRegistry() { return get_underlying_safe(moduleRegistry_); }
 
     edm::propagate_const<std::shared_ptr<TriggerResultInserter>> resultsInserter_;
+    edm::propagate_const<std::shared_ptr<AcceleratorProvenanceInserter>> acceleratorProvenanceInserter_;
     std::vector<edm::propagate_const<std::shared_ptr<PathStatusInserter>>> pathStatusInserters_;
     std::vector<edm::propagate_const<std::shared_ptr<EndPathStatusInserter>>> endPathStatusInserters_;
     edm::propagate_const<std::shared_ptr<ModuleRegistry>> moduleRegistry_;

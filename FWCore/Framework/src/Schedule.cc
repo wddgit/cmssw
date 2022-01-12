@@ -20,6 +20,7 @@
 #include "FWCore/Framework/interface/maker/ModuleHolder.h"
 #include "FWCore/Framework/interface/ModuleRegistry.h"
 #include "FWCore/Framework/src/TriggerResultInserter.h"
+#include "FWCore/Framework/src/AcceleratorProvenanceInserter.h"
 #include "FWCore/Framework/src/PathStatusInserter.h"
 #include "FWCore/Framework/src/EndPathStatusInserter.h"
 #include "FWCore/Concurrency/interface/WaitingTaskHolder.h"
@@ -32,6 +33,7 @@
 #include "FWCore/Utilities/interface/Algorithms.h"
 #include "FWCore/Utilities/interface/ConvertException.h"
 #include "FWCore/Utilities/interface/ExceptionCollector.h"
+#include "FWCore/Utilities/interface/get_underlying_safe.h"
 #include "FWCore/Utilities/interface/RandomNumberGenerator.h"
 #include "FWCore/Utilities/interface/TypeID.h"
 #include "FWCore/Utilities/interface/thread_safety_macros.h"
@@ -86,6 +88,47 @@ namespace edm {
       CMS_SA_ALLOW try {
         maker::ModuleHolderT<TriggerResultInserter> holder(
             make_shared_noexcept_false<TriggerResultInserter>(*trig_pset, iPrealloc.numberOfStreams()),
+            static_cast<Maker const*>(nullptr));
+        holder.setModuleDescription(md);
+        holder.registerProductsAndCallbacks(&preg);
+        returnValue = holder.module();
+        postCalled = true;
+        // if exception then post will be called in the catch block
+        areg->postModuleConstructionSignal_(md);
+      } catch (...) {
+        if (!postCalled) {
+          CMS_SA_ALLOW try { areg->postModuleConstructionSignal_(md); } catch (...) {
+            // If post throws an exception ignore it because we are already handling another exception
+          }
+        }
+        throw;
+      }
+      return returnValue;
+    }
+
+    std::shared_ptr<AcceleratorProvenanceInserter> makeAcceleratorProvenanceInserter(
+        ParameterSet& proc_pset,
+        PreallocationConfiguration const& iPrealloc,
+        ProductRegistry& preg,
+        ExceptionToActionTable const& actions,
+        std::shared_ptr<ActivityRegistry> areg,
+        std::shared_ptr<ProcessConfiguration> processConfiguration) {
+      ParameterSet* options_pset = proc_pset.getPSetForUpdate("options");
+      options_pset->registerIt();
+
+      WorkerParams work_args(options_pset, preg, &iPrealloc, processConfiguration, actions);
+      ModuleDescription md(options_pset->id(),
+                           "AcceleratorProvenanceInserter",
+                           "AcceleratorProvenance",
+                           processConfiguration.get(),
+                           ModuleDescription::getUniqueID());
+      areg->preModuleConstructionSignal_(md);
+      bool postCalled = false;
+      std::shared_ptr<AcceleratorProvenanceInserter> returnValue;
+      // Caught exception is rethrown
+      CMS_SA_ALLOW try {
+        maker::ModuleHolderT<AcceleratorProvenanceInserter> holder(
+            make_shared_noexcept_false<AcceleratorProvenanceInserter>(*options_pset),
             static_cast<Maker const*>(nullptr));
         holder.setModuleDescription(md);
         holder.registerProductsAndCallbacks(&preg);
@@ -685,6 +728,8 @@ namespace edm {
         resultsInserter_{tns.getTrigPaths().empty()
                              ? std::shared_ptr<TriggerResultInserter>{}
                              : makeInserter(proc_pset, prealloc, preg, actions, areg, processConfiguration)},
+        acceleratorProvenanceInserter_{
+            makeAcceleratorProvenanceInserter(proc_pset, prealloc, preg, actions, areg, processConfiguration)},
         moduleRegistry_(new ModuleRegistry()),
         all_output_communicators_(),
         preallocConfig_(prealloc),
@@ -710,21 +755,23 @@ namespace edm {
     assert(0 < prealloc.numberOfStreams());
     streamSchedules_.reserve(prealloc.numberOfStreams());
     for (unsigned int i = 0; i < prealloc.numberOfStreams(); ++i) {
-      streamSchedules_.emplace_back(make_shared_noexcept_false<StreamSchedule>(resultsInserter(),
-                                                                               pathStatusInserters_,
-                                                                               endPathStatusInserters_,
-                                                                               moduleRegistry(),
-                                                                               proc_pset,
-                                                                               tns,
-                                                                               prealloc,
-                                                                               preg,
-                                                                               branchIDListHelper,
-                                                                               actions,
-                                                                               areg,
-                                                                               processConfiguration,
-                                                                               !hasSubprocesses,
-                                                                               StreamID{i},
-                                                                               processContext));
+      streamSchedules_.emplace_back(
+          make_shared_noexcept_false<StreamSchedule>(resultsInserter(),
+                                                     get_underlying_safe(acceleratorProvenanceInserter_),
+                                                     pathStatusInserters_,
+                                                     endPathStatusInserters_,
+                                                     moduleRegistry(),
+                                                     proc_pset,
+                                                     tns,
+                                                     prealloc,
+                                                     preg,
+                                                     branchIDListHelper,
+                                                     actions,
+                                                     areg,
+                                                     processConfiguration,
+                                                     !hasSubprocesses,
+                                                     StreamID{i},
+                                                     processContext));
     }
 
     //TriggerResults are injected automatically by StreamSchedules and are
@@ -750,6 +797,7 @@ namespace edm {
 
     // propagate_const<T> has no reset() function
     globalSchedule_ = std::make_unique<GlobalSchedule>(resultsInserter(),
+                                                       get_underlying_safe(acceleratorProvenanceInserter_),
                                                        pathStatusInserters_,
                                                        endPathStatusInserters_,
                                                        moduleRegistry(),

@@ -166,6 +166,7 @@ namespace edm {
   std::vector<ModuleDescription const*> nonConsumedUnscheduledModules(
       edm::PathsAndConsumesOfModulesBase const& iPnC, std::vector<ModuleProcessName>& consumedByChildren) {
     const std::string kTriggerResults("TriggerResults");
+    const std::string kAcceleratorProvenance("AcceleratorProvenance");
 
     std::vector<std::string> pathNames = iPnC.paths();
     const unsigned int kFirstEndPathIndex = pathNames.size();
@@ -194,7 +195,7 @@ namespace edm {
     // consumed by child SubProcesses to the set of "consumers".
     auto const& allModules = iPnC.allModules();
     for (auto const& description : allModules) {
-      if (description->moduleLabel() == kTriggerResults or
+      if (description->moduleLabel() == kTriggerResults or description->moduleLabel() == kAcceleratorProvenance or
           std::find(pathNames.begin(), pathNames.end(), description->moduleLabel()) != pathNames.end()) {
         consumerModules.push_back(description);
       } else if (std::binary_search(consumedByChildren.begin(),

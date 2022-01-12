@@ -1,6 +1,7 @@
 #include "FWCore/Framework/interface/GlobalSchedule.h"
 #include "FWCore/Framework/interface/maker/WorkerMaker.h"
 #include "FWCore/Framework/src/TriggerResultInserter.h"
+#include "FWCore/Framework/src/AcceleratorProvenanceInserter.h"
 #include "FWCore/Framework/src/PathStatusInserter.h"
 #include "FWCore/Framework/src/EndPathStatusInserter.h"
 #include "FWCore/Framework/interface/PreallocationConfiguration.h"
@@ -21,6 +22,7 @@
 namespace edm {
   GlobalSchedule::GlobalSchedule(
       std::shared_ptr<TriggerResultInserter> inserter,
+      std::shared_ptr<AcceleratorProvenanceInserter> acceleratorProvenanceInserter,
       std::vector<edm::propagate_const<std::shared_ptr<PathStatusInserter>>>& pathStatusInserters,
       std::vector<edm::propagate_const<std::shared_ptr<EndPathStatusInserter>>>& endPathStatusInserters,
       std::shared_ptr<ModuleRegistry> modReg,
@@ -58,6 +60,19 @@ namespace edm {
         results_inserter->setActivityRegistry(actReg_);
         wm.addToAllWorkers(results_inserter.get());
         extraWorkers_.emplace_back(std::move(results_inserter));
+      }
+    }
+
+    if (acceleratorProvenanceInserter) {
+      acceleratorProvenanceInserter->doPreallocate(prealloc);
+      for (auto& wm : workerManagers_) {
+        auto ap_inserter = WorkerPtr(new edm::WorkerT<AcceleratorProvenanceInserter::ModuleType>(
+            acceleratorProvenanceInserter,
+            acceleratorProvenanceInserter->moduleDescription(),
+            &actions));  // propagate_const<T> has no reset() function
+        ap_inserter->setActivityRegistry(actReg_);
+        wm.addToAllWorkers(ap_inserter.get());
+        extraWorkers_.emplace_back(std::move(ap_inserter));
       }
     }
 

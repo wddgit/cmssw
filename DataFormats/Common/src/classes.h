@@ -1,3 +1,4 @@
+#include "DataFormats/Common/interface/AcceleratorProvenance.h"
 #include "DataFormats/Common/interface/RefProd.h"
 #include "DataFormats/Common/interface/RefToBaseProd.h"
 #include "DataFormats/Common/interface/RefVector.h"

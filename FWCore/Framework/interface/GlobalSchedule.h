@@ -75,6 +75,7 @@ namespace edm {
   class PreallocationConfiguration;
   class ModuleRegistry;
   class TriggerResultInserter;
+  class AcceleratorProvenanceInserter;
   class PathStatusInserter;
   class EndPathStatusInserter;
 
@@ -86,6 +87,7 @@ namespace edm {
     typedef std::vector<Worker*> Workers;
 
     GlobalSchedule(std::shared_ptr<TriggerResultInserter> inserter,
+                   std::shared_ptr<AcceleratorProvenanceInserter> acceleratorProvenanceInserter,
                    std::vector<edm::propagate_const<std::shared_ptr<PathStatusInserter>>>& pathStatusInserters,
                    std::vector<edm::propagate_const<std::shared_ptr<EndPathStatusInserter>>>& endPathStatusInserters,
                    std::shared_ptr<ModuleRegistry> modReg,
