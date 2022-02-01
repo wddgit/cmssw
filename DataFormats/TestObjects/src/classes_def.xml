@@ -253,4 +253,9 @@ exception when running testMissingDictionaryChecking_cfg.py.
  <class name="edm::soa::Table<edmtest::AnInt, edmtest::AFloat,edmtest::AString >"/>
  <class name="edm::Wrapper<edm::soa::Table<edmtest::AnInt, edmtest::AFloat,edmtest::AString > >"/>
 
+ <class name="edmtest::TestProductWithParameterSetID" ClassVersion="3">
+  <version ClassVersion="3" checksum="3798405277"/>
+ </class>
+ <class name="edm::Wrapper<edmtest::TestProductWithParameterSetID>"/>
+
 </lcgdict>

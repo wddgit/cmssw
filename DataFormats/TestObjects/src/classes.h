@@ -12,6 +12,7 @@
 
 #include "DataFormats/TestObjects/interface/MissingDictionaryTestObject.h"
 #include "DataFormats/TestObjects/interface/OtherThingCollection.h"
+#include "DataFormats/TestObjects/interface/TestProductWithParameterSetID.h"
 #include "DataFormats/TestObjects/interface/ThingCollection.h"
 #include "DataFormats/TestObjects/interface/ToyProducts.h"
 #include "DataFormats/TestObjects/interface/Thing.h"
