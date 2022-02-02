@@ -30,6 +30,15 @@ namespace edmtest {
   TestParameterSetIDProducer::TestParameterSetIDProducer(edm::ParameterSet const& iConfig)
     : value_(iConfig.getParameter<unsigned int>("value")) {
     evToken_ = produces<TestProductWithParameterSetID>();
+
+    // This is necessary only in the case where streamer output
+    // is used. It is needed because the ParameterSets are copied
+    // into the ParameterSet blobs at beginRun before the event transitions
+    // occur. This is necessary because the blobs are written
+    // into the file header before the events in the streamer format.
+    edm::ParameterSet parameterSet;
+    parameterSet.addParameter<unsigned int>("value", value_);
+    parameterSet.registerIt();
   }
 
   void TestParameterSetIDProducer::produce(edm::StreamID, edm::Event& event, edm::EventSetup const&) const {
