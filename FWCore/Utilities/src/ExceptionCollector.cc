@@ -44,7 +44,7 @@ namespace edm {
         firstException_.reset(ex.clone());
         accumulatedExceptions_ = std::make_unique<MultipleException>(ex.returnCode(), initialMessage_);
       }
-      *accumulatedExceptions_ << nExceptions_ << "\n" << ex.explainSelf();
+      *accumulatedExceptions_ << "\n" << nExceptions_ << "\n" << ex.explainSelf();
     }
   }
 

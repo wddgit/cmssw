@@ -23,6 +23,7 @@
 
 #include <map>
 #include <memory>
+#include <mutex>
 #include <set>
 #include <vector>
 
@@ -32,6 +33,7 @@ namespace edm {
   class BranchIDListHelper;
   class EventPrincipal;
   class EventSetupImpl;
+  class ExceptionCollector;
   class HistoryAppender;
   class LuminosityBlockPrincipal;
   class LumiTransitionInfo;
@@ -114,7 +116,7 @@ namespace edm {
                                    bool cleaningUpAfterException);
 
     void doBeginStream(unsigned int);
-    void doEndStream(unsigned int);
+    void doEndStream(unsigned int, ExceptionCollector&, std::mutex& collectorMutex);
     void doStreamBeginRunAsync(WaitingTaskHolder iHolder, unsigned int iID, RunTransitionInfo const&);
 
     void doStreamEndRunAsync(WaitingTaskHolder iHolder,

@@ -8,6 +8,8 @@
 #include "FWCore/Utilities/interface/ExceptionCollector.h"
 #include "DataFormats/Provenance/interface/ProductResolverIndexHelper.h"
 
+#include <exception>
+
 static const std::string kFilterType("EDFilter");
 static const std::string kProducerType("EDProducer");
 
@@ -126,9 +128,18 @@ namespace edm {
     }
   }
 
-  void WorkerManager::endStream(StreamID iID, StreamContext& streamContext) {
+  void WorkerManager::endStream(StreamID iID, StreamContext& streamContext, ExceptionCollector& collector, std::mutex& collectorMutex) {
     for (auto& worker : allWorkers_) {
-      worker->endStream(iID, streamContext);
+      std::exception_ptr ep;
+      try {
+        convertException::wrap([&]() { worker->endStream(iID, streamContext); });
+      } catch(cms::Exception const& ex) {
+        ep = std::current_exception();
+      }
+      if (ep) {
+        std::lock_guard<std::mutex> lg(collectorMutex);
+        collector.call([&ep]() { std::rethrow_exception(ep); });
+      }
     }
   }
 

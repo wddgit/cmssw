@@ -763,7 +763,7 @@ namespace edm {
   void EventProcessor::endJob() {
     // Collects exceptions, so we don't throw before all operations are performed.
     ExceptionCollector c(
-        "Multiple exceptions were thrown while executing endJob. An exception message follows for each.\n");
+        "Multiple exceptions were thrown while executing endStream, endJob, and/or related signals. An exception message follows for each.\n");
 
     //make the services available
     ServiceRegistry::Operate operate(serviceToken_);
@@ -779,31 +779,13 @@ namespace edm {
       std::mutex collectorMutex;
       for (unsigned int i = 0; i < preallocations_.numberOfStreams(); ++i) {
         first([this, i, &c, &collectorMutex](auto nextTask) {
-          std::exception_ptr ep;
-          try {
-            ServiceRegistry::Operate operate(serviceToken_);
-            this->schedule_->endStream(i);
-          } catch (...) {
-            ep = std::current_exception();
-          }
-          if (ep) {
-            std::lock_guard<std::mutex> l(collectorMutex);
-            c.call([&ep]() { std::rethrow_exception(ep); });
-          }
+          ServiceRegistry::Operate operate(serviceToken_);
+          this->schedule_->endStream(i, c, collectorMutex);
         }) | then([this, i, &c, &collectorMutex](auto nextTask) {
           for (auto& subProcess : subProcesses_) {
             first([this, i, &c, &collectorMutex, &subProcess](auto nextTask) {
-              std::exception_ptr ep;
-              try {
-                ServiceRegistry::Operate operate(serviceToken_);
-                subProcess.doEndStream(i);
-              } catch (...) {
-                ep = std::current_exception();
-              }
-              if (ep) {
-                std::lock_guard<std::mutex> l(collectorMutex);
-                c.call([&ep]() { std::rethrow_exception(ep); });
-              }
+              ServiceRegistry::Operate operate(serviceToken_);
+              subProcess.doEndStream(i, c, collectorMutex);
             }) | lastTask(nextTask);
           }
         }) | lastTask(taskHolder);

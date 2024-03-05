@@ -695,10 +695,10 @@ namespace edm {
     for_all(subProcesses_, [iID](auto& subProcess) { subProcess.doBeginStream(iID); });
   }
 
-  void SubProcess::doEndStream(unsigned int iID) {
+  void SubProcess::doEndStream(unsigned int iID, ExceptionCollector& collector, std::mutex& collectorMutex) {
     ServiceRegistry::Operate operate(serviceToken_);
-    schedule_->endStream(iID);
-    for_all(subProcesses_, [iID](auto& subProcess) { subProcess.doEndStream(iID); });
+    schedule_->endStream(iID, collector, collectorMutex);
+    for_all(subProcesses_, [iID, &collector, &collectorMutex](auto& subProcess) { subProcess.doEndStream(iID, collector, collectorMutex); });
   }
 
   void SubProcess::doStreamBeginRunAsync(WaitingTaskHolder iHolder,

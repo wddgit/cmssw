@@ -85,6 +85,7 @@
 #include <array>
 #include <map>
 #include <memory>
+#include <mutex>
 #include <set>
 #include <string>
 #include <vector>
@@ -175,7 +176,7 @@ namespace edm {
     void endJob(ExceptionCollector& collector);
 
     void beginStream(unsigned int);
-    void endStream(unsigned int);
+    void endStream(unsigned int, ExceptionCollector&, std::mutex& collectorMutex);
 
     // Write the luminosity block
     void writeLumiAsync(WaitingTaskHolder iTask,

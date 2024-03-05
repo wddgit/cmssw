@@ -1189,9 +1189,9 @@ namespace edm {
     streamSchedules_[iStreamID]->beginStream();
   }
 
-  void Schedule::endStream(unsigned int iStreamID) {
+  void Schedule::endStream(unsigned int iStreamID, ExceptionCollector& collector, std::mutex& collectorMutex) {
     assert(iStreamID < streamSchedules_.size());
-    streamSchedules_[iStreamID]->endStream();
+    streamSchedules_[iStreamID]->endStream(collector, collectorMutex);
   }
 
   void Schedule::processOneEventAsync(WaitingTaskHolder iTask,

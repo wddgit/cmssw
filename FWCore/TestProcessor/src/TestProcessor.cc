@@ -11,6 +11,7 @@
 //
 
 // system include files
+#include <mutex>
 
 // user include files
 #include "FWCore/TestProcessor/interface/TestProcessor.h"
@@ -686,13 +687,14 @@ namespace edm {
       // Collects exceptions, so we don't throw before all operations are performed.
       ExceptionCollector c(
           "Multiple exceptions were thrown while executing endJob. An exception message follows for each.\n");
+      std::mutex collectorMutex;
 
       //make the services available
       ServiceRegistry::Operate operate(serviceToken_);
 
       //NOTE: this really should go elsewhere in the future
       for (unsigned int i = 0; i < preallocations_.numberOfStreams(); ++i) {
-        c.call([this, i]() { this->schedule_->endStream(i); });
+        this->schedule_->endStream(i, c, collectorMutex);
       }
       auto actReg = actReg_.get();
       c.call([actReg]() { actReg->preEndJobSignal_(); });

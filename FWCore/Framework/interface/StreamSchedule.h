@@ -89,6 +89,7 @@
 
 #include <map>
 #include <memory>
+#include <mutex>
 #include <set>
 #include <string>
 #include <vector>
@@ -194,7 +195,7 @@ namespace edm {
                                bool cleaningUpAfterException = false);
 
     void beginStream();
-    void endStream();
+    void endStream(ExceptionCollector&, std::mutex& collectorMutex);
 
     StreamID streamID() const { return streamID_; }
 

@@ -960,7 +960,9 @@ namespace edm {
 
   void StreamSchedule::beginStream() { workerManager_.beginStream(streamID_, streamContext_); }
 
-  void StreamSchedule::endStream() { workerManager_.endStream(streamID_, streamContext_); }
+  void StreamSchedule::endStream(ExceptionCollector& collector, std::mutex& collectorMutex) { workerManager_.endStream(streamID_, streamContext_,
+                                                                                                                       collector,
+                                                                                                                       collectorMutex); }
 
   void StreamSchedule::replaceModule(maker::ModuleHolder* iMod, std::string const& iLabel) {
     Worker* found = nullptr;

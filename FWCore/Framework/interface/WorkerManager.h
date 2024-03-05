@@ -18,7 +18,7 @@
 #include "FWCore/Utilities/interface/get_underlying_safe.h"
 
 #include <memory>
-
+#include <mutex>
 #include <set>
 #include <string>
 #include <vector>
@@ -83,7 +83,7 @@ namespace edm {
     void endJob(ExceptionCollector& collector);
 
     void beginStream(StreamID iID, StreamContext& streamContext);
-    void endStream(StreamID iID, StreamContext& streamContext);
+    void endStream(StreamID iID, StreamContext& streamContext, ExceptionCollector&, std::mutex& collectorMutex);
 
     AllWorkers const& allWorkers() const { return allWorkers_; }
     AllWorkers const& unscheduledWorkers() const { return unscheduled_.workers(); }
