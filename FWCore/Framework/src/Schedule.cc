@@ -45,7 +45,6 @@
 #include <list>
 #include <map>
 #include <set>
-#include <exception>
 #include <sstream>
 
 #include "make_shared_noexcept_false.h"
@@ -1184,9 +1183,9 @@ namespace edm {
     globalSchedule_->beginJob(iRegistry, iESIndices, processBlockHelperBase);
   }
 
-  void Schedule::beginStream(unsigned int iStreamID) {
-    assert(iStreamID < streamSchedules_.size());
-    streamSchedules_[iStreamID]->beginStream();
+  void Schedule::beginStream(unsigned int streamID, std::exception_ptr& exceptionPtr) noexcept {
+    assert(streamID < streamSchedules_.size());
+    streamSchedules_[streamID]->beginStream(exceptionPtr);
   }
 
   void Schedule::endStream(unsigned int iStreamID) {

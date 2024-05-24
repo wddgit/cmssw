@@ -125,14 +125,38 @@ namespace edm {
   }
 
   void WorkerManager::beginStream(StreamID iID, StreamContext& streamContext) {
+    ParentContext parentContext(&streamContext);
+    std::exception_ptr exceptionPtr;
     for (auto& worker : allWorkers_) {
-      worker->beginStream(iID, streamContext);
+      try {
+        worker->beginStream(iID, streamContext, parentContext);
+      } catch(cms::Exception& ex) {
+        if (!exceptionPtr) {
+           exceptionPtr = std::current_exception();
+        }
+      }
+    }
+    if (exceptionPtr) {
+      std::rethrow_exception(exceptionPtr);
     }
   }
 
   void WorkerManager::endStream(StreamID iID, StreamContext& streamContext) {
+    streamContext.setTransition(StreamContext::Transition::kBeginStream);
+    streamContext.setEventID(EventID(0, 0, 0));
+    streamContext.setRunIndex(RunIndex::invalidRunIndex());
+    streamContext.setLuminosityBlockIndex(LuminosityBlockIndex::invalidLuminosityBlockIndex());
+    streamContext.setTimestamp(Timestamp());
+    ParentContext parentContext(&streamContext);
+     
     for (auto& worker : allWorkers_) {
-      worker->endStream(iID, streamContext);
+      try {
+        worker->endStream(iID, streamContext, parentContext);
+      } catch(cms::Exception& ex) {
+        if (!exceptionPtr) {
+           exceptionPtr = std::current_exception();
+        }
+      }
     }
   }
 

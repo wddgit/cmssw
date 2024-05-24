@@ -43,7 +43,6 @@
 #include "boost/range/adaptor/reversed.hpp"
 
 #include <cassert>
-#include <exception>
 #include <string>
 
 namespace edm {
@@ -689,10 +688,11 @@ namespace edm {
     lb->clearPrincipal();
   }
 
-  void SubProcess::doBeginStream(unsigned int iID) {
-    ServiceRegistry::Operate operate(serviceToken_);
-    schedule_->beginStream(iID);
-    for_all(subProcesses_, [iID](auto& subProcess) { subProcess.doBeginStream(iID); });
+  void SubProcess::doBeginStream(unsigned int streamID, std::exception_ptr& exceptionPtr) noexcept {
+    schedule_->beginStream(streamID, exceptionPtr);
+    for (auto& subProcess : subProcesses_) {
+      subProcess.doBeginStream(streamID, exceptionPtr);
+    }
   }
 
   void SubProcess::doEndStream(unsigned int iID) {

@@ -38,7 +38,6 @@
 #include <limits>
 #include <list>
 #include <map>
-#include <exception>
 #include <fmt/format.h>
 
 namespace edm {
@@ -70,6 +69,27 @@ namespace edm {
         transform_into(from.begin(), from.end(), to.begin(), func);
       }
     }
+
+    class BeginStreamTraits {
+      static void preScheduleSignal(ActivityRegistry* activityRegistry,
+                                    StreamContext const* streamContext) {
+        activityRegistry->preBeginStreamSignal_(*streamContext);
+      }
+      static void postScheduleSignal(ActivityRegistry* activityRegistry,
+                                     StreamContext const* streamContext) {
+        activityRegistry->postBeginStreamSignal_(*streamContext);
+      }
+    };
+
+    class EndStreamTraits {
+      static void preScheduleSignal(ActivityRegistry* activityRegistry,
+                            StreamContext const* streamContext) {
+        activityRegistry->preEndStreamSignal_(*streamContext);
+      }
+      static void postScheduleSignal(ActivityRegistry* activityRegistry,
+                             StreamContext const* streamContext) {
+        activityRegistry->postEndStreamSignal_(*streamContext);
+      }
 
     // -----------------------------
 
@@ -982,7 +1002,34 @@ namespace edm {
     }
   }
 
-  void StreamSchedule::beginStream() { workerManagerBeginEnd_.beginStream(streamID_, streamContext_); }
+  void StreamSchedule::beginStream(std::exception_ptr& exceptionPtr) noexcept {
+    // noexcept because exceptions should be propagated up with exceptionPtr
+    streamContext_.setTransition(StreamContext::Transition::kBeginStream);
+    streamContext_.setEventID(EventID(0, 0, 0));
+    streamContext_.setRunIndex(RunIndex::invalidRunIndex());
+    streamContext_.setLuminosityBlockIndex(LuminosityBlockIndex::invalidLuminosityBlockIndex());
+    streamContext_.setTimestamp(Timestamp());
+
+    std::exception exceptionInStream;
+    CMS_SA_ALLOW try {
+      preScheduleSignal<BeginStreamTraits>(&streamContext_);
+      workerManagerBeginEnd_.beginStream(streamID_, streamContext_);
+    } catch (...) {
+      exceptionInStream = std::current_exception();
+    }
+
+    postScheduleSignal<BeginStreamTraits>(&streamContext_, exceptionInStream);
+
+    if (exceptionInStream) {
+      bool cleaningUpAfterException = false;
+      handleException(streamContext_, cleaningUpAfterException, exceptionInStream);
+    }
+    streamContext_.setTransition(StreamContext::Transition::kInvalid);
+
+    if (exceptionInStream && !exceptionPtr) {
+      exceptionPtr = exceptionInStream;
+    }
+  }
 
   void StreamSchedule::endStream() { workerManagerBeginEnd_.endStream(streamID_, streamContext_); }
 
@@ -1435,7 +1482,6 @@ namespace edm {
   }
 
   void StreamSchedule::handleException(StreamContext const& streamContext,
-                                       ServiceWeakToken const& weakToken,
                                        bool cleaningUpAfterException,
                                        std::exception_ptr& excpt) const noexcept {
     //add context information to the exception and print message
@@ -1448,14 +1494,12 @@ namespace edm {
       if (ex.context().empty()) {
         exceptionContext(ost, streamContext);
       }
-      ServiceRegistry::Operate op(weakToken.lock());
       addContextAndPrintException(ost.str().c_str(), ex, cleaningUpAfterException);
       excpt = std::current_exception();
     }
     // We are already handling an earlier exception, so ignore it
     // if this signal results in another exception being thrown.
     CMS_SA_ALLOW try {
-      ServiceRegistry::Operate op(weakToken.lock());
       actReg_->preStreamEarlyTerminationSignal_(streamContext, TerminationOrigin::ExceptionFromThisContext);
     } catch (...) {
     }

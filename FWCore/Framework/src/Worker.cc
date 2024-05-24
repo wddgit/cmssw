@@ -49,40 +49,32 @@ namespace edm {
       ModuleDescription const* md_;
     };
 
-    class ModuleBeginStreamSignalSentry {
-    public:
-      ModuleBeginStreamSignalSentry(ActivityRegistry* a, StreamContext const& sc, ModuleCallingContext const& mcc)
-          : a_(a), sc_(sc), mcc_(mcc) {
-        if (a_)
-          a_->preModuleBeginStreamSignal_(sc_, mcc_);
+    class ModuleBeginStreamTraits {
+      using Context = StreamContext;
+      static void preModuleSignal(ActivityRegistry* activityRegistry,
+                                  StreamContext const* streamContext,
+                                  ModuleCallingContext const* moduleCallingContext) {
+        activityRegistry->preModuleBeginStreamSignal_(*streamContext, *moduleCallingContext);
       }
-      ~ModuleBeginStreamSignalSentry() {
-        if (a_)
-          a_->postModuleBeginStreamSignal_(sc_, mcc_);
+      static void postModuleSignal(ActivityRegistry* activityRegistry,
+                                   StreamContext const* streamContext,
+                                   ModuleCallingContext const* moduleCallingContext) {
+        activityRegistry->postModuleBeginStreamSignal_(*streamContext, *moduleCallingContext);
       }
-
-    private:
-      ActivityRegistry* a_;  // We do not use propagate_const because the registry itself is mutable.
-      StreamContext const& sc_;
-      ModuleCallingContext const& mcc_;
     };
 
-    class ModuleEndStreamSignalSentry {
-    public:
-      ModuleEndStreamSignalSentry(ActivityRegistry* a, StreamContext const& sc, ModuleCallingContext const& mcc)
-          : a_(a), sc_(sc), mcc_(mcc) {
-        if (a_)
-          a_->preModuleEndStreamSignal_(sc_, mcc_);
+    class ModuleEndStreamTraits {
+      using Context = StreamContext;
+      static void preModuleSignal(ActivityRegistry* activityRegistry,
+                                  StreamContext const* streamContext,
+                                  ModuleCallingContext const* moduleCallingContext) {
+        activityRegistry->preModuleEndStreamSignal_(*streamContext, *moduleCallingContext);
       }
-      ~ModuleEndStreamSignalSentry() {
-        if (a_)
-          a_->postModuleEndStreamSignal_(sc_, mcc_);
+      static void postModuleSignal(ActivityRegistry* activityRegistry,
+                                   StreamContext const* streamContext,
+                                   ModuleCallingContext const* moduleCallingContext) {
+        activityRegistry->postModuleEndStreamSignal_(*streamContext, *moduleCallingContext);
       }
-
-    private:
-      ActivityRegistry* a_;  // We do not use propagate_const because the registry itself is mutable.
-      StreamContext const& sc_;
-      ModuleCallingContext const& mcc_;
     };
 
   }  // namespace
@@ -330,51 +322,40 @@ namespace edm {
     }
   }
 
-  void Worker::beginStream(StreamID id, StreamContext& streamContext) {
+  void Worker::beginStream(StreamID id, StreamContext const& streamContext, ParentContext const& parentContext) {
+    ModuleContextSentry moduleContextSentry(&moduleCallingContext_, parentContext);
+    ModuleSignalSentry<ModuleBeginStreamTraits> sentry(activityRegistry(), &streamContext, &moduleCallingContext_);
+
     try {
-      convertException::wrap([&]() {
-        streamContext.setTransition(StreamContext::Transition::kBeginStream);
-        streamContext.setEventID(EventID(0, 0, 0));
-        streamContext.setRunIndex(RunIndex::invalidRunIndex());
-        streamContext.setLuminosityBlockIndex(LuminosityBlockIndex::invalidLuminosityBlockIndex());
-        streamContext.setTimestamp(Timestamp());
-        ParentContext parentContext(&streamContext);
-        ModuleContextSentry moduleContextSentry(&moduleCallingContext_, parentContext);
-        moduleCallingContext_.setState(ModuleCallingContext::State::kRunning);
-        ModuleBeginStreamSignalSentry beginSentry(actReg_.get(), streamContext, moduleCallingContext_);
-        implBeginStream(id);
+      convertException::wrap([this, &sentry, id]() {
+          sentry.preModuleSignal();
+          implBeginStream(id);
+          sentry.postModuleSignal();
+          beginSucceeded_ = true;
       });
     } catch (cms::Exception& ex) {
-      state_ = Exception;
-      std::ostringstream ost;
-      ost << "Calling beginStream for module " << description()->moduleName() << "/'" << description()->moduleLabel()
-          << "'";
-      ex.addContext(ost.str());
+      exceptionContext(ex, moduleCallingContext_);
       throw;
     }
   }
 
-  void Worker::endStream(StreamID id, StreamContext& streamContext) {
-    try {
-      convertException::wrap([&]() {
-        streamContext.setTransition(StreamContext::Transition::kEndStream);
-        streamContext.setEventID(EventID(0, 0, 0));
-        streamContext.setRunIndex(RunIndex::invalidRunIndex());
-        streamContext.setLuminosityBlockIndex(LuminosityBlockIndex::invalidLuminosityBlockIndex());
-        streamContext.setTimestamp(Timestamp());
-        ParentContext parentContext(&streamContext);
-        ModuleContextSentry moduleContextSentry(&moduleCallingContext_, parentContext);
-        moduleCallingContext_.setState(ModuleCallingContext::State::kRunning);
-        ModuleEndStreamSignalSentry endSentry(actReg_.get(), streamContext, moduleCallingContext_);
-        implEndStream(id);
-      });
-    } catch (cms::Exception& ex) {
-      state_ = Exception;
-      std::ostringstream ost;
-      ost << "Calling endStream for module " << description()->moduleName() << "/'" << description()->moduleLabel()
-          << "'";
-      ex.addContext(ost.str());
-      throw;
+  void Worker::endStream(StreamID id, StreamContext const& streamContext, ParentContext const& parentContext) {
+    if (beginSucceeded_) {
+      beginSucceeded_ = false;
+
+      ModuleContextSentry moduleContextSentry(&moduleCallingContext_, parentContext);
+      ModuleSignalSentry<ModuleEndStreamTraits> sentry(activityRegistry(), &streamContext, &moduleCallingContext_);
+
+      try {
+        convertException::wrap([this, &sentry, id]() {
+          sentry.preModuleSignal();
+          implEndStream(id);
+          sentry.postModuleSignal();
+        });
+      } catch (cms::Exception& ex) {
+        exceptionContext(ex, moduleCallingContext_);
+        throw;
+      }
     }
   }
 

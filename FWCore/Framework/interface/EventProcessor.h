@@ -120,6 +120,8 @@ namespace edm {
        */
     void beginJob();
 
+    void beginStream();
+
     /**This should be called before the EventProcessor is destroyed
        throws if any module's endJob throws an exception.
        */
