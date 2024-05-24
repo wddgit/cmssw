@@ -9,6 +9,7 @@
 #include "FWCore/Concurrency/interface/WaitingTaskHolder.h"
 #include "FWCore/Utilities/interface/StreamID.h"
 
+#include <exception>
 #include <memory>
 #include <set>
 #include <string>
@@ -74,7 +75,7 @@ namespace edm {
     void endJob();
     void endJob(ExceptionCollector& collector);
 
-    void beginStream(StreamID iID, StreamContext& streamContext);
+    void beginStream(StreamID, StreamContext&);
     void endStream(StreamID iID, StreamContext& streamContext);
 
     AllWorkers const& allWorkers() const { return allWorkers_; }

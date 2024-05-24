@@ -76,7 +76,6 @@ namespace edm {
   class ModuleProcessName;
   class ProductResolverIndexHelper;
   class ProductResolverIndexAndSkipBit;
-  class StreamID;
   class StreamContext;
   class ProductRegistry;
   class ThinnedAssociationsHelper;
@@ -181,8 +180,8 @@ namespace edm {
     void skipOnPath(EventPrincipal const& iEvent);
     void beginJob();
     void endJob();
-    void beginStream(StreamID id, StreamContext& streamContext);
-    void endStream(StreamID id, StreamContext& streamContext);
+    void beginStream(StreamID, StreamContext const&, ParentContext const&);
+    void endStream(StreamID, StreamContext const&, ParentContext const&);
     void respondToOpenInputFile(FileBlock const& fb) { implRespondToOpenInputFile(fb); }
     void respondToCloseInputFile(FileBlock const& fb) { implRespondToCloseInputFile(fb); }
     void respondToCloseOutputFile() { implRespondToCloseOutputFile(); }

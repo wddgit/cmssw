@@ -88,6 +88,7 @@
 #include "FWCore/Utilities/interface/propagate_const.h"
 #include "FWCore/Utilities/interface/thread_safety_macros.h"
 
+#include <exception>
 #include <map>
 #include <memory>
 #include <set>
@@ -161,7 +162,7 @@ namespace edm {
                                ServiceToken const& token,
                                bool cleaningUpAfterException = false);
 
-    void beginStream();
+    void beginStream(std::exception_ptr&);
     void endStream();
 
     StreamID streamID() const { return streamID_; }
@@ -306,12 +307,11 @@ namespace edm {
     void preScheduleSignal(StreamContext const*) const;
 
     template <typename T>
-    void postScheduleSignal(StreamContext const*, ServiceWeakToken const&, std::exception_ptr&) const;
+    void postScheduleSignal(StreamContext const*, std::exception_ptr&) const noexcept;
 
     void handleException(StreamContext const&,
-                         ServiceWeakToken const&,
                          bool cleaningUpAfterException,
-                         std::exception_ptr&) const;
+                         std::exception_ptr&) const noexcept;
 
     WorkerManager workerManagerBeginEnd_;
     WorkerManager workerManagerRuns_;
@@ -371,11 +371,15 @@ namespace edm {
     auto doneTask = make_waiting_task([this, iHolder = std::move(iHolder), id, cleaningUpAfterException, weakToken](
                                           std::exception_ptr const* iPtr) mutable {
       std::exception_ptr excpt;
-      if (iPtr) {
-        excpt = *iPtr;
-        handleException(streamContext_, weakToken, cleaningUpAfterException, excpt);
-      }
-      postScheduleSignal<T>(&streamContext_, weakToken, excpt);
+      {
+        ServiceRegistry::Operate op(weakToken.lock());
+
+        if (iPtr) {
+          excpt = *iPtr;
+          handleException(streamContext_, cleaningUpAfterException, excpt);
+        }
+        postScheduleSignal<T>(&streamContext_, excpt);
+      }  // release service token before calling doneWaiting
       iHolder.doneWaiting(excpt);
     });
 
@@ -431,11 +435,9 @@ namespace edm {
 
   template <typename T>
   void StreamSchedule::postScheduleSignal(StreamContext const* streamContext,
-                                          ServiceWeakToken const& weakToken,
-                                          std::exception_ptr& excpt) const {
+                                          std::exception_ptr& excpt) const noexcept {
     try {
       convertException::wrap([this, &weakToken, streamContext]() {
-        ServiceRegistry::Operate op(weakToken.lock());
         T::postScheduleSignal(actReg_.get(), streamContext);
       });
     } catch (cms::Exception& ex) {

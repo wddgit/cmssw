@@ -1,11 +1,11 @@
+// -*- C++ -*-
 #ifndef FWCore_ServiceRegistry_ActivityRegistry_h
 #define FWCore_ServiceRegistry_ActivityRegistry_h
-// -*- C++ -*-
 //
 // Package:     ServiceRegistry
 // Class  :     ActivityRegistry
 //
-/**\class ActivityRegistry ActivityRegistry.h FWCore/ServiceRegistry/interface/ActivityRegistry.h
+/**\class edm::ActivityRegistry
 
  Description: Registry holding the signals that Services can subscribe to
 
@@ -28,11 +28,16 @@ to this file that go beyond the obvious cut and paste type of edits.
   1. The number at the end of the AR_WATCH_USING_METHOD_X macro definition
   is the number of function arguments. It will not compile if you use the
   wrong number there.
-  2. Use connect or connect_front depending on whether the callback function
+  2. Inside the watch function definition, choose either connect or
+  connect_front depending on whether the callback function
   should be called for different services in the order the Services were
-  constructed or in reverse order. Begin signals are usually forward and
-  End signals in reverse, but if the service does not depend on other services
-  and vice versa this does not matter.
+  constructed or in reverse order. If services don't depend on one another,
+  this choice does not matter (most services fall in this category, maybe
+  all). There is some inconsistency in how this has been implemented. Originally,
+  we intended usually with begin signals the services are called in forward
+  order and with end signals in reverse order. But a lot of these are implemented
+  with pre signals forward and post signals in reverse (not sure why or if
+  this was done intentionally or if it actually matters).
   3. The signal needs to be added to either connectGlobals or connectLocals
   in the ActivityRegistry.cc file, depending on whether a signal is seen
   by children or parents when there are SubProcesses. For example, source
@@ -180,6 +185,30 @@ namespace edm {
     PostEndJob postEndJobSignal_;
     void watchPostEndJob(PostEndJob::slot_type const& iSlot) { postEndJobSignal_.connect_front(iSlot); }
     AR_WATCH_USING_METHOD_0(watchPostEndJob)
+
+    typedef signalslot::Signal<void(StreamContext const&)> PreBeginStream;
+    PreBeginStream preBeginStreamSignal_;
+    void watchPreBeginStream(PreBeginStream::slot_type const& iSlot) { preBeginStreamSignal_.connect(iSlot); }
+    AR_WATCH_USING_METHOD_1(watchPreBeginStream)
+
+    typedef signalslot::Signal<void(StreamContext const&)> PostBeginStream;
+    PostBeginStream postBeginStreamSignal_;
+    void watchPostBeginStream(PostBeginStream::slot_type const& iSlot) {
+      postBeginStreamSignal_.connect_front(iSlot);
+    }
+    AR_WATCH_USING_METHOD_1(watchPostBeginStream)
+
+    typedef signalslot::Signal<void(StreamContext const&)> PreEndStream;
+    PreEndStream preEndStreamSignal_;
+    void watchPreEndStream(PreEndStream::slot_type const& iSlot) { preEndStreamSignal_.connect(iSlot); }
+    AR_WATCH_USING_METHOD_1(watchPreEndStream)
+
+    typedef signalslot::Signal<void(StreamContext const&)> PostEndStream;
+    PostEndStream postEndStreamSignal_;
+    void watchPostEndStream(PostEndStream::slot_type const& iSlot) {
+      postEndStreamSignal_.connect_front(iSlot);
+    }
+    AR_WATCH_USING_METHOD_1(watchPostEndStream)
 
     typedef signalslot::Signal<void()> JobFailure;
     /// signal is emitted if event processing or end-of-job
@@ -649,9 +678,9 @@ namespace edm {
 	       Unlike the case in the Run, Lumi, and Event loops,
 	       the Module descriptor (often passed by pointer or reference
 	       as an argument named desc) in the construction phase is NOT
-	       at some permanent fixed address during the construction phase.  
-	       Therefore, any optimization of caching the module name keying 
-	       off of address of the descriptor will NOT be valid during 
+	       at some permanent fixed address during the construction phase.
+	       Therefore, any optimization of caching the module name keying
+	       off of address of the descriptor will NOT be valid during
                such functions.  mf / cj 9/11/09
 	*/
 

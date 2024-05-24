@@ -743,20 +743,36 @@ namespace edm {
     for_all(subProcesses_, [](auto& subProcess) { subProcess.doBeginJob(); });
     actReg_->postBeginJobSignal_();
 
+    // beginStream transition
+    beginStream();
+  }
+
+  void EventProcessor::beginStream() {
     oneapi::tbb::task_group group;
     FinalWaitingTask last{group};
     using namespace edm::waiting_task::chain;
-    first([this](auto nextTask) {
+    {
+      WaitingTaskHolder holder(group, &last);
       for (unsigned int i = 0; i < preallocations_.numberOfStreams(); ++i) {
         first([i, this](auto nextTask) {
           ServiceRegistry::Operate operate(serviceToken_);
           schedule_->beginStream(i);
         }) | ifThen(not subProcesses_.empty(), [this, i](auto nextTask) {
           ServiceRegistry::Operate operate(serviceToken_);
-          for_all(subProcesses_, [i](auto& subProcess) { subProcess.doBeginStream(i); });
-        }) | lastTask(nextTask);
+          std::exception_ptr exceptionPtr;
+          for (auto& subProcess : subProcesses_) {
+            CMS_SA_ALLOW try {
+              subProcess.doBeginStream(i);
+            } catch(...) {
+              if (!exceptionPtr) {
+                exceptionPtr = std::current_exception();
+              }
+            }
+          }
+          nextTask.doneWaiting(exceptionPtr);
+        }) | lastTask(holder);
       }
-    }) | runLast(WaitingTaskHolder(group, &last));
+    }
     last.wait();
   }
 
