@@ -94,6 +94,7 @@
 #include <sys/msg.h>
 
 #include "oneapi/tbb/task.h"
+#include "oneapi/tbb/task_group.h"
 
 //Used for CPU affinity
 #ifndef __APPLE__
@@ -743,11 +744,12 @@ namespace edm {
     for_all(subProcesses_, [](auto& subProcess) { subProcess.doBeginJob(); });
     actReg_->postBeginJobSignal_();
 
-    // beginStream transition
     beginStream();
   }
 
   void EventProcessor::beginStream() {
+    // This will process streams concurrently, but not modules in the
+    // same stream or SubProcesses.
     oneapi::tbb::task_group group;
     FinalWaitingTask last{group};
     using namespace edm::waiting_task::chain;
@@ -757,15 +759,20 @@ namespace edm {
         first([i, this](auto nextTask) {
           ServiceRegistry::Operate operate(serviceToken_);
           schedule_->beginStream(i);
-        }) | ifThen(not subProcesses_.empty(), [this, i](auto nextTask) {
-          ServiceRegistry::Operate operate(serviceToken_);
+        }) | ifThen(not subProcesses_.empty(), [this, i](std::exception_ptr const* iPtr, auto nextTask) {
           std::exception_ptr exceptionPtr;
-          for (auto& subProcess : subProcesses_) {
-            CMS_SA_ALLOW try {
-              subProcess.doBeginStream(i);
-            } catch(...) {
-              if (!exceptionPtr) {
-                exceptionPtr = std::current_exception();
+          if (iPtr) {
+            exceptionPtr = *iPtr;
+          }
+          {
+            ServiceRegistry::Operate operate(serviceToken_);
+            for (auto& subProcess : subProcesses_) {
+              CMS_SA_ALLOW try {
+                subProcess.doBeginStream(i);
+              } catch(...) {
+                if (!exceptionPtr) {
+                  exceptionPtr = std::current_exception();
+                }
               }
             }
           }

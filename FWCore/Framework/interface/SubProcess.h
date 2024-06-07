@@ -21,7 +21,6 @@
 
 #include "DataFormats/Provenance/interface/SelectedProducts.h"
 
-#include <exception>
 #include <map>
 #include <memory>
 #include <set>
@@ -114,7 +113,7 @@ namespace edm {
                                    LumiTransitionInfo const& iTransitionInfo,
                                    bool cleaningUpAfterException);
 
-    void doBeginStream(unsigned int streamID, std::exception_ptr&) noexcept;
+    void doBeginStream(unsigned int streamID);
     void doEndStream(unsigned int);
     void doStreamBeginRunAsync(WaitingTaskHolder iHolder, unsigned int iID, RunTransitionInfo const&);
 

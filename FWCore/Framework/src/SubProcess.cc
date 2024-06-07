@@ -43,6 +43,7 @@
 #include "boost/range/adaptor/reversed.hpp"
 
 #include <cassert>
+#include <exception>
 #include <string>
 
 namespace edm {
@@ -688,10 +689,25 @@ namespace edm {
     lb->clearPrincipal();
   }
 
-  void SubProcess::doBeginStream(unsigned int streamID, std::exception_ptr& exceptionPtr) noexcept {
-    schedule_->beginStream(streamID, exceptionPtr);
+  void SubProcess::doBeginStream(unsigned int streamID) {
+    std::exception_ptr exceptionPtr;
+    CMS_SA_ALLOW try {
+      schedule_->beginStream(streamID);
+    } catch(...) {
+      exceptionPtr = std::current_exception();
+    }
+
     for (auto& subProcess : subProcesses_) {
-      subProcess.doBeginStream(streamID, exceptionPtr);
+      CMS_SA_ALLOW try {
+        subProcess.doBeginStream(streamID);
+      } catch(...) {
+        if (!exceptionPtr) {
+          exceptionPtr = std::current_exception();
+        }
+      }
+    }
+    if (exceptionPtr) {
+      std::rethrow_exception(exceptionPtr);
     }
   }
 

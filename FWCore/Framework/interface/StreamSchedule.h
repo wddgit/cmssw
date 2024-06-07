@@ -437,7 +437,7 @@ namespace edm {
   void StreamSchedule::postScheduleSignal(StreamContext const* streamContext,
                                           std::exception_ptr& excpt) const noexcept {
     try {
-      convertException::wrap([this, &weakToken, streamContext]() {
+      convertException::wrap([this, streamContext]() {
         T::postScheduleSignal(actReg_.get(), streamContext);
       });
     } catch (cms::Exception& ex) {

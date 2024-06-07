@@ -83,7 +83,6 @@
 #include "FWCore/Utilities/interface/propagate_const.h"
 
 #include <array>
-#include <exception>
 #include <map>
 #include <memory>
 #include <set>
@@ -175,7 +174,7 @@ namespace edm {
                   ProcessBlockHelperBase const&);
     void endJob(ExceptionCollector& collector);
 
-    void beginStream(unsigned int streamID, std::exception_ptr&) noexcept;
+    void beginStream(unsigned int streamID);
     void endStream(unsigned int);
 
     // Write the luminosity block
