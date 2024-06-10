@@ -35,6 +35,8 @@ configured in the user's main() function, and is set running.
 #include "FWCore/Utilities/interface/get_underlying_safe.h"
 #include "FWCore/Utilities/interface/propagate_const.h"
 
+#include "oneapi/tbb/task_group.h"
+
 #include <atomic>
 #include <map>
 #include <memory>

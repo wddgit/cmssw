@@ -59,53 +59,54 @@
 
 #include "DataFormats/Common/interface/HLTGlobalStatus.h"
 #include "DataFormats/Provenance/interface/ModuleDescription.h"
-#include "FWCore/Framework/interface/ExceptionActions.h"
-#include "FWCore/Framework/interface/EventPrincipal.h"
-#include "FWCore/Framework/interface/ExceptionHelpers.h"
+//#include "FWCore/Framework/interface/ExceptionActions.h"
+//#include "FWCore/Framework/interface/EventPrincipal.h"
+//#include "FWCore/Framework/interface/ExceptionHelpers.h"
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/OccurrenceTraits.h"
-#include "FWCore/Framework/interface/UnscheduledCallProducer.h"
-#include "FWCore/Framework/interface/WorkerManager.h"
+//#include "FWCore/Framework/interface/OccurrenceTraits.h"
+//#include "FWCore/Framework/interface/UnscheduledCallProducer.h"
+//#include "FWCore/Framework/interface/WorkerManager.h"
 #include "FWCore/Framework/interface/Path.h"
-#include "FWCore/Framework/interface/TransitionInfoTypes.h"
+//#include "FWCore/Framework/interface/TransitionInfoTypes.h"
 #include "FWCore/Framework/interface/maker/Worker.h"
-#include "FWCore/Framework/interface/WorkerRegistry.h"
-#include "FWCore/Framework/interface/EarlyDeleteHelper.h"
-#include "FWCore/MessageLogger/interface/ExceptionMessages.h"
-#include "FWCore/MessageLogger/interface/JobReport.h"
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
+//#include "FWCore/Framework/interface/WorkerRegistry.h"
+//#include "FWCore/Framework/interface/EarlyDeleteHelper.h"
+//#include "FWCore/MessageLogger/interface/ExceptionMessages.h"
+//#include "FWCore/MessageLogger/interface/JobReport.h"
+//#include "FWCore/MessageLogger/interface/MessageLogger.h"
+//#include "FWCore/ServiceRegistry/interface/Service.h"
 #include "FWCore/ServiceRegistry/interface/ServiceRegistryfwd.h"
+//#include "FWCore/ServiceRegistry/interface/ServiceToken.h"
 #include "FWCore/ServiceRegistry/interface/StreamContext.h"
-#include "FWCore/Concurrency/interface/FunctorTask.h"
-#include "FWCore/Concurrency/interface/WaitingTaskHolder.h"
-#include "FWCore/Utilities/interface/Algorithms.h"
-#include "FWCore/Utilities/interface/BranchType.h"
-#include "FWCore/Utilities/interface/ConvertException.h"
-#include "FWCore/Utilities/interface/Exception.h"
+//#include "FWCore/Concurrency/interface/FunctorTask.h"
+//#include "FWCore/Concurrency/interface/WaitingTaskHolder.h"
+//#include "FWCore/Utilities/interface/Algorithms.h"
+//#include "FWCore/Utilities/interface/BranchType.h"
+//#include "FWCore/Utilities/interface/ConvertException.h"
+//#include "FWCore/Utilities/interface/Exception.h"
 #include "FWCore/Utilities/interface/StreamID.h"
-#include "FWCore/Utilities/interface/get_underlying_safe.h"
+//#include "FWCore/Utilities/interface/get_underlying_safe.h"
 #include "FWCore/Utilities/interface/propagate_const.h"
-#include "FWCore/Utilities/interface/thread_safety_macros.h"
+//#include "FWCore/Utilities/interface/thread_safety_macros.h"
 
-#include <exception>
-#include <map>
+//#include <exception>
+//#include <map>
 #include <memory>
-#include <set>
+//#include <set>
 #include <string>
 #include <vector>
-#include <sstream>
-#include <atomic>
-#include <unordered_set>
-#include <utility>
+//#include <sstream>
+//#include <atomic>
+//#include <unordered_set>
+//#include <utility>
 
 namespace edm {
 
-  class BranchIDListHelper;
-  class ExceptionCollector;
+  //  class BranchIDListHelper;
+  //class ExceptionCollector;
   class ExceptionToActionTable;
-  class OutputModuleCommunicator;
-  class UnscheduledCallProducer;
+  //class OutputModuleCommunicator;
+  //class UnscheduledCallProducer;
   class WorkerInPath;
   class ModuleRegistry;
   class TriggerResultInserter;
@@ -114,7 +115,7 @@ namespace edm {
   class PreallocationConfiguration;
   class WaitingTaskHolder;
 
-  class ConditionalTaskHelper;
+  //class ConditionalTaskHelper;
 
   namespace service {
     class TriggerNamesService;
@@ -124,14 +125,10 @@ namespace edm {
   public:
     typedef std::vector<std::string> vstring;
     typedef std::vector<Path> TrigPaths;
-    typedef std::vector<Path> NonTrigPaths;
     typedef std::shared_ptr<HLTGlobalStatus> TrigResPtr;
     typedef std::shared_ptr<HLTGlobalStatus const> TrigResConstPtr;
     typedef std::shared_ptr<Worker> WorkerPtr;
     typedef std::vector<Worker*> AllWorkers;
-
-    typedef std::vector<Worker*> Workers;
-
     typedef std::vector<WorkerInPath> PathWorkers;
 
     StreamSchedule(std::shared_ptr<TriggerResultInserter> inserter,
@@ -162,7 +159,7 @@ namespace edm {
                                ServiceToken const& token,
                                bool cleaningUpAfterException = false);
 
-    void beginStream(std::exception_ptr&);
+    void beginStream();
     void endStream();
 
     StreamID streamID() const { return streamID_; }

@@ -90,6 +90,7 @@ namespace edm {
                              StreamContext const* streamContext) {
         activityRegistry->postEndStreamSignal_(*streamContext);
       }
+    };
 
     // -----------------------------
 
@@ -1002,8 +1003,7 @@ namespace edm {
     }
   }
 
-  void StreamSchedule::beginStream(std::exception_ptr& exceptionPtr) noexcept {
-    // noexcept because exceptions should be propagated up with exceptionPtr
+  void StreamSchedule::beginStream() {
     streamContext_.setTransition(StreamContext::Transition::kBeginStream);
     streamContext_.setEventID(EventID(0, 0, 0));
     streamContext_.setRunIndex(RunIndex::invalidRunIndex());
@@ -1026,8 +1026,8 @@ namespace edm {
     }
     streamContext_.setTransition(StreamContext::Transition::kInvalid);
 
-    if (exceptionInStream && !exceptionPtr) {
-      exceptionPtr = exceptionInStream;
+    if (exceptionInStream) {
+      std::rethrow_exception(exceptionInStream);
     }
   }
 

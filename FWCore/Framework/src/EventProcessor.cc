@@ -94,7 +94,6 @@
 #include <sys/msg.h>
 
 #include "oneapi/tbb/task.h"
-#include "oneapi/tbb/task_group.h"
 
 //Used for CPU affinity
 #ifndef __APPLE__
@@ -756,7 +755,7 @@ namespace edm {
     {
       WaitingTaskHolder holder(group, &last);
       for (unsigned int i = 0; i < preallocations_.numberOfStreams(); ++i) {
-        first([i, this](auto nextTask) {
+        first([this, i](auto nextTask) {
           ServiceRegistry::Operate operate(serviceToken_);
           schedule_->beginStream(i);
         }) | ifThen(not subProcesses_.empty(), [this, i](std::exception_ptr const* iPtr, auto nextTask) {
