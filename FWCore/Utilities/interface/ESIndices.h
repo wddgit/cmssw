@@ -43,6 +43,14 @@ namespace edm {
 
     constexpr Value_t value() const noexcept { return index_; }
 
+    static constexpr ESResolverIndex noResolverConfigured() noexcept {
+      return ESResolverIndex{std::numeric_limits<int>::max()};
+    }
+
+    static constexpr ESResolverIndex noResolverWithMatchingModuleLabel() noexcept {
+      return ESResolverIndex{std::numeric_limits<int>::max() - 1};
+    }
+
   private:
     Value_t index_ = std::numeric_limits<int>::max();
   };

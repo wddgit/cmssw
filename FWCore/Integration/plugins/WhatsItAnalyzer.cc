@@ -76,7 +76,7 @@ namespace edmtest {
     //now do what ever initialization is needed
     int i = 0;
     for (auto l : std::vector<const char*>({"", "A", "B", "C", "D"})) {
-      tokenAndLabel_[i].first = esConsumes(edm::ESInputTag("", l));
+      tokenAndLabel_[i].first = esConsumes(edm::ESInputTag("foo", l));
       tokenAndLabel_[i++].second = l;
     }
   }

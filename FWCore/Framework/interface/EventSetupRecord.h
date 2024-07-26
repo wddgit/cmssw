@@ -163,8 +163,12 @@ namespace edm {
         }
 
         auto resolverIndex = getTokenIndices_[iToken.index().value()];
-        if UNLIKELY (resolverIndex.value() == std::numeric_limits<int>::max()) {
-          return noResolverHandle<H>(iToken);
+        if UNLIKELY (resolverIndex.value() >= ESResolverIndex::noResolverWithMatchingModuleLabel()) {                     
+          if (resolverIndex.value() == ESResolverIndex::noResolverWithMatchingModuleLabel()) {
+            return noResolverHandle<H>(iToken);
+          } else if (resolverIndex.value() == ESResolverIndex::noResolverConfigured()) {
+            return noResolverHandle<H>(iToken);
+          }
         }
 
         T const* value = nullptr;
@@ -204,11 +208,11 @@ namespace edm {
       }
 
       template <template <typename> typename H, typename T, typename R>
-      H<T> noResolverHandle(ESGetToken<T, R> const& iToken) const {
+      H<T> noResolverHandle(ESGetToken<T, R> const& iToken, bool failedModuleLabelMatch) const {
         auto const key = this->key();
         auto name = iToken.name();
         return H<T>{makeESHandleExceptionFactory([key, name] {
-          NoProductResolverException<T> ex(key, DataKey{DataKey::makeTypeTag<T>(), name});
+          NoProductResolverException ex(key, heterocontainer::className<T>(), name, failedModuleLabelMatch);
           return std::make_exception_ptr(ex);
         })};
       }

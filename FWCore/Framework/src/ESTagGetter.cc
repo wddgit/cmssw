@@ -23,7 +23,7 @@ using namespace edm;
 // const member functions
 //
 ESResolverIndex ESTagGetter::operator()(std::string_view iModuleLabel, std::string_view iProductLabel) const {
-  ESResolverIndex returnValue = eventsetup::ESRecordsToProductResolverIndices::missingResolverIndex();
+  ESResolverIndex returnValue = ESResolverIndex::noResolverConfigured();
   for (auto const& item : lookup_) {
     if (item.productLabel_ == iProductLabel) {
       if (iProductLabel.empty() or iProductLabel == item.productLabel_) {

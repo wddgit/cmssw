@@ -12,13 +12,17 @@ process.source = cms.Source("EmptySource",
     numberEventsInRun = cms.untracked.uint32(3)
 )
 
-#stuck something into the EventSetup
-process.WhatsItESProducer = cms.ESProducer("WhatsItESProducer")
-#es_source = DoodadESSource {}
-
+# Tries to read a WhatsIt object
 process.demo = cms.EDAnalyzer("WhatsItAnalyzer",
     expectedValues = cms.untracked.vint32(0)
 )
+#produces a WhatsIt object in the EventSetup
+process.WhatsItESProducer = cms.ESProducer("WhatsItESProducer")
+
+# Test intentionally throws an exception because this ESSource is missing
+# and WhatsItProducer tries to get a Doodad object
+#process.DoodadESSource = cms.ESSource("DoodadESSource")
+
 
 process.bad = cms.ESSource("EmptyESSource",
     recordName = cms.string('GadgetRcd'),

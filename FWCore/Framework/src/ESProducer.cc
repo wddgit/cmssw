@@ -51,27 +51,27 @@ namespace edm {
             records.emplace_back(eventsetup::ESRecordsToProductResolverIndices::missingRecordIndex());
           }
           chooser->setTagGetter(std::move(tagGetter));
-          items.push_back(eventsetup::ESRecordsToProductResolverIndices::missingResolverIndex());
+          items.push_back(ESResolverIndex::noResolverConfigured()());
         } else {
           auto index = iResolverToIndices.indexInRecord(resolverInfo.recordKey_, resolverInfo.productKey_);
-          if (index != eventsetup::ESRecordsToProductResolverIndices::missingResolverIndex()) {
+          if (index != ESResolverIndex::noResolverConfigured()()) {
             if (not resolverInfo.moduleLabel_.empty()) {
               auto component = iResolverToIndices.component(resolverInfo.recordKey_, resolverInfo.productKey_);
               if (nullptr == component) {
-                index = eventsetup::ESRecordsToProductResolverIndices::missingResolverIndex();
+                index = ESResolverIndex::noResolverConfigured()();
               } else {
                 if (component->label_.empty()) {
                   if (component->type_ != resolverInfo.moduleLabel_) {
-                    index = eventsetup::ESRecordsToProductResolverIndices::missingResolverIndex();
+                    index = ESResolverIndex::noResolverWithMatchingModuleLabel();
                   }
                 } else if (component->label_ != resolverInfo.moduleLabel_) {
-                  index = eventsetup::ESRecordsToProductResolverIndices::missingResolverIndex();
+                  index = ESResolverIndex::noResolverWithMatchingModuleLabel();
                 }
               }
             }
           }
           items.push_back(index);
-          if (index != eventsetup::ESRecordsToProductResolverIndices::missingResolverIndex()) {
+          if (index != ESResolverIndex::noResolverConfigured()) {
             records.push_back(iResolverToIndices.recordIndexFor(resolverInfo.recordKey_));
           } else {
             //The record is not actually missing but the resolver is
