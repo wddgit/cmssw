@@ -196,14 +196,16 @@ namespace edm {
 
     template <typename ESProduct, typename ESRecord, Transition Tr = Transition::Event>
     auto esConsumes(ESInputTag const& tag) {
+      char const* dataLabel = nullptr;
       auto index = recordESConsumes(Tr,
                                     eventsetup::EventSetupRecordKey::makeKey<
                                         std::conditional_t<std::is_same_v<ESRecord, edm::DefaultRecord>,
                                                            eventsetup::default_record_t<ESHandleAdapter<ESProduct>>,
                                                            ESRecord>>(),
                                     eventsetup::heterocontainer::HCTypeTag::make<ESProduct>(),
-                                    tag);
-      return ESGetToken<ESProduct, ESRecord>{static_cast<unsigned int>(Tr), index, labelFor(index)};
+                                    tag,
+                                    dataLabel);
+      return ESGetToken<ESProduct, ESRecord>{static_cast<unsigned int>(Tr), index, dataLabel};
     }
 
     template <Transition Tr = Transition::Event>
@@ -219,8 +221,9 @@ namespace edm {
     ///Used with EventSetupRecord::doGet
     template <Transition Tr = Transition::Event>
     ESGetTokenGeneric esConsumes(eventsetup::EventSetupRecordKey const& iRecord, eventsetup::DataKey const& iKey) {
+      char const* dataLabel = nullptr;
       return ESGetTokenGeneric(static_cast<unsigned int>(Tr),
-                               recordESConsumes(Tr, iRecord, iKey.type(), ESInputTag("", iKey.name().value())),
+                               recordESConsumes(Tr, iRecord, iKey.type(), ESInputTag("", iKey.name().value()), dataLabel),
                                iRecord.type());
     }
 
@@ -234,9 +237,8 @@ namespace edm {
     ESTokenIndex recordESConsumes(Transition,
                                   eventsetup::EventSetupRecordKey const&,
                                   eventsetup::heterocontainer::HCTypeTag const&,
-                                  edm::ESInputTag const& iTag);
-
-    const char* labelFor(ESTokenIndex) const;
+                                  edm::ESInputTag const& iTag,
+                                  char const*& dataLabel);
 
     void throwTypeMismatch(edm::TypeID const&, EDGetToken) const;
     void throwBranchMismatch(BranchType, EDGetToken) const;

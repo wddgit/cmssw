@@ -189,7 +189,8 @@ void EDConsumerBase::updateLookup(eventsetup::ESRecordsToProductResolverIndices 
 ESTokenIndex EDConsumerBase::recordESConsumes(Transition iTrans,
                                               eventsetup::EventSetupRecordKey const& iRecord,
                                               eventsetup::heterocontainer::HCTypeTag const& iDataType,
-                                              edm::ESInputTag const& iTag) {
+                                              edm::ESInputTag const& iTag,
+                                              char const*& dataLabel) {
   if (frozen_) {
     throwESConsumesCallAfterFrozen(iRecord, iDataType, iTag);
   }
@@ -207,6 +208,7 @@ ESTokenIndex EDConsumerBase::recordESConsumes(Transition iTrans,
       m_tokenLabels.push_back('\0');
     }
   }
+  dataLabel = &m_tokenLabels[startOfComponentName];
 
   auto index = static_cast<ESResolverIndex::Value_t>(m_esTokenInfo.size());
   m_esTokenInfo.emplace_back(
@@ -589,8 +591,4 @@ std::vector<ConsumesInfo> EDConsumerBase::consumesInfo() const {
                         itInfo->m_index.skipCurrentProcess());
   }
   return result;
-}
-
-const char* EDConsumerBase::labelFor(ESTokenIndex iIndex) const {
-  return m_esTokenInfo.get<kESLookupInfo>(iIndex.value()).m_key.name().value();
 }
