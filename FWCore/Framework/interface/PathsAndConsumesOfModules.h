@@ -30,12 +30,17 @@ namespace edm {
   class ProductRegistry;
   class Schedule;
 
+  namespace eventsetup {
+    struct ComponentDescription;
+  }
+
   class PathsAndConsumesOfModules : public PathsAndConsumesOfModulesBase {
   public:
     PathsAndConsumesOfModules();
     ~PathsAndConsumesOfModules() override;
 
     void initialize(Schedule const*, std::shared_ptr<ProductRegistry const>);
+    void initializeForEventSetup();
 
     void removeModules(std::vector<ModuleDescription const*> const& modules);
 
@@ -52,6 +57,9 @@ namespace edm {
     std::vector<ModuleDescription const*> const& doModulesOnPath(unsigned int pathIndex) const override;
     std::vector<ModuleDescription const*> const& doModulesOnEndPath(unsigned int endPathIndex) const override;
     std::vector<ModuleDescription const*> const& doModulesWhoseProductsAreConsumedBy(
+        unsigned int moduleID, BranchType branchType) const override;
+
+    std::vector<eventsetup::ComponentDescription const*> const& doESModulesWhoseProductsAreConsumedBy(
         unsigned int moduleID, BranchType branchType) const override;
 
     std::vector<ConsumesInfo> doConsumesInfo(unsigned int moduleID) const override;
@@ -76,6 +84,8 @@ namespace edm {
 
     std::array<std::vector<std::vector<ModuleDescription const*> >, NumBranchTypes> modulesWhoseProductsAreConsumedBy_;
     std::vector<std::vector<ModuleProcessName> > modulesInPreviousProcessesWhoseProductsAreConsumedBy_;
+
+    std::array<std::vector<std::vector<eventsetup::ComponentDescription const*> >, NumBranchTypes> esModulesWhoseProductsAreConsumedBy_;
 
     Schedule const* schedule_;
     std::shared_ptr<ProductRegistry const> preg_;

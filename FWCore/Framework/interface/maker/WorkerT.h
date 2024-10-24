@@ -13,6 +13,7 @@ WorkerT: Code common to all workers.
 #include "FWCore/Framework/interface/maker/Worker.h"
 #include "FWCore/Framework/interface/maker/WorkerParams.h"
 #include "FWCore/ServiceRegistry/interface/ConsumesInfo.h"
+#include "FWCore/Utilities/interface/BranchType.h"
 #include "FWCore/Utilities/interface/propagate_const.h"
 
 #include <array>
@@ -28,6 +29,10 @@ namespace edm {
   class ProductResolverIndexAndSkipBit;
   class ThinnedAssociationsHelper;
   class WaitingTaskWithArenaHolder;
+
+  namespace eventsetup {
+    struct ComponentDescription;
+  }
 
   template <typename T>
   class WorkerT : public Worker {
@@ -130,6 +135,12 @@ namespace edm {
         std::map<std::string, ModuleDescription const*> const& labelsToDesc) const override {
       module_->modulesWhoseProductsAreConsumed(
           modules, modulesInPreviousProcesses, preg, labelsToDesc, module_->moduleDescription().processName());
+    }
+
+    void esModulesWhoseProductsAreConsumed(
+        std::array<std::vector<eventsetup::ComponentDescription const*>*, NumBranchTypes>& esModules) const override {
+      module_->esModulesWhoseProductsAreConsumed(
+          esModules);
     }
 
     void convertCurrentProcessAlias(std::string const& processName) override {

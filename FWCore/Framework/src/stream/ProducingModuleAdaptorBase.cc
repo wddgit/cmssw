@@ -11,7 +11,6 @@
 //
 
 // system include files
-#include <array>
 #include <cassert>
 
 // user include files
@@ -138,6 +137,13 @@ namespace edm {
       assert(not m_streamModules.empty());
       return m_streamModules[0]->modulesWhoseProductsAreConsumed(
           modules, modulesInPreviousProcesses, preg, labelsToDesc, processName);
+    }
+
+    template <typename T>
+    void ProducingModuleAdaptorBase<T>::esModulesWhoseProductsAreConsumed(
+        std::array<std::vector<eventsetup::ComponentDescription const*>*, NumBranchTypes>& esModules) const {
+      assert(not m_streamModules.empty());
+      return m_streamModules[0]->esModulesWhoseProductsAreConsumed(esModules);
     }
 
     template <typename T>

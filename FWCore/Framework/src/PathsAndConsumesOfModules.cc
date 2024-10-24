@@ -51,6 +51,10 @@ namespace edm {
                                         *preg);
   }
 
+  void PathsAndConsumesOfModules::initializeForEventSetup() {
+    schedule_->fillESModuleAndConsumesInfo(esModulesWhoseProductsAreConsumedBy_);
+  }
+
   void PathsAndConsumesOfModules::removeModules(std::vector<ModuleDescription const*> const& modules) {
     // First check that no modules on Paths are removed
     auto checkPath = [&modules](auto const& paths) {
@@ -117,6 +121,11 @@ namespace edm {
   std::vector<ModuleDescription const*> const& PathsAndConsumesOfModules::doModulesWhoseProductsAreConsumedBy(
       unsigned int moduleID, BranchType branchType) const {
     return modulesWhoseProductsAreConsumedBy_[branchType].at(moduleIndex(moduleID));
+  }
+
+  std::vector<eventsetup::ComponentDescription const*> const& PathsAndConsumesOfModules::doESModulesWhoseProductsAreConsumedBy(
+      unsigned int moduleID, BranchType branchType) const {
+    return esModulesWhoseProductsAreConsumedBy_[branchType].at(moduleIndex(moduleID));
   }
 
   std::vector<ConsumesInfo> PathsAndConsumesOfModules::doConsumesInfo(unsigned int moduleID) const {

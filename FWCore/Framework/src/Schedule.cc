@@ -1372,6 +1372,29 @@ namespace edm {
     }
   }
 
+  void Schedule::fillESModuleAndConsumesInfo(
+      std::array<std::vector<std::vector<eventsetup::ComponentDescription const*>>, NumBranchTypes>& esModulesWhoseProductsAreConsumedBy) const {
+    for (auto iBranchType = 0U; iBranchType < NumBranchTypes; ++iBranchType) {
+      esModulesWhoseProductsAreConsumedBy[iBranchType].clear();
+      esModulesWhoseProductsAreConsumedBy[iBranchType].resize(allWorkers().size());
+    }
+    unsigned int i = 0;
+    for (auto const& worker : allWorkers()) {
+      std::array<std::vector<eventsetup::ComponentDescription const*>*, NumBranchTypes> esModules;
+      for (auto iBranchType = 0U; iBranchType < NumBranchTypes; ++iBranchType) {
+        esModules[iBranchType] = &esModulesWhoseProductsAreConsumedBy[iBranchType].at(i);
+      }
+      try {
+        worker->esModulesWhoseProductsAreConsumed(esModules);
+      } catch (cms::Exception& ex) {
+        ex.addContext("Calling Worker::esModulesWhoseProductsAreConsumed() for module " +
+                      worker->description()->moduleLabel());
+        throw;
+      }
+      ++i;
+    }
+  }
+
   void Schedule::getTriggerReport(TriggerReport& rep) const {
     rep.eventSummary.totalEvents = 0;
     rep.eventSummary.totalEventsPassed = 0;

@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <cassert>
 
+#include "FWCore/Framework/interface/ComponentDescription.h"
 #include "FWCore/Framework/interface/PathsAndConsumesOfModules.h"
 #include "FWCore/Utilities/interface/Exception.h"
 #include "DataFormats/Provenance/interface/ParameterSetID.h"
@@ -42,6 +43,12 @@ namespace {
         unsigned int moduleID, edm::BranchType branchType) const final {
       return m_modulesWhoseProductsAreConsumedBy[moduleID];
     }
+
+    std::vector<edm::eventsetup::ComponentDescription const*> const& doESModulesWhoseProductsAreConsumedBy(
+        unsigned int moduleID, edm::BranchType branchType) const {
+      return m_esModulesWhoseProductsAreConsumedBy[moduleID];
+    }
+
     std::vector<edm::ConsumesInfo> doConsumesInfo(unsigned int moduleID) const final {
       return m_moduleConsumesInfo[moduleID];
     }
@@ -59,6 +66,7 @@ namespace {
     std::vector<std::vector<edm::ModuleDescription const*>> m_modulesOnPath;
     std::vector<std::vector<edm::ModuleDescription const*>> m_modulesOnEndPath;
     std::vector<std::vector<edm::ModuleDescription const*>> m_modulesWhoseProductsAreConsumedBy;
+    std::vector<std::vector<edm::eventsetup::ComponentDescription const*>> m_esModulesWhoseProductsAreConsumedBy;
     std::vector<edm::ModuleDescription> m_cache;
 
     static unsigned int indexForModule(std::string const& iName,

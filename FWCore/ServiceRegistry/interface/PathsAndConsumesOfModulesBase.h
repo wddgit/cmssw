@@ -32,6 +32,10 @@ namespace edm {
 
   class ModuleDescription;
 
+  namespace eventsetup {
+    struct ComponentDescription;
+  }
+
   class PathsAndConsumesOfModulesBase {
   public:
     virtual ~PathsAndConsumesOfModulesBase();
@@ -55,7 +59,7 @@ namespace edm {
     // (not the prior process, and it will never include the source even
     // though the source can make products) and these modules will declare
     // they produce (they might or might not really produce) at least one
-    // product in the event (not run, not lumi) that the module corresponding
+    // product associated with the branchType that the module corresponding
     // to the moduleID argument declares it consumes (includes declarations using
     // consumes or maybeConsumes). Note that if a module declares
     // it consumes a module label that is an EDAlias, the corresponding module
@@ -64,6 +68,11 @@ namespace edm {
     std::vector<ModuleDescription const*> const& modulesWhoseProductsAreConsumedBy(
         unsigned int moduleID, BranchType branchType = InEvent) const {
       return doModulesWhoseProductsAreConsumedBy(moduleID, branchType);
+    }
+
+    std::vector<eventsetup::ComponentDescription const*> const& esModulesWhoseProductsAreConsumedBy(
+        unsigned int moduleID, BranchType branchType = InEvent) const {
+      return doESModulesWhoseProductsAreConsumedBy(moduleID, branchType);
     }
 
     // This returns the declared consumes information for a module.
@@ -85,6 +94,8 @@ namespace edm {
     virtual std::vector<ModuleDescription const*> const& doModulesOnPath(unsigned int pathIndex) const = 0;
     virtual std::vector<ModuleDescription const*> const& doModulesOnEndPath(unsigned int endPathIndex) const = 0;
     virtual std::vector<ModuleDescription const*> const& doModulesWhoseProductsAreConsumedBy(
+        unsigned int moduleID, BranchType branchType) const = 0;
+    virtual std::vector<eventsetup::ComponentDescription const*> const& doESModulesWhoseProductsAreConsumedBy(
         unsigned int moduleID, BranchType branchType) const = 0;
     virtual std::vector<ConsumesInfo> doConsumesInfo(unsigned int moduleID) const = 0;
     virtual unsigned int doLargestModuleID() const = 0;

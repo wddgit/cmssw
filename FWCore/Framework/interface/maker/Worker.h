@@ -85,6 +85,7 @@ namespace edm {
     class CallImpl;
   }
   namespace eventsetup {
+    struct ComponentDescription;
     class ESRecordsToProductResolverIndices;
   }
 
@@ -223,6 +224,9 @@ namespace edm {
         std::vector<ModuleProcessName>& modulesInPreviousProcesses,
         ProductRegistry const& preg,
         std::map<std::string, ModuleDescription const*> const& labelsToDesc) const = 0;
+
+    virtual void esModulesWhoseProductsAreConsumed(
+        std::array<std::vector<eventsetup::ComponentDescription const*>*, NumBranchTypes>& esModules) const = 0;
 
     virtual void convertCurrentProcessAlias(std::string const& processName) = 0;
 

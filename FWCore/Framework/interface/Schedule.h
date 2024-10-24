@@ -97,7 +97,8 @@ namespace edm {
   namespace service {
     class TriggerNamesService;
   }
-  namespace evetnsetup {
+  namespace eventsetup {
+    struct ComponentDescription;
     class ESRecordsToProductResolverIndices;
   }
 
@@ -253,6 +254,8 @@ namespace edm {
             modulesWhoseProductsAreConsumedBy,
         std::vector<std::vector<ModuleProcessName>>& modulesInPreviousProcessesWhoseProductsAreConsumedBy,
         ProductRegistry const& preg) const;
+
+    void fillESModuleAndConsumesInfo(std::array<std::vector<std::vector<eventsetup::ComponentDescription const*>>, NumBranchTypes>& esModulesWhoseProductsAreConsumedBy) const;
 
     /// Return the number of events this Schedule has tried to process
     /// (inclues both successes and failures, including failures due

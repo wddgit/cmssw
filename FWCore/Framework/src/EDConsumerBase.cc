@@ -520,6 +520,10 @@ void EDConsumerBase::modulesWhoseProductsAreConsumed(
   }
 }
 
+void EDConsumerBase::esModulesWhoseProductsAreConsumed(
+  std::array<std::vector<eventsetup::ComponentDescription const*>*, NumBranchTypes>& esModules) const {
+}
+
 void EDConsumerBase::convertCurrentProcessAlias(std::string const& processName) {
   frozen_ = true;
 

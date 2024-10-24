@@ -716,6 +716,8 @@ namespace edm {
     //}
     espController_->finishConfiguration();
     actReg_->eventSetupConfigurationSignal_(esp_->recordsToResolverIndices(), processContext_);
+    pathsAndConsumesOfModules_.initializeForEventSetup();
+
     try {
       convertException::wrap([&]() { input_->doBeginJob(); });
     } catch (cms::Exception& ex) {

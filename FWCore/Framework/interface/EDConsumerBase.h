@@ -37,6 +37,7 @@
 #include "FWCore/Framework/interface/DataKey.h"
 #include "FWCore/Framework/interface/data_default_record_trait.h"
 #include "FWCore/ServiceRegistry/interface/ConsumesInfo.h"
+#include "FWCore/Utilities/interface/BranchType.h"
 #include "FWCore/Utilities/interface/ESIndices.h"
 #include "FWCore/Utilities/interface/TypeID.h"
 #include "FWCore/Utilities/interface/TypeToGet.h"
@@ -67,6 +68,7 @@ namespace edm {
   class WillGetIfMatch;
 
   namespace eventsetup {
+    struct ComponentDescription;
     class ESRecordsToProductResolverIndices;
   }
 
@@ -116,6 +118,8 @@ namespace edm {
                                          ProductRegistry const& preg,
                                          std::map<std::string, ModuleDescription const*> const& labelsToDesc,
                                          std::string const& processName) const;
+
+    void esModulesWhoseProductsAreConsumed(std::array<std::vector<eventsetup::ComponentDescription const*>*, NumBranchTypes>& esModules) const;
 
     /// Convert "@currentProcess" in InputTag process names to the actual current process name.
     void convertCurrentProcessAlias(std::string const& processName);

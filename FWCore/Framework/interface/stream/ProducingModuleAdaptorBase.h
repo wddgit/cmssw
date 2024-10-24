@@ -32,6 +32,7 @@
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "DataFormats/Provenance/interface/ModuleDescription.h"
 #include "FWCore/ParameterSet/interface/ParameterSetfwd.h"
+#include "FWCore/Utilities/interface/BranchType.h"
 #include "FWCore/Utilities/interface/StreamID.h"
 #include "FWCore/Utilities/interface/RunIndex.h"
 #include "FWCore/Utilities/interface/LuminosityBlockIndex.h"
@@ -63,6 +64,7 @@ namespace edm {
   }
 
   namespace eventsetup {
+    struct ComponentDescription;
     class ESRecordsToProductResolverIndices;
   }
 
@@ -114,6 +116,8 @@ namespace edm {
                                            ProductRegistry const& preg,
                                            std::map<std::string, ModuleDescription const*> const& labelsToDesc,
                                            std::string const& processName) const;
+
+      void esModulesWhoseProductsAreConsumed(std::array<std::vector<eventsetup::ComponentDescription const*>*, NumBranchTypes>& esModules) const;
 
       void convertCurrentProcessAlias(std::string const& processName);
 
