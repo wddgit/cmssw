@@ -28,6 +28,8 @@
 
 // user include files
 #include "FWCore/Common/interface/FWCoreCommonFwd.h"
+#include "FWCore/Concurrency/interface/FinalWaitingTask.h"
+#include "FWCore/Concurrency/interface/WaitingTaskHolder.h"
 #include "FWCore/Framework/interface/SharedResourcesAcquirer.h"
 #include "FWCore/Framework/interface/PrincipalCache.h"
 #include "FWCore/Framework/interface/SignallingProductRegistryFiller.h"
@@ -332,6 +334,12 @@ This simulates a problem happening early in the job which causes processing not 
       void closeOutputFiles();
       void endJob();
 
+      template <typename Traits>
+      void processTransitionForAllStreams(typename Traits::TransitionInfoType& transitionInfo);
+
+      template <typename Traits>
+      void processGlobalTransition(typename Traits::TransitionInfoType& transitionInfo);
+
       // ---------- member data --------------------------------
       oneapi::tbb::global_control globalControl_;
       oneapi::tbb::task_group taskGroup_;
@@ -378,6 +386,27 @@ This simulates a problem happening early in the job which causes processing not 
       bool beginLumiCalled_ = false;
       bool openOutputFilesCalled_ = false;
     };
+
+    template <typename Traits>
+    void TestProcessor::processTransitionForAllStreams(typename Traits::TransitionInfoType& transitionInfo) {
+      FinalWaitingTask finalWaitTask{taskGroup_};
+      {
+        WaitingTaskHolder holder(taskGroup_, &finalWaitTask);
+        for (unsigned int i = 0; i < preallocations_.numberOfStreams(); ++i) {
+          schedule_->processOneStreamAsync<Traits>(holder, i, transitionInfo, serviceToken_);
+        }
+      }
+      finalWaitTask.wait();
+    }
+
+    template <typename Traits>
+    void TestProcessor::processGlobalTransition(typename Traits::TransitionInfoType& transitionInfo) {
+      FinalWaitingTask finalWaitTask{taskGroup_};
+      schedule_->processOneGlobalAsync<Traits>(
+          WaitingTaskHolder(taskGroup_, &finalWaitTask), transitionInfo, serviceToken_);
+      finalWaitTask.wait();
+    }
+
   }  // namespace test
 }  // namespace edm
 

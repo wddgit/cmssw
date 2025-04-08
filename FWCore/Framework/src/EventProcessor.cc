@@ -1975,6 +1975,7 @@ namespace edm {
 
   void EventProcessor::writeProcessBlockAsync(WaitingTaskHolder task, ProcessBlockType processBlockType) {
     ServiceRegistry::Operate op(serviceToken_);
+    // Don't move task because the lifetime of the task should be greater than the lifetime of the Operate object
     schedule_->writeProcessBlockAsync(
         task, principalCache_.processBlockPrincipal(processBlockType), &processContext_, actReg_.get());
   }
@@ -1984,6 +1985,7 @@ namespace edm {
                                      MergeableRunProductMetadata const* mergeableRunProductMetadata) {
     if (runPrincipal.shouldWriteRun() != RunPrincipal::kNo) {
       ServiceRegistry::Operate op(serviceToken_);
+      // Don't move task because the lifetime of the task should be greater than the lifetime of the Operate object
       schedule_->writeRunAsync(task, runPrincipal, &processContext_, actReg_.get(), mergeableRunProductMetadata);
     }
   }

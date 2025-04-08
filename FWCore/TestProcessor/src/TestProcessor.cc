@@ -46,8 +46,6 @@
 
 #include "FWCore/Utilities/interface/ExceptionCollector.h"
 
-#include "FWCore/Concurrency/interface/FinalWaitingTask.h"
-
 #include "oneTimeInitialization.h"
 
 #include <mutex>
@@ -453,14 +451,10 @@ namespace edm {
       ProcessBlockPrincipal& processBlockPrincipal = principalCache_.processBlockPrincipal();
       processBlockPrincipal.fillProcessBlockPrincipal(processConfiguration_->processName());
 
-      {
-        ProcessBlockTransitionInfo transitionInfo(processBlockPrincipal);
-        using Traits = OccurrenceTraits<ProcessBlockPrincipal, BranchActionGlobalBegin>;
-        FinalWaitingTask globalWaitTask{taskGroup_};
-        schedule_->processOneGlobalAsync<Traits>(
-            WaitingTaskHolder(taskGroup_, &globalWaitTask), transitionInfo, serviceToken_);
-        globalWaitTask.wait();
-      }
+      ProcessBlockTransitionInfo transitionInfo(processBlockPrincipal);
+      using Traits = OccurrenceTraits<ProcessBlockPrincipal, BranchActionGlobalBegin>;
+      processGlobalTransition<Traits>(transitionInfo);
+
       beginProcessBlockCalled_ = true;
     }
 
@@ -518,25 +512,13 @@ namespace edm {
       auto const& es = esp_->eventSetupImpl();
 
       RunTransitionInfo transitionInfo(*runPrincipal_, es, nullptr);
-
       {
         using Traits = OccurrenceTraits<RunPrincipal, BranchActionGlobalBegin>;
-        FinalWaitingTask globalWaitTask{taskGroup_};
-        schedule_->processOneGlobalAsync<Traits>(
-            WaitingTaskHolder(taskGroup_, &globalWaitTask), transitionInfo, serviceToken_);
-        globalWaitTask.wait();
+        processGlobalTransition<Traits>(transitionInfo);
       }
       {
-        //To wait, the ref count has to be 1+#streams
-        FinalWaitingTask streamLoopWaitTask{taskGroup_};
-
         using Traits = OccurrenceTraits<RunPrincipal, BranchActionStreamBegin>;
-        for (unsigned int i = 0; i < preallocations_.numberOfStreams(); ++i) {
-          schedule_->processOneStreamAsync<Traits>(
-              WaitingTaskHolder(taskGroup_, &streamLoopWaitTask), i, transitionInfo, serviceToken_);
-        }
-
-        streamLoopWaitTask.wait();
+        processTransitionForAllStreams<Traits>(transitionInfo);
       }
       beginRunCalled_ = true;
     }
@@ -561,22 +543,11 @@ namespace edm {
 
       {
         using Traits = OccurrenceTraits<LuminosityBlockPrincipal, BranchActionGlobalBegin>;
-        FinalWaitingTask globalWaitTask{taskGroup_};
-        schedule_->processOneGlobalAsync<Traits>(
-            WaitingTaskHolder(taskGroup_, &globalWaitTask), transitionInfo, serviceToken_);
-        globalWaitTask.wait();
+        processGlobalTransition<Traits>(transitionInfo);
       }
       {
-        //To wait, the ref count has to be 1+#streams
-        FinalWaitingTask streamLoopWaitTask{taskGroup_};
-
         using Traits = OccurrenceTraits<LuminosityBlockPrincipal, BranchActionStreamBegin>;
-        for (unsigned int i = 0; i < preallocations_.numberOfStreams(); ++i) {
-          schedule_->processOneStreamAsync<Traits>(
-              WaitingTaskHolder(taskGroup_, &streamLoopWaitTask), i, transitionInfo, serviceToken_);
-        }
-
-        streamLoopWaitTask.wait();
+        processTransitionForAllStreams<Traits>(transitionInfo);
       }
       beginLumiCalled_ = true;
     }
@@ -630,26 +601,13 @@ namespace edm {
 
         LumiTransitionInfo transitionInfo(*lumiPrincipal, es, nullptr);
 
-        //To wait, the ref count has to be 1+#streams
         {
-          FinalWaitingTask streamLoopWaitTask{taskGroup_};
-
           using Traits = OccurrenceTraits<LuminosityBlockPrincipal, BranchActionStreamEnd>;
-
-          for (unsigned int i = 0; i < preallocations_.numberOfStreams(); ++i) {
-            schedule_->processOneStreamAsync<Traits>(
-                WaitingTaskHolder(taskGroup_, &streamLoopWaitTask), i, transitionInfo, serviceToken_, false);
-          }
-
-          streamLoopWaitTask.wait();
+          processTransitionForAllStreams<Traits>(transitionInfo);
         }
         {
-          FinalWaitingTask globalWaitTask{taskGroup_};
-
           using Traits = OccurrenceTraits<LuminosityBlockPrincipal, BranchActionGlobalEnd>;
-          schedule_->processOneGlobalAsync<Traits>(
-              WaitingTaskHolder(taskGroup_, &globalWaitTask), transitionInfo, serviceToken_, false);
-          globalWaitTask.wait();
+          processGlobalTransition<Traits>(transitionInfo);
         }
         {
           FinalWaitingTask globalWaitTask{taskGroup_};
@@ -680,26 +638,13 @@ namespace edm {
 
         RunTransitionInfo transitionInfo(*runPrincipal, es);
 
-        //To wait, the ref count has to be 1+#streams
         {
-          FinalWaitingTask streamLoopWaitTask{taskGroup_};
-
           using Traits = OccurrenceTraits<RunPrincipal, BranchActionStreamEnd>;
-
-          for (unsigned int i = 0; i < preallocations_.numberOfStreams(); ++i) {
-            schedule_->processOneStreamAsync<Traits>(
-                WaitingTaskHolder(taskGroup_, &streamLoopWaitTask), i, transitionInfo, serviceToken_, false);
-          }
-
-          streamLoopWaitTask.wait();
+          processTransitionForAllStreams<Traits>(transitionInfo);
         }
         {
-          FinalWaitingTask globalWaitTask{taskGroup_};
-
           using Traits = OccurrenceTraits<RunPrincipal, BranchActionGlobalEnd>;
-          schedule_->processOneGlobalAsync<Traits>(
-              WaitingTaskHolder(taskGroup_, &globalWaitTask), transitionInfo, serviceToken_, false);
-          globalWaitTask.wait();
+          processGlobalTransition<Traits>(transitionInfo);
         }
         {
           FinalWaitingTask globalWaitTask{taskGroup_};
@@ -719,15 +664,9 @@ namespace edm {
       if (beginProcessBlockCalled_) {
         beginProcessBlockCalled_ = false;
 
-        {
-          FinalWaitingTask globalWaitTask{taskGroup_};
-
-          ProcessBlockTransitionInfo transitionInfo(processBlockPrincipal);
-          using Traits = OccurrenceTraits<ProcessBlockPrincipal, BranchActionGlobalEnd>;
-          schedule_->processOneGlobalAsync<Traits>(
-              WaitingTaskHolder(taskGroup_, &globalWaitTask), transitionInfo, serviceToken_, false);
-          globalWaitTask.wait();
-        }
+        ProcessBlockTransitionInfo transitionInfo(processBlockPrincipal);
+        using Traits = OccurrenceTraits<ProcessBlockPrincipal, BranchActionGlobalEnd>;
+        processGlobalTransition<Traits>(transitionInfo);
       }
       return &processBlockPrincipal;
     }
