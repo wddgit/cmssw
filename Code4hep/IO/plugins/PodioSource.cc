@@ -109,7 +109,7 @@ namespace c4h {
     }
 
     // make sure the new product registry is compatible with the main one
-    std::string mergeInfo =
+    const std::string mergeInfo =
         productRegistryUpdate().merge(*podioFile_->productRegistry(), *currentFileIter_, ProductDescription::Strict);
     if (!mergeInfo.empty()) {
       throw Exception(errors::MismatchedInputFiles, "PodioSource::readFile_()") << mergeInfo;

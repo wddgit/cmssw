@@ -1,5 +1,4 @@
-#include <cstddef>
-#include <vector>
+#include <unordered_map>
 
 #include "edm4hep/edm4hep.h"
 #include "podio/UserDataCollection.h"
@@ -27,67 +26,45 @@ namespace c4h {
     edm::TypeID typeID;
     bool const produced = false;
 
+    static const std::unordered_map<std::string, const std::type_info*> collectionToTypeInfo = {
+        {"CalorimeterHitCollection", &typeid(edm4hep::CalorimeterHitCollection)},
+        {"CaloHitContributionCollection", &typeid(edm4hep::CaloHitContributionCollection)},
+        {"ClusterCollection", &typeid(edm4hep::ClusterCollection)},
+        {"EventHeader", &typeid(edm4hep::EventHeaderCollection)},
+        {"GeneratorEventParametersCollection", &typeid(edm4hep::GeneratorEventParametersCollection)},
+        {"MCParticleCollection", &typeid(edm4hep::MCParticleCollection)},
+        {"ParticleIDCollection", &typeid(edm4hep::ParticleIDCollection)},
+        {"RawCalorimeterHitCollection", &typeid(edm4hep::RawCalorimeterHitCollection)},
+        {"RawTimeSeriesCollection", &typeid(edm4hep::RawTimeSeriesCollection)},
+        {"RecDqdxCollection", &typeid(edm4hep::RecDqdxCollection)},
+        {"ReconstructedParticleCollection", &typeid(edm4hep::ReconstructedParticleCollection)},
+        {"SenseWireHitCollection", &typeid(edm4hep::SenseWireHitCollection)},
+        {"SimCalorimeterHitCollection", &typeid(edm4hep::SimCalorimeterHitCollection)},
+        {"SimTrackerHitCollection", &typeid(edm4hep::SimTrackerHitCollection)},
+        {"TimeSeriesCollection", &typeid(edm4hep::TimeSeriesCollection)},
+        {"TrackCollection", &typeid(edm4hep::TrackCollection)},
+        {"TrackerHitPlaneCollection", &typeid(edm4hep::TrackerHitPlaneCollection)},
+        {"TrackerHit3DCollection", &typeid(edm4hep::TrackerHit3DCollection)},
+        {"UserDataCollectionFloat", &typeid(podio::UserDataCollection<float>)},
+        {"UserDataCollectionInt", &typeid(podio::UserDataCollection<int32_t>)},
+        {"VertexCollection", &typeid(edm4hep::VertexCollection)},
+        {"CaloHitMCParticleLinkCollection", &typeid(podio::LinkCollection<edm4hep::CalorimeterHit, edm4hep::MCParticle>)},
+        {"CaloHitSimCaloHitLinkCollection", &typeid(podio::LinkCollection<edm4hep::CalorimeterHit, edm4hep::SimCalorimeterHit>)},
+        {"ClusterMCParticleLinkCollection", &typeid(podio::LinkCollection<edm4hep::Cluster, edm4hep::MCParticle>)},
+        {"RecoMCParticleLinkCollection", &typeid(podio::LinkCollection<edm4hep::ReconstructedParticle, edm4hep::MCParticle>)},
+        {"TrackMCParticleLinkCollection", &typeid(podio::LinkCollection<edm4hep::Track, edm4hep::MCParticle>)},
+        {"TrackerHitSimTrackerHitLinkCollection", &typeid(podio::LinkCollection<edm4hep::TrackerHit, edm4hep::SimTrackerHit>)},
+        {"VertexRecoParticleLinkCollection", &typeid(podio::LinkCollection<edm4hep::Vertex, edm4hep::ReconstructedParticle>)},
+    };
+
     for (std::string const& collection : podioFrame.getAvailableCollections()) {
       // This line of code just emphasizes to the reader that a podio collection
       // name is used as the module label in the EDM ProductDescription
       std::string const& moduleLabel = collection;
 
-      if (collection == "CalorimeterHitCollection") {
-        typeID = edm::TypeID(typeid(edm4hep::CalorimeterHitCollection));
-      } else if (collection == "CaloHitContributionCollection") {
-        typeID = edm::TypeID(typeid(edm4hep::CaloHitContributionCollection));
-      } else if (collection == "ClusterCollection") {
-        typeID = edm::TypeID(typeid(edm4hep::ClusterCollection));
-      } else if (collection == "EventHeader") {
-        typeID = edm::TypeID(typeid(edm4hep::EventHeaderCollection));
-      } else if (collection == "GeneratorEventParametersCollection") {
-        typeID = edm::TypeID(typeid(edm4hep::GeneratorEventParametersCollection));
-      } else if (collection == "MCParticleCollection") {
-        typeID = edm::TypeID(typeid(edm4hep::MCParticleCollection));
-      } else if (collection == "ParticleIDCollection") {
-        typeID = edm::TypeID(typeid(edm4hep::ParticleIDCollection));
-      } else if (collection == "RawCalorimeterHitCollection") {
-        typeID = edm::TypeID(typeid(edm4hep::RawCalorimeterHitCollection));
-      } else if (collection == "RawTimeSeriesCollection") {
-        typeID = edm::TypeID(typeid(edm4hep::RawTimeSeriesCollection));
-      } else if (collection == "RecDqdxCollection") {
-        typeID = edm::TypeID(typeid(edm4hep::RecDqdxCollection));
-      } else if (collection == "ReconstructedParticleCollection") {
-        typeID = edm::TypeID(typeid(edm4hep::ReconstructedParticleCollection));
-      } else if (collection == "SenseWireHitCollection") {
-        typeID = edm::TypeID(typeid(edm4hep::SenseWireHitCollection));
-      } else if (collection == "SimCalorimeterHitCollection") {
-        typeID = edm::TypeID(typeid(edm4hep::SimCalorimeterHitCollection));
-      } else if (collection == "SimTrackerHitCollection") {
-        typeID = edm::TypeID(typeid(edm4hep::SimTrackerHitCollection));
-      } else if (collection == "TimeSeriesCollection") {
-        typeID = edm::TypeID(typeid(edm4hep::TimeSeriesCollection));
-      } else if (collection == "TrackCollection") {
-        typeID = edm::TypeID(typeid(edm4hep::TrackCollection));
-      } else if (collection == "TrackerHitPlaneCollection") {
-        typeID = edm::TypeID(typeid(edm4hep::TrackerHitPlaneCollection));
-      } else if (collection == "TrackerHit3DCollection") {
-        typeID = edm::TypeID(typeid(edm4hep::TrackerHit3DCollection));
-      } else if (collection == "UserDataCollectionFloat") {
-        typeID = edm::TypeID(typeid(podio::UserDataCollection<float>));
-      } else if (collection == "UserDataCollectionInt") {
-        typeID = edm::TypeID(typeid(podio::UserDataCollection<int32_t>));
-      } else if (collection == "VertexCollection") {
-        typeID = edm::TypeID(typeid(edm4hep::VertexCollection));
-      } else if (collection == "CaloHitMCParticleLinkCollection") {
-        typeID = edm::TypeID(typeid(podio::LinkCollection<edm4hep::CalorimeterHit, edm4hep::MCParticle>));
-      } else if (collection == "CaloHitSimCaloHitLinkCollection") {
-        typeID = edm::TypeID(typeid(podio::LinkCollection<edm4hep::CalorimeterHit, edm4hep::SimCalorimeterHit>));
-      } else if (collection == "ClusterMCParticleLinkCollection") {
-        typeID = edm::TypeID(typeid(podio::LinkCollection<edm4hep::Cluster, edm4hep::MCParticle>));
-      } else if (collection == "RecoMCParticleLinkCollection") {
-        typeID = edm::TypeID(typeid(podio::LinkCollection<edm4hep::ReconstructedParticle, edm4hep::MCParticle>));
-      } else if (collection == "TrackMCParticleLinkCollection") {
-        typeID = edm::TypeID(typeid(podio::LinkCollection<edm4hep::Track, edm4hep::MCParticle>));
-      } else if (collection == "TrackerHitSimTrackerHitLinkCollection") {
-        typeID = edm::TypeID(typeid(podio::LinkCollection<edm4hep::TrackerHit, edm4hep::SimTrackerHit>));
-      } else if (collection == "VertexRecoParticleLinkCollection") {
-        typeID = edm::TypeID(typeid(podio::LinkCollection<edm4hep::Vertex, edm4hep::ReconstructedParticle>));
+      auto it = collectionToTypeInfo.find(collection);
+      if (it != collectionToTypeInfo.end()) {
+        typeID = edm::TypeID(*it->second);
       } else {
         throw edm::Exception(edm::errors::LogicError, "fillProductRegistry")
             << "Unknown podio collection name " << collection << "\n";

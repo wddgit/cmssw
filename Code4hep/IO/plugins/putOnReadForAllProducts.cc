@@ -1,6 +1,8 @@
+#include <functional>
 #include <memory>
 #include <optional>
 #include <string>
+#include <unordered_map>
 #include <utility>
 
 #include "edm4hep/edm4hep.h"
@@ -47,80 +49,133 @@ namespace c4h {
   void putOnReadForAllProducts(podio::Frame const& podioFrame,
                                edm::ProductRegistry const& productRegistry,
                                edm::EventPrincipal& eventPrincipal) {
+    static const std::unordered_map<
+        std::string,
+        std::function<void(edm::EventPrincipal&, edm::ProductDescription const&, const podio::CollectionBase*)>>
+        moduleLabelToHandler = {
+            {"CalorimeterHitCollection",
+             [](edm::EventPrincipal& ep, edm::ProductDescription const& pd, const podio::CollectionBase* cb) {
+               putOnReadForProductType<edm4hep::CalorimeterHitCollection>(ep, pd, cb);
+             }},
+            {"CaloHitContributionCollection",
+             [](edm::EventPrincipal& ep, edm::ProductDescription const& pd, const podio::CollectionBase* cb) {
+               putOnReadForProductType<edm4hep::CaloHitContributionCollection>(ep, pd, cb);
+             }},
+            {"ClusterCollection",
+             [](edm::EventPrincipal& ep, edm::ProductDescription const& pd, const podio::CollectionBase* cb) {
+               putOnReadForProductType<edm4hep::ClusterCollection>(ep, pd, cb);
+             }},
+            {"EventHeader",
+             [](edm::EventPrincipal& ep, edm::ProductDescription const& pd, const podio::CollectionBase* cb) {
+               putOnReadForProductType<edm4hep::EventHeaderCollection>(ep, pd, cb);
+             }},
+            {"GeneratorEventParametersCollection",
+             [](edm::EventPrincipal& ep, edm::ProductDescription const& pd, const podio::CollectionBase* cb) {
+               putOnReadForProductType<edm4hep::GeneratorEventParametersCollection>(ep, pd, cb);
+             }},
+            {"MCParticleCollection",
+             [](edm::EventPrincipal& ep, edm::ProductDescription const& pd, const podio::CollectionBase* cb) {
+               putOnReadForProductType<edm4hep::MCParticleCollection>(ep, pd, cb);
+             }},
+            {"ParticleIDCollection",
+             [](edm::EventPrincipal& ep, edm::ProductDescription const& pd, const podio::CollectionBase* cb) {
+               putOnReadForProductType<edm4hep::ParticleIDCollection>(ep, pd, cb);
+             }},
+            {"RawCalorimeterHitCollection",
+             [](edm::EventPrincipal& ep, edm::ProductDescription const& pd, const podio::CollectionBase* cb) {
+               putOnReadForProductType<edm4hep::RawCalorimeterHitCollection>(ep, pd, cb);
+             }},
+            {"RawTimeSeriesCollection",
+             [](edm::EventPrincipal& ep, edm::ProductDescription const& pd, const podio::CollectionBase* cb) {
+               putOnReadForProductType<edm4hep::RawTimeSeriesCollection>(ep, pd, cb);
+             }},
+            {"RecDqdxCollection",
+             [](edm::EventPrincipal& ep, edm::ProductDescription const& pd, const podio::CollectionBase* cb) {
+               putOnReadForProductType<edm4hep::RecDqdxCollection>(ep, pd, cb);
+             }},
+            {"ReconstructedParticleCollection",
+             [](edm::EventPrincipal& ep, edm::ProductDescription const& pd, const podio::CollectionBase* cb) {
+               putOnReadForProductType<edm4hep::ReconstructedParticleCollection>(ep, pd, cb);
+             }},
+            {"SenseWireHitCollection",
+             [](edm::EventPrincipal& ep, edm::ProductDescription const& pd, const podio::CollectionBase* cb) {
+               putOnReadForProductType<edm4hep::SenseWireHitCollection>(ep, pd, cb);
+             }},
+            {"SimCalorimeterHitCollection",
+             [](edm::EventPrincipal& ep, edm::ProductDescription const& pd, const podio::CollectionBase* cb) {
+               putOnReadForProductType<edm4hep::SimCalorimeterHitCollection>(ep, pd, cb);
+             }},
+            {"SimTrackerHitCollection",
+             [](edm::EventPrincipal& ep, edm::ProductDescription const& pd, const podio::CollectionBase* cb) {
+               putOnReadForProductType<edm4hep::SimTrackerHitCollection>(ep, pd, cb);
+             }},
+            {"TimeSeriesCollection",
+             [](edm::EventPrincipal& ep, edm::ProductDescription const& pd, const podio::CollectionBase* cb) {
+               putOnReadForProductType<edm4hep::TimeSeriesCollection>(ep, pd, cb);
+             }},
+            {"TrackCollection",
+             [](edm::EventPrincipal& ep, edm::ProductDescription const& pd, const podio::CollectionBase* cb) {
+               putOnReadForProductType<edm4hep::TrackCollection>(ep, pd, cb);
+             }},
+            {"TrackerHitPlaneCollection",
+             [](edm::EventPrincipal& ep, edm::ProductDescription const& pd, const podio::CollectionBase* cb) {
+               putOnReadForProductType<edm4hep::TrackerHitPlaneCollection>(ep, pd, cb);
+             }},
+            {"TrackerHit3DCollection",
+             [](edm::EventPrincipal& ep, edm::ProductDescription const& pd, const podio::CollectionBase* cb) {
+               putOnReadForProductType<edm4hep::TrackerHit3DCollection>(ep, pd, cb);
+             }},
+            {"UserDataCollectionFloat",
+             [](edm::EventPrincipal& ep, edm::ProductDescription const& pd, const podio::CollectionBase* cb) {
+               putOnReadForProductType<podio::UserDataCollection<float>>(ep, pd, cb);
+             }},
+            {"UserDataCollectionInt",
+             [](edm::EventPrincipal& ep, edm::ProductDescription const& pd, const podio::CollectionBase* cb) {
+               putOnReadForProductType<podio::UserDataCollection<int32_t>>(ep, pd, cb);
+             }},
+            {"VertexCollection",
+             [](edm::EventPrincipal& ep, edm::ProductDescription const& pd, const podio::CollectionBase* cb) {
+               putOnReadForProductType<edm4hep::VertexCollection>(ep, pd, cb);
+             }},
+            {"CaloHitMCParticleLinkCollection",
+             [](edm::EventPrincipal& ep, edm::ProductDescription const& pd, const podio::CollectionBase* cb) {
+               putOnReadForProductType<podio::LinkCollection<edm4hep::CalorimeterHit, edm4hep::MCParticle>>(ep, pd, cb);
+             }},
+            {"CaloHitSimCaloHitLinkCollection",
+             [](edm::EventPrincipal& ep, edm::ProductDescription const& pd, const podio::CollectionBase* cb) {
+               putOnReadForProductType<podio::LinkCollection<edm4hep::CalorimeterHit, edm4hep::SimCalorimeterHit>>(ep, pd, cb);
+             }},
+            {"ClusterMCParticleLinkCollection",
+             [](edm::EventPrincipal& ep, edm::ProductDescription const& pd, const podio::CollectionBase* cb) {
+               putOnReadForProductType<podio::LinkCollection<edm4hep::Cluster, edm4hep::MCParticle>>(ep, pd, cb);
+             }},
+            {"RecoMCParticleLinkCollection",
+             [](edm::EventPrincipal& ep, edm::ProductDescription const& pd, const podio::CollectionBase* cb) {
+               putOnReadForProductType<podio::LinkCollection<edm4hep::ReconstructedParticle, edm4hep::MCParticle>>(ep, pd, cb);
+             }},
+            {"TrackMCParticleLinkCollection",
+             [](edm::EventPrincipal& ep, edm::ProductDescription const& pd, const podio::CollectionBase* cb) {
+               putOnReadForProductType<podio::LinkCollection<edm4hep::Track, edm4hep::MCParticle>>(ep, pd, cb);
+             }},
+            {"TrackerHitSimTrackerHitLinkCollection",
+             [](edm::EventPrincipal& ep, edm::ProductDescription const& pd, const podio::CollectionBase* cb) {
+               putOnReadForProductType<podio::LinkCollection<edm4hep::TrackerHit, edm4hep::SimTrackerHit>>(ep, pd, cb);
+             }},
+            {"VertexRecoParticleLinkCollection",
+             [](edm::EventPrincipal& ep, edm::ProductDescription const& pd, const podio::CollectionBase* cb) {
+               putOnReadForProductType<podio::LinkCollection<edm4hep::Vertex, edm4hep::ReconstructedParticle>>(ep, pd, cb);
+             }},
+        };
+
     for (auto const& iter : productRegistry.productList()) {
       auto const& productDescription = iter.second;
       std::string const& moduleLabel = productDescription.moduleLabel();
 
       const podio::CollectionBase* collectionBase = podioFrame.get(moduleLabel);
 
-      if (moduleLabel == "CalorimeterHitCollection") {
-        putOnReadForProductType<edm4hep::CalorimeterHitCollection>(eventPrincipal, productDescription, collectionBase);
-      } else if (moduleLabel == "CaloHitContributionCollection") {
-        putOnReadForProductType<edm4hep::CaloHitContributionCollection>(
-            eventPrincipal, productDescription, collectionBase);
-      } else if (moduleLabel == "ClusterCollection") {
-        putOnReadForProductType<edm4hep::ClusterCollection>(eventPrincipal, productDescription, collectionBase);
-      } else if (moduleLabel == "EventHeader") {
-        putOnReadForProductType<edm4hep::EventHeaderCollection>(eventPrincipal, productDescription, collectionBase);
-      } else if (moduleLabel == "GeneratorEventParametersCollection") {
-        putOnReadForProductType<edm4hep::GeneratorEventParametersCollection>(
-            eventPrincipal, productDescription, collectionBase);
-      } else if (moduleLabel == "MCParticleCollection") {
-        putOnReadForProductType<edm4hep::MCParticleCollection>(eventPrincipal, productDescription, collectionBase);
-      } else if (moduleLabel == "ParticleIDCollection") {
-        putOnReadForProductType<edm4hep::ParticleIDCollection>(eventPrincipal, productDescription, collectionBase);
-      } else if (moduleLabel == "RawCalorimeterHitCollection") {
-        putOnReadForProductType<edm4hep::RawCalorimeterHitCollection>(
-            eventPrincipal, productDescription, collectionBase);
-      } else if (moduleLabel == "RawTimeSeriesCollection") {
-        putOnReadForProductType<edm4hep::RawTimeSeriesCollection>(eventPrincipal, productDescription, collectionBase);
-      } else if (moduleLabel == "RecDqdxCollection") {
-        putOnReadForProductType<edm4hep::RecDqdxCollection>(eventPrincipal, productDescription, collectionBase);
-      } else if (moduleLabel == "ReconstructedParticleCollection") {
-        putOnReadForProductType<edm4hep::ReconstructedParticleCollection>(
-            eventPrincipal, productDescription, collectionBase);
-      } else if (moduleLabel == "SenseWireHitCollection") {
-        putOnReadForProductType<edm4hep::SenseWireHitCollection>(eventPrincipal, productDescription, collectionBase);
-      } else if (moduleLabel == "SimCalorimeterHitCollection") {
-        putOnReadForProductType<edm4hep::SimCalorimeterHitCollection>(
-            eventPrincipal, productDescription, collectionBase);
-      } else if (moduleLabel == "SimTrackerHitCollection") {
-        putOnReadForProductType<edm4hep::SimTrackerHitCollection>(eventPrincipal, productDescription, collectionBase);
-      } else if (moduleLabel == "TimeSeriesCollection") {
-        putOnReadForProductType<edm4hep::TimeSeriesCollection>(eventPrincipal, productDescription, collectionBase);
-      } else if (moduleLabel == "TrackCollection") {
-        putOnReadForProductType<edm4hep::TrackCollection>(eventPrincipal, productDescription, collectionBase);
-      } else if (moduleLabel == "TrackerHitPlaneCollection") {
-        putOnReadForProductType<edm4hep::TrackerHitPlaneCollection>(eventPrincipal, productDescription, collectionBase);
-      } else if (moduleLabel == "TrackerHit3DCollection") {
-        putOnReadForProductType<edm4hep::TrackerHit3DCollection>(eventPrincipal, productDescription, collectionBase);
-      } else if (moduleLabel == "UserDataCollectionFloat") {
-        putOnReadForProductType<podio::UserDataCollection<float>>(eventPrincipal, productDescription, collectionBase);
-      } else if (moduleLabel == "UserDataCollectionInt") {
-        putOnReadForProductType<podio::UserDataCollection<int32_t>>(eventPrincipal, productDescription, collectionBase);
-      } else if (moduleLabel == "VertexCollection") {
-        putOnReadForProductType<edm4hep::VertexCollection>(eventPrincipal, productDescription, collectionBase);
-      } else if (moduleLabel == "CaloHitMCParticleLinkCollection") {
-        putOnReadForProductType<podio::LinkCollection<edm4hep::CalorimeterHit, edm4hep::MCParticle>>(
-            eventPrincipal, productDescription, collectionBase);
-      } else if (moduleLabel == "CaloHitSimCaloHitLinkCollection") {
-        putOnReadForProductType<podio::LinkCollection<edm4hep::CalorimeterHit, edm4hep::SimCalorimeterHit>>(
-            eventPrincipal, productDescription, collectionBase);
-      } else if (moduleLabel == "ClusterMCParticleLinkCollection") {
-        putOnReadForProductType<podio::LinkCollection<edm4hep::Cluster, edm4hep::MCParticle>>(
-            eventPrincipal, productDescription, collectionBase);
-      } else if (moduleLabel == "RecoMCParticleLinkCollection") {
-        putOnReadForProductType<podio::LinkCollection<edm4hep::ReconstructedParticle, edm4hep::MCParticle>>(
-            eventPrincipal, productDescription, collectionBase);
-      } else if (moduleLabel == "TrackMCParticleLinkCollection") {
-        putOnReadForProductType<podio::LinkCollection<edm4hep::Track, edm4hep::MCParticle>>(
-            eventPrincipal, productDescription, collectionBase);
-      } else if (moduleLabel == "TrackerHitSimTrackerHitLinkCollection") {
-        putOnReadForProductType<podio::LinkCollection<edm4hep::TrackerHit, edm4hep::SimTrackerHit>>(
-            eventPrincipal, productDescription, collectionBase);
-      } else if (moduleLabel == "VertexRecoParticleLinkCollection") {
-        putOnReadForProductType<podio::LinkCollection<edm4hep::Vertex, edm4hep::ReconstructedParticle>>(
-            eventPrincipal, productDescription, collectionBase);
+      auto it = moduleLabelToHandler.find(moduleLabel);
+      if (it != moduleLabelToHandler.end()) {
+        it->second(eventPrincipal, productDescription, collectionBase);
       } else {
         throw edm::Exception(edm::errors::LogicError, "putOnReadForAllProducts")
             << "Unknown moduleLabel \"" << moduleLabel << "\"\n";
