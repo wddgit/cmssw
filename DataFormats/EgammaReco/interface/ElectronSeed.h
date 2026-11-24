@@ -40,14 +40,14 @@
 #include "DataFormats/TrajectoryState/interface/TrackCharge.h"
 #include "DataFormats/TrackingRecHit/interface/TrackingRecHit.h"
 #include "DataFormats/TrackReco/interface/TrackFwd.h"
-#include "DataFormats/Common/interface/RefToBase.h"
+#include "DataFormats/Common/interface/Ptr.h"
 #include "DataFormats/Common/interface/Ref.h"
 
 #include <vector>
 #include <limits>
 
 namespace reco {
-  namespace io_v1 {
+  namespace io_v2 {
 
     class ElectronSeed : public TrajectorySeed {
     public:
@@ -66,7 +66,7 @@ namespace reco {
         void setDet(int iDetId, int iLayerOrDiskNr);
       };
 
-      typedef edm::RefToBase<CaloCluster> CaloClusterRef;
+      typedef edm::Ptr<CaloCluster> CaloClusterPtr;
       typedef edm::Ref<TrackCollection> CtfTrackRef;
 
       static std::string const& name() {
@@ -83,7 +83,7 @@ namespace reco {
 
       //! Set additional info
       void setCtfTrack(const CtfTrackRef&);
-      void setCaloCluster(const CaloClusterRef& clus) {
+      void setCaloCluster(const CaloClusterPtr& clus) {
         caloCluster_ = clus;
         isEcalDriven_ = true;
       }
@@ -91,7 +91,7 @@ namespace reco {
       void setNrLayersAlongTraj(int val) { nrLayersAlongTraj_ = val; }
       //! Accessors
       const CtfTrackRef& ctfTrack() const { return ctfTrack_; }
-      const CaloClusterRef& caloCluster() const { return caloCluster_; }
+      const CaloClusterPtr& caloCluster() const { return caloCluster_; }
 
       //! Utility
       TrackCharge getCharge() const { return startingState().parameters().charge(); }
@@ -147,15 +147,15 @@ namespace reco {
 
     private:
       CtfTrackRef ctfTrack_;
-      CaloClusterRef caloCluster_;
+      CaloClusterPtr caloCluster_;
       std::vector<PMVars> hitInfo_;
       int nrLayersAlongTraj_;
 
       bool isEcalDriven_;
       bool isTrackerDriven_;
     };
-  }  // namespace io_v1
-  using ElectronSeed = io_v1::ElectronSeed;
+  }  // namespace io_v2
+  using ElectronSeed = io_v2::ElectronSeed;
 }  // namespace reco
 
 #endif
